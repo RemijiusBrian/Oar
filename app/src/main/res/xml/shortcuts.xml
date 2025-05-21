@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_add"
+        android:shortcutId="add_new_expense_static_shortcut"
+        android:shortcutLongLabel="@string/shortcut_add_new_transaction_label"
+        android:shortcutShortLabel="@string/shortcut_add_new_transaction_label">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="dev.ridill.oar://app/add_edit_transaction"
+            android:targetClass="dev.ridill.oar.application.OarActivity"
+            android:targetPackage="dev.ridill.oar" />
+    </shortcut>
+
+    <!--    <shortcut-->
+    <!--        android:enabled="true"-->
+    <!--        android:icon="@drawable/ic_outline_add_folder"-->
+    <!--        android:shortcutId="add_new_folder_static_shortcut"-->
+    <!--        android:shortcutLongLabel="@string/shortcut_add_new_folder_label"-->
+    <!--        android:shortcutShortLabel="@string/shortcut_add_new_folder_label">-->
+    <!--        <intent-->
+    <!--            android:action="android.intent.action.VIEW"-->
+    <!--            android:data="dev.ridill.oar://app/add_folder_shortcut"-->
+    <!--            android:targetClass="dev.ridill.oar.application.OarActivity"-->
+    <!--            android:targetPackage="dev.ridill.oar.internal" />-->
+    <!--    </shortcut>-->
+</shortcuts>
