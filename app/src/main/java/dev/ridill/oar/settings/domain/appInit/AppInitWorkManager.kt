@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.ridill.oar.core.domain.util.toUUID
+import kotlinx.coroutines.flow.Flow
 
 class AppInitWorkManager(
     private val context: Context
@@ -16,19 +18,32 @@ class AppInitWorkManager(
 
     private val workManager = WorkManager.getInstance(context)
 
-    private val appInitWorkerName: String
-        get() = "${context.packageName}.APP_INIT_WORKER"
+    private val budgetCycleInitWorkerName: String
+        get() = "${context.packageName}.BUDGET_CYCLE_INIT_WORKER"
+
+    private val currencyInitWorkerName: String
+        get() = "${context.packageName}.CURRENCY_INIT_WORKER"
 
     fun startAppInitWorker() {
-        val workRequest = OneTimeWorkRequestBuilder<AppInitWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setId(appInitWorkerName.toUUID())
+        val budgetCycleInitWorker = OneTimeWorkRequestBuilder<BudgetCycleInitWorker>()
+            .setId(budgetCycleInitWorkerName.toUUID())
+            .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
             .build()
 
-        workManager.enqueueUniqueWork(
-            appInitWorkerName,
-            ExistingWorkPolicy.KEEP,
-            workRequest
+        val currencyInitWorker = OneTimeWorkRequestBuilder<CurrencyInitWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setId(currencyInitWorkerName.toUUID())
+            .build()
+
+        workManager.beginUniqueWork(
+            budgetCycleInitWorkerName,
+            ExistingWorkPolicy.REPLACE,
+            budgetCycleInitWorker
         )
+            .then(currencyInitWorker)
+            .enqueue()
     }
+
+    fun getBudgetCycleInitWorkInfo(): Flow<WorkInfo?> =
+        workManager.getWorkInfoByIdFlow(budgetCycleInitWorkerName.toUUID())
 }

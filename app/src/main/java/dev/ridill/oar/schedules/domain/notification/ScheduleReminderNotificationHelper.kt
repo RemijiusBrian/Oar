@@ -48,7 +48,7 @@ class ScheduleReminderNotificationHelper(
         val channel = NotificationChannelCompat
             .Builder(channelId, NotificationManagerCompat.IMPORTANCE_DEFAULT)
             .setName(context.getString(R.string.notification_channel_schedule_reminders_name))
-            .setGroup(NotificationHelper.Groups.transactions(context))
+            .setGroup(NotificationHelper.Groups.schedules(context))
             .build()
         notificationManager.createNotificationChannel(channel)
     }

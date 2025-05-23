@@ -67,7 +67,6 @@ class OarViewModel @Inject constructor(
     init {
         collectTransactionAutoDetectEnabled()
         collectIsAppLocked()
-        runInitIfNeeded()
         initRemoteConfig()
     }
 
@@ -128,10 +127,6 @@ class OarViewModel @Inject constructor(
     }
 
     fun startConfigRestore() = backupWorkManager.runConfigRestoreWork()
-
-    private fun runInitIfNeeded() = viewModelScope.launch {
-        appInitWorkManager.startAppInitWorker()
-    }
 
     private fun initRemoteConfig() = viewModelScope.launch {
         remoteConfigService.activate()
