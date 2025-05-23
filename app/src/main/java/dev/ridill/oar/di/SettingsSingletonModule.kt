@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.ridill.oar.BuildConfig
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.account.domain.service.AccessTokenService
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
@@ -110,6 +111,7 @@ object SettingsSingletonModule {
         schedulesRepository: SchedulesRepository,
         authRepository: AuthRepository,
         cryptoManager: CryptoManager,
+        cycleRepository: BudgetCycleRepository
     ): BackupRepository = BackupRepositoryImpl(
         context = context,
         backupService = backupService,
@@ -120,7 +122,8 @@ object SettingsSingletonModule {
         backupWorkManager = backupWorkManager,
         schedulesRepository = schedulesRepository,
         authRepo = authRepository,
-        cryptoManager = cryptoManager
+        cryptoManager = cryptoManager,
+        cycleRepo = cycleRepository
     )
 
     @Provides

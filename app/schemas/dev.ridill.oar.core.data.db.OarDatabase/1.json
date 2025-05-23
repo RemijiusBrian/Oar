@@ -2,8 +2,77 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "53aae3f306f1388fc89f1c0cc24de2db",
+    "identityHash": "d2521aa771f7d6c544ce9ef60921d04d",
     "entities": [
+      {
+        "tableName": "budget_cycle_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_date` TEXT NOT NULL, `end_date` TEXT NOT NULL, `budget` REAL NOT NULL, `currency_code` TEXT NOT NULL, `status` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "start_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "end_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "budget",
+            "columnName": "budget",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currencyCode",
+            "columnName": "currency_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_budget_cycle_table_start_date_end_date",
+            "unique": true,
+            "columnNames": [
+              "start_date",
+              "end_date"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_budget_cycle_table_start_date_end_date` ON `${TABLE_NAME}` (`start_date`, `end_date`)"
+          },
+          {
+            "name": "index_budget_cycle_table_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_budget_cycle_table_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ]
+      },
       {
         "tableName": "budget_preference_table",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `amount` INTEGER NOT NULL, PRIMARY KEY(`date`))",
@@ -30,7 +99,7 @@
       },
       {
         "tableName": "transaction_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `note` TEXT NOT NULL, `amount` REAL NOT NULL, `currency_code` TEXT NOT NULL, `timestamp` TEXT NOT NULL, `type` TEXT NOT NULL, `is_excluded` INTEGER NOT NULL, `tag_id` INTEGER, `folder_id` INTEGER, `schedule_id` INTEGER, FOREIGN KEY(`tag_id`) REFERENCES `tag_table`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`folder_id`) REFERENCES `folder_table`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`schedule_id`) REFERENCES `schedules_table`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `note` TEXT NOT NULL, `amount` REAL NOT NULL, `currency_code` TEXT NOT NULL, `timestamp` TEXT NOT NULL, `type` TEXT NOT NULL, `is_excluded` INTEGER NOT NULL, `cycle_id` INTEGER NOT NULL, `tag_id` INTEGER, `folder_id` INTEGER, `schedule_id` INTEGER, FOREIGN KEY(`cycle_id`) REFERENCES `budget_cycle_table`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`tag_id`) REFERENCES `tag_table`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`folder_id`) REFERENCES `folder_table`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`schedule_id`) REFERENCES `schedules_table`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -75,6 +144,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "cycleId",
+            "columnName": "cycle_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "tagId",
             "columnName": "tag_id",
             "affinity": "INTEGER"
@@ -97,6 +172,15 @@
           ]
         },
         "indices": [
+          {
+            "name": "index_transaction_table_cycle_id",
+            "unique": false,
+            "columnNames": [
+              "cycle_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transaction_table_cycle_id` ON `${TABLE_NAME}` (`cycle_id`)"
+          },
           {
             "name": "index_transaction_table_tag_id",
             "unique": false,
@@ -135,6 +219,17 @@
           }
         ],
         "foreignKeys": [
+          {
+            "table": "budget_cycle_table",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cycle_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
           {
             "table": "tag_table",
             "onDelete": "NO ACTION",
@@ -391,7 +486,7 @@
     "views": [
       {
         "viewName": "transaction_details_view",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tx.id AS transactionId,\n        tx.note AS transactionNote,\n        tx.amount AS transactionAmount,\n        tx.timestamp AS transactionTimestamp,\n        tx.type AS transactionType,\n        tx.currency_code AS currencyCode,\n        tag.id AS tagId,\n        tag.name AS tagName,\n        tag.color_code AS tagColorCode,\n        tag.created_timestamp AS tagCreatedTimestamp,\n        folder.id AS folderId,\n        folder.name AS folderName,\n        folder.created_timestamp AS folderCreatedTimestamp,\n        tx.schedule_id as scheduleId,\n        (CASE WHEN 1 IN (tx.is_excluded, tag.is_excluded, folder.is_excluded) THEN 1 ELSE 0 END) AS excluded\n        FROM transaction_table tx\n        LEFT OUTER JOIN tag_table tag ON tx.tag_id = tag.id\n        LEFT OUTER JOIN folder_table folder ON tx.folder_id = folder.id"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tx.id AS transactionId,\n        tx.note AS transactionNote,\n        tx.amount AS transactionAmount,\n        tx.timestamp AS transactionTimestamp,\n        tx.type AS transactionType,\n        tx.currency_code AS currencyCode,\n        cyc.id AS cycleId,\n        cyc.start_date AS cycleStartDate,\n        cyc.end_date AS cycleEndDate,\n        tag.id AS tagId,\n        tag.name AS tagName,\n        tag.color_code AS tagColorCode,\n        tag.created_timestamp AS tagCreatedTimestamp,\n        folder.id AS folderId,\n        folder.name AS folderName,\n        folder.created_timestamp AS folderCreatedTimestamp,\n        tx.schedule_id as scheduleId,\n        (CASE WHEN 1 IN (tx.is_excluded, tag.is_excluded, folder.is_excluded) THEN 1 ELSE 0 END) AS excluded\n        FROM transaction_table tx\n        JOIN budget_cycle_table cyc ON tx.cycle_id = cyc.id\n        LEFT OUTER JOIN tag_table tag ON tx.tag_id = tag.id\n        LEFT OUTER JOIN folder_table folder ON tx.folder_id = folder.id"
       },
       {
         "viewName": "folder_and_aggregate_view",
@@ -400,7 +495,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '53aae3f306f1388fc89f1c0cc24de2db')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd2521aa771f7d6c544ce9ef60921d04d')"
     ]
   }
 }
