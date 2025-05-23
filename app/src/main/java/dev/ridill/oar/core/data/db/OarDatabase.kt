@@ -3,6 +3,9 @@ package dev.ridill.oar.core.data.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import dev.ridill.oar.aggregations.data.local.AggregationsDao
+import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
+import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.folders.data.local.FolderDao
 import dev.ridill.oar.folders.data.local.entity.FolderEntity
 import dev.ridill.oar.folders.data.local.views.FolderAndAggregateView
@@ -24,6 +27,7 @@ import dev.ridill.oar.transactions.data.local.views.TransactionDetailsView
 
 @Database(
     entities = [
+        BudgetCycleEntity::class,
         BudgetPreferenceEntity::class,
         TransactionEntity::class,
         TagEntity::class,
@@ -48,6 +52,8 @@ abstract class OarDatabase : RoomDatabase() {
     }
 
     // Dao Methods
+    abstract fun aggregationDao(): AggregationsDao
+    abstract fun budgetCycleDao(): BudgetCycleDao
     abstract fun budgetPreferenceDao(): BudgetPreferenceDao
     abstract fun transactionDao(): TransactionDao
     abstract fun tagsDao(): TagsDao

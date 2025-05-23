@@ -16,10 +16,12 @@ import dev.ridill.oar.account.domain.model.AuthState
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.account.presentation.util.AuthorizationService
 import dev.ridill.oar.account.presentation.util.CredentialService
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.asStateFlow
 import dev.ridill.oar.core.domain.util.logI
@@ -30,8 +32,6 @@ import dev.ridill.oar.onboarding.domain.model.SignInAndDataRestoreState
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.modal.BackupDetails
 import dev.ridill.oar.settings.domain.repositoty.BackupRepository
-import dev.ridill.oar.settings.domain.repositoty.BudgetPreferenceRepository
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Currency
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -52,11 +53,10 @@ class OnboardingViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val eventBus: EventBus<OnboardingEvent>,
     private val backupWorkManager: BackupWorkManager,
-    private val budgetRepo: BudgetPreferenceRepository,
     private val preferencesManager: PreferencesManager,
     private val backupRepo: BackupRepository,
     private val authRepo: AuthRepository,
-    private val currencyRepo: CurrencyRepository
+    private val cycleRepo: BudgetCycleRepository
 ) : ViewModel(), OnboardingActions {
 
     val signInAndDataRestoreState = savedStateHandle
@@ -74,7 +74,10 @@ class OnboardingViewModel @Inject constructor(
         init = { TextFieldState() }
     )
 
-    private val appCurrency = currencyRepo.getCurrencyPreferenceForMonth()
+    private val currency = savedStateHandle
+        .getStateFlow(SELECTED_CURRENCY, LocaleUtil.defaultCurrency)
+
+    private val _isLoading = MutableStateFlow(false)
 
     val state = combineTuple(
         signInAndDataRestoreState,
@@ -82,14 +85,16 @@ class OnboardingViewModel @Inject constructor(
         dataRestoreState,
         showEncryptionPasswordInput,
         _appRestartTimer.asStateFlow(),
-        appCurrency
+        currency,
+        _isLoading
     ).mapLatest { (
                       signInAndDataRestoreState,
                       authState,
                       dataRestoreState,
                       showEncryptionPasswordInput,
                       appRestartTimer,
-                      appCurrency
+                      appCurrency,
+                      isLoading
                   ) ->
         OnboardingState(
             signInAndDataRestoreState = signInAndDataRestoreState,
@@ -97,7 +102,8 @@ class OnboardingViewModel @Inject constructor(
             dataRestoreState = dataRestoreState,
             showEncryptionPasswordInput = showEncryptionPasswordInput,
             appRestartTimer = appRestartTimer,
-            appCurrency = appCurrency
+            appCurrency = appCurrency,
+            isLoading = isLoading
         )
     }.onStart { collectRestoreWorkState() }
         .asStateFlow(viewModelScope, OnboardingState())
@@ -284,7 +290,7 @@ class OnboardingViewModel @Inject constructor(
     override fun onSkipSignInClick() {
         viewModelScope.launch {
             eventBus.send(
-                OnboardingEvent.NavigateToPage(OnboardingPage.SET_BUDGET)
+                OnboardingEvent.NavigateToPage(OnboardingPage.SETUP_BUDGET_CYCLES)
             )
         }
     }
@@ -338,7 +344,7 @@ class OnboardingViewModel @Inject constructor(
         when (val result = backupRepo.checkForBackup()) {
             is Result.Error -> {
                 _dataRestoreState.update { DataRestoreState.IDLE }
-                eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.SET_BUDGET))
+                eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.SETUP_BUDGET_CYCLES))
             }
 
             is Result.Success -> {
@@ -365,17 +371,20 @@ class OnboardingViewModel @Inject constructor(
 
     override fun onDataRestoreSkip() {
         viewModelScope.launch {
-            eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.SET_BUDGET))
+            eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.SETUP_BUDGET_CYCLES))
             savedStateHandle[AVAILABLE_BACKUP] = null
         }
     }
 
     fun onCurrencySelected(currency: Currency) = viewModelScope.launch {
-        currencyRepo.saveCurrencyPreference(currency)
+        savedStateHandle[SELECTED_CURRENCY] = currency
     }
 
+    var startBudgetingJob: Job? = null
     override fun onStartBudgetingClick() {
-        viewModelScope.launch {
+        startBudgetingJob?.cancel()
+        startBudgetingJob = viewModelScope.launch {
+            _isLoading.update { true }
             val budgetValue = budgetInputState.text.toString().toLongOrNull() ?: -1L
             if (budgetValue <= Long.Zero) {
                 eventBus.send(
@@ -385,9 +394,23 @@ class OnboardingViewModel @Inject constructor(
                 )
                 return@launch
             }
-            budgetRepo.saveBudgetPreference(budgetValue)
-            preferencesManager.concludeOnboarding()
-            eventBus.send(OnboardingEvent.OnboardingConcluded)
+            val result = cycleRepo.createNewCycleAndScheduleCompletion(
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusMonths(1),
+                budget = budgetValue.toDouble(),
+                currency = currency.value
+            )
+
+            when (result) {
+                is Result.Error -> {
+                    eventBus.send(OnboardingEvent.ShowUiMessage(result.message))
+                }
+                is Result.Success -> {
+
+                    eventBus.send(OnboardingEvent.OnboardingConcluded)
+                }
+            }
+            _isLoading.update { false }
         }
     }
 
@@ -408,3 +431,4 @@ class OnboardingViewModel @Inject constructor(
 private const val SIGN_IN_AND_DATA_RESTORE_STATE = "SIGN_IN_AND_DATA_RESTORE_STATE"
 private const val AVAILABLE_BACKUP = "AVAILABLE_BACKUP"
 private const val SHOW_ENCRYPTION_PASSWORD_INPUT = "SHOW_ENCRYPTION_PASSWORD_INPUT"
+private const val SELECTED_CURRENCY = "SELECTED_CURRENCY"

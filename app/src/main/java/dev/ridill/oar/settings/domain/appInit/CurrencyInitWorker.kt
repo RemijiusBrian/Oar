@@ -21,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class AppInitWorker @AssistedInject constructor(
+class CurrencyInitWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted params: WorkerParameters,
     private val repo: AppInitRepository,
@@ -31,18 +31,18 @@ class AppInitWorker @AssistedInject constructor(
         startForeground()
         try {
             if (!repo.needsInit()) {
-                logI(AppInitWorker::class.simpleName) { "App init unnecessary" }
+                logI(CurrencyInitWorker::class.simpleName) { "App init unnecessary" }
                 return@withContext Result.success()
             }
 
-            logI(AppInitWorker::class.simpleName) { "Running currencyList init" }
+            logI(CurrencyInitWorker::class.simpleName) { "Running currencyList init" }
             repo.initCurrenciesList()
 
-            logI(AppInitWorker::class.simpleName) { "Initialization complete" }
+            logI(CurrencyInitWorker::class.simpleName) { "Initialization complete" }
             Result.success()
         } catch (t: Throwable) {
             t.rethrowIfCoroutineCancellation()
-            logE(t, AppInitWorker::class.simpleName) { "AppInit failed" }
+            logE(t, CurrencyInitWorker::class.simpleName) { "AppInit failed" }
             Result.failure()
         }
     }
