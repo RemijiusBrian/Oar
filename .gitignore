@@ -1,5 +1,6 @@
 # Gradle files
 .gradle/
+.kotlin
 build/
 
 # Local configuration file (sdk path, etc)
@@ -27,7 +28,22 @@ render.experimental.xml
 *.keystore
 
 # Google Services (e.g. APIs or Firebase)
-google-services.json
+app/google-services.json
 
 # Android Profiling
 *.hprof
+
+/local.properties
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+/app/internal/
+/app/production/
+/app/release/
+/app/google-services.json
+
+# Kotlin 2.0
+/.kotlin/
