@@ -34,9 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 import java.util.Currency
 import kotlin.math.absoluteValue
@@ -63,16 +61,6 @@ class BudgetCycleRepositoryImpl(
 
         val startDay = when (type) {
             CycleStartDayType.LAST_DAY_OF_MONTH -> CycleStartDay.LastDayOfMonth
-            CycleStartDayType.LAST_DAY_OF_WEEK_OF_MONTH -> {
-                val weekSet = configDao.getValueForKey(ConfigKeys.BUDGET_CYCLE_START_WEEK_DAY_SET)
-                    ?.split(",")
-                    ?.map { DayOfWeek.valueOf(it) }
-                    .orEmpty()
-                    .toSet()
-
-                if (weekSet.isEmpty()) CycleStartDay.LastDayOfMonth
-                else CycleStartDay.LastDayOfWeekOfMonth(weekSet)
-            }
 
             CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> {
                 val dayOfMonth =
@@ -118,11 +106,6 @@ class BudgetCycleRepositoryImpl(
         val startDayDataUpdateJob = async {
             when (config.startDay) {
                 CycleStartDay.LastDayOfMonth -> null
-                is CycleStartDay.LastDayOfWeekOfMonth -> ConfigEntity(
-                    configKey = ConfigKeys.BUDGET_CYCLE_START_WEEK_DAY_SET,
-                    configValue = config.startDay.weekDays.joinToString(",") { it.name }
-                )
-
                 is CycleStartDay.SpecificDayOfMonth -> ConfigEntity(
                     configKey = ConfigKeys.BUDGET_CYCLE_START_DAY_OF_MONTH,
                     configValue = config.startDay.dayOfMonth.toString()
@@ -176,13 +159,6 @@ class BudgetCycleRepositoryImpl(
                         CycleStartDay.LastDayOfMonth -> lastMonthDate
                             .with(TemporalAdjusters.lastDayOfMonth())
 
-                        is CycleStartDay.LastDayOfWeekOfMonth -> DateUtil
-                            .findLastMatchingDayOfWeekInMonth(
-                                yearMonth = YearMonth.from(lastMonthDate),
-                                daysOfWeek = cycleStartDay.weekDays
-                                    .ifEmpty { DateUtil.daysOfWeekMondayToFriday() }
-                            )!!
-
                         is CycleStartDay.SpecificDayOfMonth -> lastMonthDate
                             .withDayOfMonth(cycleStartDay.dayOfMonth)
                     }
@@ -190,12 +166,6 @@ class BudgetCycleRepositoryImpl(
                     val newCycleEndDate = when (cycleStartDay) {
                         CycleStartDay.LastDayOfMonth -> nextMonthDate
                             .with(TemporalAdjusters.lastDayOfMonth())
-
-                        is CycleStartDay.LastDayOfWeekOfMonth -> DateUtil.findLastMatchingDayOfWeekInMonth(
-                            yearMonth = YearMonth.from(nextMonthDate),
-                            daysOfWeek = cycleStartDay.weekDays
-                                .ifEmpty { DateUtil.daysOfWeekMondayToFriday() }
-                        )!!
 
                         is CycleStartDay.SpecificDayOfMonth -> nextMonthDate
                             .withDayOfMonth(cycleStartDay.dayOfMonth)
@@ -280,12 +250,6 @@ class BudgetCycleRepositoryImpl(
                 val nextEndDate = when (startDay) {
                     CycleStartDay.LastDayOfMonth -> nextMonthDate
                         .with(TemporalAdjusters.lastDayOfMonth())
-
-                    is CycleStartDay.LastDayOfWeekOfMonth -> DateUtil.findLastMatchingDayOfWeekInMonth(
-                        yearMonth = YearMonth.from(nextMonthDate),
-                        daysOfWeek = startDay.weekDays
-                            .ifEmpty { DateUtil.daysOfWeekMondayToFriday() }
-                    )!!
 
                     is CycleStartDay.SpecificDayOfMonth -> nextMonthDate
                         .withDayOfMonth(startDay.dayOfMonth)

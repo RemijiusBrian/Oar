@@ -3,12 +3,10 @@ package dev.ridill.oar.core.domain.util
 import androidx.annotation.StringRes
 import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.util.UiText
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -73,31 +71,6 @@ object DateUtil {
         .withSecond(time.second)
         .withNano(time.nano)
         .toLocalDateTime()
-
-    fun findLastMatchingDayOfWeekInMonth(
-        yearMonth: YearMonth,
-        daysOfWeek: Set<DayOfWeek>
-    ): LocalDate? {
-        if (daysOfWeek.isEmpty()) return null
-
-        var currentDate = yearMonth.atEndOfMonth()
-        while (currentDate.month == yearMonth.month) {
-            if (currentDate.dayOfWeek in daysOfWeek)
-                return currentDate
-
-            currentDate = currentDate.minusDays(1)
-        }
-
-        return null
-    }
-
-    fun daysOfWeekMondayToFriday(): Set<DayOfWeek> = setOf(
-        DayOfWeek.MONDAY,
-        DayOfWeek.TUESDAY,
-        DayOfWeek.WEDNESDAY,
-        DayOfWeek.THURSDAY,
-        DayOfWeek.FRIDAY,
-    )
 
     object Formatters {
         val isoLocalDateTime: DateTimeFormatter
