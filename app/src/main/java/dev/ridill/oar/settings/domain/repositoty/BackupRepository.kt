@@ -17,7 +17,7 @@ interface BackupRepository {
 
     suspend fun tryClearLocalCache()
     suspend fun setBackupError(error: FatalBackupError?)
-    suspend fun restoreAppConfig()
+    suspend fun restoreBackupJobs()
 }
 
 enum class FatalBackupError { PASSWORD_CORRUPTED, GOOGLE_AUTH_FAILURE, STORAGE_QUOTA_EXCEEDED }

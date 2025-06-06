@@ -38,6 +38,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.paging.compose.LazyPagingItems
 import dev.ridill.oar.R
+import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
+import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.ui.components.AmountWithTypeIndicator
@@ -65,6 +67,7 @@ import dev.ridill.oar.core.ui.util.isEmpty
 import dev.ridill.oar.core.ui.util.mergedContentDescription
 import dev.ridill.oar.folders.domain.model.AggregateType
 import dev.ridill.oar.transactions.domain.model.TagIndicator
+import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import dev.ridill.oar.transactions.presentation.components.NewTransactionFab
@@ -167,13 +170,13 @@ fun FolderDetailsScreen(
                 repeat(transactionPagingItems.itemCount) { index ->
                     transactionPagingItems[index]?.let { item ->
                         when (item) {
-                            is TransactionListItemUIModel.DateSeparator -> {
+                            is TransactionListItemUIModel.CycleSeparator -> {
                                 stickyHeader(
-                                    key = item.date.toString(),
-                                    contentType = "TransactionDateSeparator"
+                                    key = "CycleId-${item.cycle.id}",
+                                    contentType = CycleIndicator::class
                                 ) {
                                     ListSeparator(
-                                        label = item.date.format(DateUtil.Formatters.MMMM_yyyy_spaceSep),
+                                        label = item.cycle.description,
                                         modifier = Modifier
                                             .animateItem()
                                     )
@@ -183,7 +186,7 @@ fun FolderDetailsScreen(
                             is TransactionListItemUIModel.TransactionItem -> {
                                 item(
                                     key = item.id,
-                                    contentType = "TransactionListItem"
+                                    contentType = TransactionEntry::class
                                 ) {
                                     TransactionInFolderItem(
                                         note = item.note,

@@ -102,8 +102,8 @@ import dev.ridill.oar.core.ui.components.rememberAmountOutputTransformation
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.AllSchedulesScreenSpec
 import dev.ridill.oar.core.ui.theme.IconSizeMedium
-import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
 import dev.ridill.oar.core.ui.theme.OarTheme
+import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.schedules.domain.model.ScheduleRepetition
 import dev.ridill.oar.settings.presentation.components.SimplePreference
@@ -283,11 +283,9 @@ fun AddEditTransactionScreen(
                     .align(Alignment.End)
             )
 
-            FolderIndicator(
-                folderName = state.linkedFolderName,
-                onSelectFolderClick = actions::onSelectFolderClick,
-                modifier = Modifier
-                    .align(Alignment.Start)
+            SimplePreference(
+                titleRes = R.string.cycle,
+                summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
             )
 
             AnimatedVisibility(
@@ -302,6 +300,7 @@ fun AddEditTransactionScreen(
                         .padding(horizontal = MaterialTheme.spacing.medium)
                 )
             }
+
             HorizontalDivider()
 
             SwitchPreference(
@@ -312,6 +311,13 @@ fun AddEditTransactionScreen(
             )
 
             HorizontalDivider()
+
+            FolderIndicator(
+                folderName = state.linkedFolderName,
+                onSelectFolderClick = actions::onSelectFolderClick,
+                modifier = Modifier
+                    .align(Alignment.Start)
+            )
 
             TagSelection(
                 tagsLazyPagingItems = recentTagsLazyPagingItems,

@@ -1,10 +1,10 @@
 package dev.ridill.oar.budgetCycles.domain.cycleManager
 
-import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.UtilConstants
 import dev.ridill.oar.core.domain.util.logD
@@ -16,8 +16,12 @@ class CycleManagerImpl(
 ) : CycleManager {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    @SuppressLint("ScheduleExactAlarm")
     override fun scheduleCycleCompletion(cycleId: Long, endDateTime: LocalDateTime) {
+        if (
+            BuildUtil.isApiLevelAtLeast31
+            && !alarmManager.canScheduleExactAlarms()
+        ) return
+
         try {
             val endTimeMillis = DateUtil.toMillis(endDateTime)
 

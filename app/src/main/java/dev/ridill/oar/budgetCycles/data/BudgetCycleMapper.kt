@@ -1,16 +1,17 @@
 package dev.ridill.oar.budgetCycles.data
 
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
+import dev.ridill.oar.budgetCycles.data.local.view.BudgetCycleDetailsView
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.core.domain.util.LocaleUtil
 
-fun BudgetCycleEntity.toEntry(): BudgetCycleEntry = BudgetCycleEntry(
+fun BudgetCycleDetailsView.toEntry(): BudgetCycleEntry = BudgetCycleEntry(
     id = id,
     startDate = startDate,
     endDate = endDate,
     budget = budget,
     currency = LocaleUtil.currencyForCode(currencyCode),
-    status = status
+    active = active
 )
 
 fun BudgetCycleEntry.toEntity(): BudgetCycleEntity = BudgetCycleEntity(
@@ -19,5 +20,4 @@ fun BudgetCycleEntry.toEntity(): BudgetCycleEntity = BudgetCycleEntity(
     endDate = endDate,
     budget = budget,
     currencyCode = currency.currencyCode,
-    status = status
 )

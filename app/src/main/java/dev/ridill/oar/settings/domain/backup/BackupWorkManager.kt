@@ -13,7 +13,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import dev.ridill.oar.core.domain.util.toUUID
-import dev.ridill.oar.settings.domain.backup.workers.AppConfigRestoreWorker
 import dev.ridill.oar.settings.domain.backup.workers.GDriveDataBackupWorker
 import dev.ridill.oar.settings.domain.backup.workers.GDriveDataDownloadWorker
 import dev.ridill.oar.settings.domain.backup.workers.GDriveDataRestoreWorker
@@ -25,6 +24,19 @@ import java.util.concurrent.TimeUnit
 class BackupWorkManager(
     private val context: Context
 ) {
+    companion object {
+        const val WORK_INTERVAL_TAG_PREFIX = "WORK_INTERVAL-"
+        const val KEY_MESSAGE = "KEY_MESSAGE"
+        const val KEY_BACKUP_FILE_ID = "KEY_BACKUP_FILE_ID"
+        const val KEY_BACKUP_TIMESTAMP = "KEY_BACKUP_DATE"
+        const val KEY_PASSWORD = "KEY_PASSWORD_HASH"
+        const val KEY_PASSWORD_HASH_SALT = "KEY_PASSWORD_HASH_SALT"
+
+        const val BACKUP_WORKER_NOTIFICATION_ID = "BACKUP_WORKER_NOTIFICATION"
+
+        private const val BACKOFF_DELAY_MINUTES = 10L
+    }
+
     private val workManager = WorkManager.getInstance(context)
 
     private val dataBackupWorkerTag: String
@@ -42,25 +54,8 @@ class BackupWorkManager(
     private val oneTimeDataDownloadWorkName: String
         get() = "${context.packageName}.ONE_TIME_DATA_DOWNLOAD_WORK"
 
-    private val oneTimeRestoreWorkName: String
+    private val oneTimeDataRestoreWorkName: String
         get() = "${context.packageName}.ONE_TIME_DATA_RESTORE_WORK"
-
-    private val oneTimeConfigRestoreWorkName: String
-        get() = "${context.packageName}.ONE_TIME_CONFIG_RESTORE_WORK"
-
-    companion object {
-        const val WORK_INTERVAL_TAG_PREFIX = "WORK_INTERVAL-"
-        const val KEY_MESSAGE = "KEY_MESSAGE"
-        const val KEY_BACKUP_FILE_ID = "KEY_BACKUP_FILE_ID"
-        const val KEY_BACKUP_TIMESTAMP = "KEY_BACKUP_DATE"
-        const val KEY_PASSWORD = "KEY_PASSWORD_HASH"
-        const val KEY_PASSWORD_HASH_SALT = "KEY_PASSWORD_HASH_SALT"
-
-        const val RESTORE_WORKER_NOTIFICATION_ID = "RESTORE_WORKER_NOTIFICATION"
-        const val BACKUP_WORKER_NOTIFICATION_ID = "BACKUP_WORKER_NOTIFICATION"
-
-        private const val BACKOFF_DELAY_MINUTES = 10L
-    }
 
     fun schedulePeriodicBackupWork(interval: BackupInterval) {
         val backupWorkRequest = PeriodicWorkRequestBuilder<GDriveDataBackupWorker>(
@@ -130,7 +125,7 @@ class BackupWorkManager(
         val dataRestoreWorkRequest = OneTimeWorkRequestBuilder<GDriveDataRestoreWorker>()
             .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
             .addTag(dataRestoreWorkerTag)
-            .setId(oneTimeRestoreWorkName.toUUID())
+            .setId(oneTimeDataRestoreWorkName.toUUID())
             .setInputData(
                 workDataOf(
                     KEY_PASSWORD to password,
@@ -146,7 +141,7 @@ class BackupWorkManager(
             .build()
 
         workManager.beginUniqueWork(
-            oneTimeRestoreWorkName,
+            oneTimeDataRestoreWorkName,
             ExistingWorkPolicy.REPLACE,
             dataDownloadWorkRequest
         )
@@ -158,7 +153,7 @@ class BackupWorkManager(
         .getWorkInfoByIdFlow(oneTimeDataDownloadWorkName.toUUID())
 
     fun getImmediateDataRestoreWorkInfoFlow(): Flow<WorkInfo?> = workManager
-        .getWorkInfoByIdFlow(oneTimeRestoreWorkName.toUUID())
+        .getWorkInfoByIdFlow(oneTimeDataRestoreWorkName.toUUID())
 
     fun getBackupIntervalFromWorkInfo(info: WorkInfo): BackupInterval? {
         val intervalTag = info.tags.find { it.startsWith(WORK_INTERVAL_TAG_PREFIX) }
@@ -166,19 +161,6 @@ class BackupWorkManager(
         return intervalTag
             ?.removePrefix(WORK_INTERVAL_TAG_PREFIX)
             ?.let { BackupInterval.valueOf(it) }
-    }
-
-    fun runConfigRestoreWork() {
-        val workRequest = OneTimeWorkRequestBuilder<AppConfigRestoreWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setId(oneTimeConfigRestoreWorkName.toUUID())
-            .build()
-
-        workManager.enqueueUniqueWork(
-            oneTimeConfigRestoreWorkName,
-            ExistingWorkPolicy.KEEP,
-            workRequest
-        )
     }
 
     private fun buildBackupConstraints(): Constraints = Constraints.Builder()

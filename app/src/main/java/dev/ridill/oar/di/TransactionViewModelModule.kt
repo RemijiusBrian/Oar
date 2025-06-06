@@ -4,12 +4,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
+import dev.ridill.oar.aggregations.data.local.AggregationsDao
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.folders.domain.repository.FolderDetailsRepository
 import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.transactions.data.local.TransactionDao
 import dev.ridill.oar.transactions.data.repository.AddEditTransactionRepositoryImpl
 import dev.ridill.oar.transactions.data.repository.AllTransactionsRepositoryImpl
@@ -43,16 +44,18 @@ object TransactionViewModelModule {
     @Provides
     fun provideAllTransactionsRepository(
         db: OarDatabase,
-        dao: TransactionDao,
+        transactionDao: TransactionDao,
+        aggregationsDao: AggregationsDao,
+        cycleRepo: BudgetCycleRepository,
         transactionRepo: TransactionRepository,
-        preferencesManager: PreferencesManager,
-        currencyRepository: CurrencyRepository
+        preferencesManager: PreferencesManager
     ): AllTransactionsRepository = AllTransactionsRepositoryImpl(
         db = db,
-        dao = dao,
+        transactionsDao = transactionDao,
         repo = transactionRepo,
         preferencesManager = preferencesManager,
-        currencyPrefRepo = currencyRepository
+        aggregationsDao = aggregationsDao,
+        cycleRepo = cycleRepo
     )
 
     @Provides

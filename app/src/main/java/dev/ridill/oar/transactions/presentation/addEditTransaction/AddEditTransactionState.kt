@@ -26,7 +26,8 @@ data class AddEditTransactionState(
     val linkedFolderName: String? = null,
     val isScheduleTxMode: Boolean = false,
     val selectedRepetition: ScheduleRepetition = ScheduleRepetition.NO_REPEAT,
-    val showRepeatModeSelection: Boolean = false
+    val showRepeatModeSelection: Boolean = false,
+    val cycleDescription: String? = null
 ) {
     val timestampUtc: ZonedDateTime
         get() = timestamp.atZone(ZoneId.of(ZoneOffset.UTC.id))

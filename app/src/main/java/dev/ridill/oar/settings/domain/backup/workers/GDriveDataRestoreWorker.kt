@@ -100,7 +100,7 @@ class GDriveDataRestoreWorker @AssistedInject constructor(
     private suspend fun startForegroundService() {
         setForeground(
             ForegroundInfo(
-                BackupWorkManager.RESTORE_WORKER_NOTIFICATION_ID.hashCode(),
+                BackupWorkManager.BACKUP_WORKER_NOTIFICATION_ID.hashCode(),
                 notificationHelper.buildBaseNotification()
                     .setContentTitle(appContext.getString(R.string.restoring_app_data))
                     .setProgress(100, 0, true)

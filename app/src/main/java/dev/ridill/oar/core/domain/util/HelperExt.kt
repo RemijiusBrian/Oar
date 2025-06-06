@@ -20,6 +20,7 @@ inline fun Double.ifNaN(value: () -> Double): Double = if (this.isNaN()) value()
 val Float.Companion.Zero: Float get() = 0f
 val Float.Companion.One: Float get() = 1f
 fun Float?.orZero(): Float = this ?: Float.Zero
+inline fun Float.ifNaN(value: () -> Float): Float = if (this.isNaN()) value() else this
 
 val Int.Companion.Zero: Int get() = 0
 val Int.Companion.One: Int get() = 1

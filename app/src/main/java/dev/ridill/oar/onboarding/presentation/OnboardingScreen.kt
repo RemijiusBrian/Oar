@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.ui.components.MultiplePermissionsState
 import dev.ridill.oar.core.ui.components.OarScaffold
@@ -121,10 +120,7 @@ fun OnboardingScreen(
 
                         OnboardingPage.SETUP_BUDGET_CYCLES.ordinal -> {
                             SetupBudgetCyclesPage(
-                                cycleStartDay = CycleStartDay.SpecificDayOfMonth(10),
-                                showDayOfWeekSelection = false,
-                                selectedDayOfWeeks = emptySet(),
-                                inputState = budgetInputState,
+                                budgetInput = budgetInputState,
                                 selectedCurrency = state.appCurrency,
                                 onCurrencyClick = navigateToCurrencySelection,
                                 onStartBudgetingClick = actions::onStartBudgetingClick

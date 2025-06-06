@@ -11,13 +11,19 @@ interface ConfigDao : BaseDao<ConfigEntity> {
     suspend fun getBackupInterval(): String?
 
     @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_BUDGET_AMOUNT}'")
-    suspend fun getBudgetAmount(): String?
+    suspend fun getCycleBudget(): String?
 
-    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_BUDGET_CURRENCY_CODE}'")
-    suspend fun getBudgetCurrencyCode(): String?
+    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_CURRENCY_CODE}'")
+    suspend fun getCycleCurrencyCode(): String?
 
-    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.BUDGET_CYCLE_START_DAY_TYPE}'")
-    suspend fun getBudgetStartDayType(): String?
+    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_START_DAY_TYPE}'")
+    suspend fun getCycleStartDayType(): String?
+
+    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_DURATION}'")
+    suspend fun getCycleDuration(): String?
+
+    @Query("SELECT config_value FROM config_table WHERE config_key = '${ConfigKeys.CYCLE_DURATION_UNIT}'")
+    suspend fun getCycleDurationUnit(): String?
 
     @Query("SELECT config_value FROM config_table WHERE config_key = :key")
     suspend fun getValueForKey(key: String): String?

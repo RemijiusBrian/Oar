@@ -62,12 +62,12 @@ import dev.ridill.oar.core.ui.components.BodyMediumText
 import dev.ridill.oar.core.ui.components.CollapsibleHeaderLayout
 import dev.ridill.oar.core.ui.components.DisplaySmallText
 import dev.ridill.oar.core.ui.components.ListLabel
-import dev.ridill.oar.core.ui.components.OnLifecycleStartEffect
 import dev.ridill.oar.core.ui.components.OarImage
 import dev.ridill.oar.core.ui.components.OarPlainTooltip
 import dev.ridill.oar.core.ui.components.OarProgressBar
 import dev.ridill.oar.core.ui.components.OarRichTooltip
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.OnLifecycleStartEffect
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.SpacerMedium
 import dev.ridill.oar.core.ui.components.SpacerSmall
@@ -79,8 +79,8 @@ import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.AllTransactionsScreenSpec
 import dev.ridill.oar.core.ui.navigation.destinations.BottomNavDestination
 import dev.ridill.oar.core.ui.theme.ContentAlpha
-import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
 import dev.ridill.oar.core.ui.theme.OarTheme
+import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
 import dev.ridill.oar.core.ui.theme.elevation
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.core.ui.util.TextFormat

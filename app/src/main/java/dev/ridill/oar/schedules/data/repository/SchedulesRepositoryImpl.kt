@@ -1,6 +1,7 @@
 package dev.ridill.oar.schedules.data.repository
 
 import androidx.room.withTransaction
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.util.trySuspend
 import dev.ridill.oar.core.domain.service.ReceiverService
@@ -25,6 +26,7 @@ class SchedulesRepositoryImpl(
     private val transactionDao: TransactionDao,
     private val scheduler: ScheduleReminder,
     private val receiverService: ReceiverService,
+    private val cycleRepo: BudgetCycleRepository,
 ) : SchedulesRepository {
     override suspend fun getScheduleById(
         id: Long
@@ -74,6 +76,7 @@ class SchedulesRepositoryImpl(
         dateTime: LocalDateTime
     ) = withContext(Dispatchers.IO) {
         db.withTransaction {
+            val activeCycle = cycleRepo.getActiveCycle()
             val transaction = TransactionEntity(
                 amount = schedule.amount,
                 note = schedule.note.orEmpty(),
@@ -83,7 +86,8 @@ class SchedulesRepositoryImpl(
                 folderId = schedule.folderId,
                 scheduleId = schedule.id,
                 isExcluded = false,
-                currencyCode = schedule.currency.currencyCode
+                currencyCode = schedule.currency.currencyCode,
+                cycleId = activeCycle?.id ?: OarDatabase.DEFAULT_ID_LONG
             )
             transactionDao.upsert(transaction)
             val nextReminderDate = schedule.nextPaymentTimestamp

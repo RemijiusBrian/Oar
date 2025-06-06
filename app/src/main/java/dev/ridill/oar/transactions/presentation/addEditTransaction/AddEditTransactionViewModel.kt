@@ -9,11 +9,13 @@ import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.service.ExpEvalService
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.Empty
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.UtilConstants
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.asStateFlow
@@ -28,7 +30,6 @@ import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.schedules.data.toTransaction
 import dev.ridill.oar.schedules.domain.model.ScheduleRepetition
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.tags.domain.repository.TagsRepository
 import dev.ridill.oar.transactions.domain.model.AmountTransformation
 import dev.ridill.oar.transactions.domain.model.Transaction
@@ -36,7 +37,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionType
 import dev.ridill.oar.transactions.domain.repository.AddEditTransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
@@ -47,12 +47,13 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditTransactionViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val cycleRepo: BudgetCycleRepository,
     private val transactionRepo: AddEditTransactionRepository,
     tagsRepo: TagsRepository,
-    private val currencyRepo: CurrencyRepository,
     private val evalService: ExpEvalService,
     private val eventBus: EventBus<AddEditTransactionEvent>
 ) : ViewModel(), AddEditTransactionActions {
+
     private val transactionIdArg = AddEditTransactionScreenSpec
         .getTransactionIdFromSavedStateHandle(savedStateHandle)
 
@@ -74,6 +75,12 @@ class AddEditTransactionViewModel @Inject constructor(
 
     private val txInput = savedStateHandle.getStateFlow(TX_INPUT, Transaction.DEFAULT)
     private val currency = txInput.mapLatest { it.currency }
+        .distinctUntilChanged()
+
+    private val cycleDescription = txInput
+        .mapLatest { it.cycleId }
+        .flatMapLatest { cycleRepo.getCycleByIdFlow(it) }
+        .mapLatest { it?.description }
         .distinctUntilChanged()
 
     val amountInputState = TextFieldState()
@@ -157,7 +164,8 @@ class AddEditTransactionViewModel @Inject constructor(
         linkedFolderName,
         isScheduleTxMode,
         selectedRepetition,
-        showRepetitionSelection
+        showRepetitionSelection,
+        cycleDescription,
     ).mapLatest { (
                       isLoading,
                       menuOptions,
@@ -174,7 +182,8 @@ class AddEditTransactionViewModel @Inject constructor(
                       linkedFolderName,
                       isScheduleTxMode,
                       selectedRepetition,
-                      showRepetitionSelection
+                      showRepetitionSelection,
+                      cycleDescription,
                   ) ->
         AddEditTransactionState(
             isLoading = isLoading,
@@ -192,7 +201,8 @@ class AddEditTransactionViewModel @Inject constructor(
             linkedFolderName = linkedFolderName,
             isScheduleTxMode = isScheduleTxMode,
             selectedRepetition = selectedRepetition,
-            showRepeatModeSelection = showRepetitionSelection
+            showRepeatModeSelection = showRepetitionSelection,
+            cycleDescription = cycleDescription
         )
     }.asStateFlow(viewModelScope, AddEditTransactionState())
 
@@ -203,13 +213,14 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     private fun onInit() = viewModelScope.launch {
-        val currentCurrencyPref = currencyRepo.getCurrencyPreferenceForMonth().first()
+        val activeCycle = cycleRepo.getActiveCycle()
         val transaction: Transaction = if (scheduleModeArg) {
             val schedule = transactionRepo.getScheduleById(transactionIdArg)
             savedStateHandle[SELECTED_REPETITION] = schedule?.repetition
                 ?: ScheduleRepetition.NO_REPEAT
 
             schedule?.toTransaction(
+                cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG,
                 dateTime = schedule.nextPaymentTimestamp
                     ?: DateUtil.now()
                         .plusDays(1L),
@@ -219,12 +230,13 @@ class AddEditTransactionViewModel @Inject constructor(
             var transaction = transactionRepo.getTransactionById(transactionIdArg)
             if (isDuplicateModeArg) {
                 transaction = transaction?.copy(
-                    id = OarDatabase.DEFAULT_ID_LONG
+                    id = OarDatabase.DEFAULT_ID_LONG,
                 )
             }
             transaction
         } ?: Transaction.DEFAULT.copy(
-            currency = currentCurrencyPref
+            currency = activeCycle?.currency ?: LocaleUtil.defaultCurrency,
+            cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG
         )
         savedStateHandle[IS_SCHEDULE_MODE] = scheduleModeArg
         val dateNow = DateUtil.now()

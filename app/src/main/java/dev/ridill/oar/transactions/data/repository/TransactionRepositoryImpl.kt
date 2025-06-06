@@ -32,7 +32,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Currency
 
@@ -43,7 +42,7 @@ class TransactionRepositoryImpl(
 ) : TransactionRepository {
     override fun getAllTransactionsPaged(
         query: String?,
-        dateRange: Pair<LocalDate, LocalDate>?,
+        cycleIds: Set<Long>?,
         type: TransactionType?,
         showExcluded: Boolean,
         tagIds: Set<Long>?,
@@ -54,8 +53,8 @@ class TransactionRepositoryImpl(
         pagingSourceFactory = {
             transactionDao.getTransactionsPaged(
                 query = query,
-                startDate = dateRange?.first?.atStartOfDay(),
-                endDate = dateRange?.second?.plusDays(1L)?.atStartOfDay(),
+                startDate = null,
+                endDate = null,
                 type = type,
                 showExcluded = showExcluded,
                 tagIds = tagIds?.takeIf { it.isNotEmpty() },
@@ -68,7 +67,7 @@ class TransactionRepositoryImpl(
 
     override fun getDateSeparatedTransactions(
         query: String?,
-        dateRange: Pair<LocalDate, LocalDate>?,
+        cycleIds: Set<Long>?,
         type: TransactionType?,
         showExcluded: Boolean,
         tagIds: Set<Long>?,
@@ -76,7 +75,7 @@ class TransactionRepositoryImpl(
         currency: Currency?
     ): Flow<PagingData<TransactionListItemUIModel>> = getAllTransactionsPaged(
         query = query,
-        dateRange = dateRange,
+        cycleIds = cycleIds,
         type = type,
         showExcluded = showExcluded,
         tagIds = tagIds,
@@ -88,22 +87,14 @@ class TransactionRepositoryImpl(
         pagingData
             .insertSeparators<TransactionListItemUIModel.TransactionItem, TransactionListItemUIModel>
             { before, after ->
-                if (before?.timestamp
-                        ?.withDayOfMonth(1)
-                        ?.toLocalDate()
-                    != after?.timestamp
-                        ?.withDayOfMonth(1)
-                        ?.toLocalDate()
-                ) after?.timestamp
-                    ?.withDayOfMonth(1)
-                    ?.toLocalDate()
-                    ?.let { localDate ->
-                        TransactionListItemUIModel.DateSeparator(localDate)
-                    } else null
+                if (before?.cycleEntry?.id != after?.cycleEntry?.id) after?.cycleEntry
+                    ?.let { TransactionListItemUIModel.CycleSeparator(it) }
+                else null
             }
     }
 
     override suspend fun saveTransaction(
+        cycleId: Long,
         amount: Double,
         id: Long,
         note: String?,
@@ -126,7 +117,8 @@ class TransactionRepositoryImpl(
             tagId = tagId,
             folderId = folderId,
             scheduleId = scheduleId,
-            currencyCode = currencyPref.currencyCode
+            currencyCode = currencyPref.currencyCode,
+            cycleId = cycleId
         )
         val insertedId = transactionDao.upsert(entity).first()
         entity.copy(id = insertedId)

@@ -1,6 +1,7 @@
 package dev.ridill.oar.transactions.domain.model
 
-import java.time.LocalDate
+import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
+import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import java.time.LocalDateTime
 import java.util.Currency
 
@@ -13,6 +14,7 @@ sealed class TransactionListItemUIModel {
         val timestamp: LocalDateTime,
         val type: TransactionType,
         val excluded: Boolean,
+        val cycleEntry: CycleIndicator,
         val tag: TagIndicator?,
         val folder: FolderIndicator?,
         val scheduleId: Long?
@@ -25,11 +27,12 @@ sealed class TransactionListItemUIModel {
             transactionEntry.timestamp,
             transactionEntry.type,
             transactionEntry.excluded,
+            transactionEntry.cycle,
             transactionEntry.tag,
             transactionEntry.folder,
             transactionEntry.scheduleId
         )
     }
 
-    data class DateSeparator(val date: LocalDate) : TransactionListItemUIModel()
+    data class CycleSeparator(val cycle: CycleIndicator) : TransactionListItemUIModel()
 }

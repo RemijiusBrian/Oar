@@ -5,7 +5,6 @@ import com.google.android.gms.auth.GoogleAuthException
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.gson.Gson
 import dev.ridill.oar.account.domain.repository.AuthRepository
-import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.data.util.tryNetworkCall
@@ -16,7 +15,6 @@ import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.logD
 import dev.ridill.oar.core.domain.util.logI
-import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
 import dev.ridill.oar.settings.data.local.ConfigDao
 import dev.ridill.oar.settings.data.remote.GDriveApi
 import dev.ridill.oar.settings.data.remote.MEDIA_PART_KEY
@@ -34,8 +32,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -48,7 +44,6 @@ import javax.crypto.IllegalBlockSizeException
 
 class BackupRepositoryImpl(
     private val context: Context,
-    private val cycleRepo: BudgetCycleRepository,
     private val backupService: BackupService,
     private val gDriveApi: GDriveApi,
     private val preferencesManager: PreferencesManager,
@@ -56,7 +51,6 @@ class BackupRepositoryImpl(
     private val securityPreferencesManager: SecurityPreferencesManager,
     private val configDao: ConfigDao,
     private val backupWorkManager: BackupWorkManager,
-    private val schedulesRepository: SchedulesRepository,
     private val authRepo: AuthRepository
 ) : BackupRepository {
     override suspend fun checkForBackup(): Result<BackupDetails, DataError> =
@@ -229,40 +223,14 @@ class BackupRepositoryImpl(
     override suspend fun setBackupError(error: FatalBackupError?) =
         preferencesManager.updateFatalBackupError(error)
 
-    override suspend fun restoreAppConfig(): Unit = withContext(Dispatchers.IO) {
-        supervisorScope {
-            // Schedule budget cycle completion
-            launch {
-                scheduleLastOrNewCycleCompletion()
-            }
-
-            // Schedule backup job
-            launch {
-                scheduleBackupJob()
-            }
-
-            // Set reminders
-            launch {
-                setReminders()
-            }
-        }
-    }
-
-    private suspend fun scheduleLastOrNewCycleCompletion() {
-        cycleRepo.scheduleLastCycleOrNew()
-    }
-
-    private suspend fun scheduleBackupJob() {
+    override suspend fun restoreBackupJobs(): Unit = withContext(Dispatchers.IO) {
         val backupInterval = configDao.getBackupInterval()
             ?.let { BackupInterval.valueOf(it) }
-            ?: return
+            ?: return@withContext
         if (backupInterval == BackupInterval.MANUAL) backupWorkManager.cancelPeriodicBackupWork()
         backupWorkManager.schedulePeriodicBackupWork(backupInterval)
     }
 
-    private suspend fun setReminders() {
-        schedulesRepository.setAllFutureScheduleReminders()
-    }
 }
 
 const val JSON_MIME_TYPE = "application/json"
