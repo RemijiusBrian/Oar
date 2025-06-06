@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -83,11 +84,13 @@ class AddEditTransactionViewModel @Inject constructor(
         saver = TextFieldState.Saver,
         init = { TextFieldState() }
     )
+
     private val cycleDescription = txInput
-        .mapLatest { it.cycleId }
+        .mapLatest { it?.cycleId ?: OarDatabase.INVALID_ID_LONG }
         .flatMapLatest { cycleRepo.getCycleByIdFlow(it) }
         .mapLatest { it?.description }
         .distinctUntilChanged()
+
 
     private val isAmountInputAnExpression = amountInputState.textAsFlow()
         .mapLatest { evalService.isExpression(it) }
@@ -245,9 +248,9 @@ class AddEditTransactionViewModel @Inject constructor(
                     )
                 }
                 transaction
-            } ?: Transaction.DEFAULT.copy(
+            } ?: (txInput.value ?: Transaction.DEFAULT).copy(
+                cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG,
                 currency = activeCycle?.currency ?: LocaleUtil.defaultCurrency,
-                cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG
             )
             savedStateHandle[IS_SCHEDULE_MODE] = scheduleModeArg
             val dateNow = DateUtil.now()
