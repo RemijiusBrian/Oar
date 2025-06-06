@@ -2,13 +2,15 @@ package dev.ridill.oar.transactions.data.repository
 
 import androidx.paging.PagingData
 import androidx.room.withTransaction
+import dev.ridill.oar.aggregations.data.local.AggregationsDao
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.model.BasicError
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.Empty
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.transactions.data.local.TransactionDao
 import dev.ridill.oar.transactions.data.local.entity.TransactionEntity
 import dev.ridill.oar.transactions.data.local.relation.AmountAndCurrencyRelation
@@ -31,10 +33,11 @@ import kotlin.math.absoluteValue
 
 class AllTransactionsRepositoryImpl(
     private val db: OarDatabase,
-    private val dao: TransactionDao,
+    private val transactionsDao: TransactionDao,
+    private val aggregationsDao: AggregationsDao,
+    private val cycleRepo: BudgetCycleRepository,
     private val repo: TransactionRepository,
     private val preferencesManager: PreferencesManager,
-    private val currencyPrefRepo: CurrencyRepository,
 ) : AllTransactionsRepository {
     override fun getAmountAggregate(
         dateRange: Pair<LocalDate, LocalDate>?,
@@ -42,18 +45,17 @@ class AllTransactionsRepositoryImpl(
         addExcluded: Boolean,
         tagIds: Set<Long>,
         selectedTxIds: Set<Long>
-    ): Flow<List<AggregateAmountItem>> = dao.getAmountAggregate(
-        startDate = dateRange?.first,
-        endDate = dateRange?.second,
+    ): Flow<List<AggregateAmountItem>> = aggregationsDao.getAggregatesGroupedByCurrencyCode(
         type = type,
         tagIds = tagIds.takeIf { it.isNotEmpty() },
-        showExcluded = addExcluded,
+        addExcluded = addExcluded,
         selectedTxIds = selectedTxIds.takeIf { it.isNotEmpty() },
-        currencyCode = null
+        currencyCode = null,
+        cycleIds = null
     ).mapLatest { it.map(AmountAndCurrencyRelation::toAggregateAmountItem) }
         .distinctUntilChanged()
 
-    override fun getDateLimits(): Flow<Pair<LocalDate, LocalDate>> = dao.getDateLimits()
+    override fun getDateLimits(): Flow<Pair<LocalDate, LocalDate>> = transactionsDao.getDateLimits()
         .mapLatest { limits -> limits.minDate to limits.maxDate }
         .distinctUntilChanged()
 
@@ -64,7 +66,7 @@ class AllTransactionsRepositoryImpl(
         tagIds: Set<Long>?,
         folderId: Long?
     ): Flow<PagingData<TransactionListItemUIModel>> = repo.getDateSeparatedTransactions(
-        dateRange = dateRange,
+        cycleIds = null,
         type = transactionType,
         showExcluded = showExcluded,
         tagIds = tagIds,
@@ -78,7 +80,7 @@ class AllTransactionsRepositoryImpl(
         tagId: Long?,
         transactionIds: Set<Long>
     ) = withContext(Dispatchers.IO) {
-        dao.setTagIdToTransactionsByIds(tagId = tagId, ids = transactionIds)
+        transactionsDao.setTagIdToTransactionsByIds(tagId = tagId, ids = transactionIds)
     }
 
     override fun getShowExcludedOption(): Flow<Boolean> = preferencesManager.preferences
@@ -90,7 +92,7 @@ class AllTransactionsRepositoryImpl(
 
     override suspend fun toggleTransactionExclusionByIds(ids: Set<Long>, excluded: Boolean) =
         withContext(Dispatchers.IO) {
-            dao.toggleExclusionByIds(ids, excluded)
+            transactionsDao.toggleExclusionByIds(ids, excluded)
         }
 
     override suspend fun deleteTransactionsByIds(
@@ -101,12 +103,12 @@ class AllTransactionsRepositoryImpl(
         ids: Set<Long>,
         folderId: Long
     ) = withContext(Dispatchers.IO) {
-        dao.setFolderIdToTransactionsByIds(ids = ids, folderId = folderId)
+        transactionsDao.setFolderIdToTransactionsByIds(ids = ids, folderId = folderId)
     }
 
     override suspend fun removeTransactionsFromFolders(ids: Set<Long>) =
         withContext(Dispatchers.IO) {
-            dao.removeFolderFromTransactionsByIds(ids)
+            transactionsDao.removeFolderFromTransactionsByIds(ids)
         }
 
     override suspend fun aggregateTogether(
@@ -114,8 +116,9 @@ class AllTransactionsRepositoryImpl(
         dateTime: LocalDateTime
     ): Long = withContext(Dispatchers.IO) {
         db.withTransaction {
-            val currentCurrencyPref = currencyPrefRepo.getCurrencyPreferenceForMonth().first()
-            val aggregatedAmount = dao.getAggregateAmountByIds(ids)
+            val currentCurrencyPref = cycleRepo.getActiveCycleFlow().first()?.currency
+                ?: LocaleUtil.defaultCurrency
+            val aggregatedAmount = aggregationsDao.getAggregateAmountForCycle(-1L)
             var insertedId = -1L
             if (aggregatedAmount != Double.Zero) {
                 val type = if (aggregatedAmount > 0) TransactionType.DEBIT
@@ -129,11 +132,12 @@ class AllTransactionsRepositoryImpl(
                     tagId = null,
                     folderId = null,
                     scheduleId = null,
-                    currencyCode = currentCurrencyPref.currencyCode
+                    currencyCode = currentCurrencyPref.currencyCode,
+                    cycleId = OarDatabase.INVALID_ID_LONG
                 )
-                insertedId = dao.upsert(entity).first()
+                insertedId = transactionsDao.upsert(entity).first()
             }
-            dao.deleteMultipleTransactionsById(ids)
+            transactionsDao.deleteMultipleTransactionsById(ids)
             insertedId
         }
     }

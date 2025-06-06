@@ -57,9 +57,7 @@ data object OnboardingScreenSpec : ScreenSpec {
         val activity = LocalActivity.current
 
         val permissionsState = rememberMultiplePermissionsState(
-            permissions = if (BuildUtil.isNotificationRuntimePermissionNeeded())
-                listOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.RECEIVE_SMS)
-            else listOf(Manifest.permission.RECEIVE_SMS),
+            permissions = getPermissionsList(),
             onPermissionResult = viewModel::onPermissionsRequestResult
         )
 
@@ -163,5 +161,13 @@ data object OnboardingScreenSpec : ScreenSpec {
             },
             actions = viewModel
         )
+    }
+
+    private fun getPermissionsList() = buildList {
+        if (BuildUtil.isNotificationRuntimePermissionNeeded())
+            add(Manifest.permission.POST_NOTIFICATIONS)
+
+        if (BuildUtil.isScheduleAlarmRuntimePermissionRequired())
+            add(Manifest.permission.SCHEDULE_EXACT_ALARM)
     }
 }

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d2521aa771f7d6c544ce9ef60921d04d",
+    "identityHash": "2120eabcecc9f380148643d00bdb2ebd",
     "entities": [
       {
         "tableName": "budget_cycle_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_date` TEXT NOT NULL, `end_date` TEXT NOT NULL, `budget` REAL NOT NULL, `currency_code` TEXT NOT NULL, `status` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `start_date` TEXT NOT NULL, `end_date` TEXT NOT NULL, `budget` INTEGER NOT NULL, `currency_code` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -29,18 +29,12 @@
           {
             "fieldPath": "budget",
             "columnName": "budget",
-            "affinity": "REAL",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "currencyCode",
             "columnName": "currency_code",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "status",
-            "columnName": "status",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -59,43 +53,13 @@
               "start_date",
               "end_date"
             ],
-            "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_budget_cycle_table_start_date_end_date` ON `${TABLE_NAME}` (`start_date`, `end_date`)"
-          },
-          {
-            "name": "index_budget_cycle_table_status",
-            "unique": false,
-            "columnNames": [
-              "status"
+            "orders": [
+              "DESC",
+              "DESC"
             ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_budget_cycle_table_status` ON `${TABLE_NAME}` (`status`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_budget_cycle_table_start_date_end_date` ON `${TABLE_NAME}` (`start_date` DESC, `end_date` DESC)"
           }
         ]
-      },
-      {
-        "tableName": "budget_preference_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `amount` INTEGER NOT NULL, PRIMARY KEY(`date`))",
-        "fields": [
-          {
-            "fieldPath": "date",
-            "columnName": "date",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "amount",
-            "columnName": "amount",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "date"
-          ]
-        }
       },
       {
         "tableName": "transaction_table",
@@ -435,30 +399,6 @@
         }
       },
       {
-        "tableName": "currency_preference_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `currency_code` TEXT NOT NULL, PRIMARY KEY(`date`))",
-        "fields": [
-          {
-            "fieldPath": "date",
-            "columnName": "date",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "currencyCode",
-            "columnName": "currency_code",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "date"
-          ]
-        }
-      },
-      {
         "tableName": "config_table",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`config_key` TEXT NOT NULL, `config_value` TEXT NOT NULL, PRIMARY KEY(`config_key`))",
         "fields": [
@@ -485,6 +425,10 @@
     ],
     "views": [
       {
+        "viewName": "budget_cycle_details_view",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT bdgt.id AS id,\n        bdgt.start_date AS startDate,\n        bdgt.end_date as endDate,\n        bdgt.budget AS budget,\n        bdgt.currency_code AS currencyCode,\n        CASE\n            WHEN cnfg.config_value IS NOT NULL THEN 1\n            ELSE 0\n        END AS active\n        FROM budget_cycle_table bdgt\n        LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = 'ACTIVE_CYCLE_ID' AND cnfg.config_value = bdgt.id)"
+      },
+      {
         "viewName": "transaction_details_view",
         "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tx.id AS transactionId,\n        tx.note AS transactionNote,\n        tx.amount AS transactionAmount,\n        tx.timestamp AS transactionTimestamp,\n        tx.type AS transactionType,\n        tx.currency_code AS currencyCode,\n        cyc.id AS cycleId,\n        cyc.start_date AS cycleStartDate,\n        cyc.end_date AS cycleEndDate,\n        tag.id AS tagId,\n        tag.name AS tagName,\n        tag.color_code AS tagColorCode,\n        tag.created_timestamp AS tagCreatedTimestamp,\n        folder.id AS folderId,\n        folder.name AS folderName,\n        folder.created_timestamp AS folderCreatedTimestamp,\n        tx.schedule_id as scheduleId,\n        (CASE WHEN 1 IN (tx.is_excluded, tag.is_excluded, folder.is_excluded) THEN 1 ELSE 0 END) AS excluded\n        FROM transaction_table tx\n        JOIN budget_cycle_table cyc ON tx.cycle_id = cyc.id\n        LEFT OUTER JOIN tag_table tag ON tx.tag_id = tag.id\n        LEFT OUTER JOIN folder_table folder ON tx.folder_id = folder.id"
       },
@@ -495,7 +439,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd2521aa771f7d6c544ce9ef60921d04d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2120eabcecc9f380148643d00bdb2ebd')"
     ]
   }
 }

@@ -1,5 +1,6 @@
 package dev.ridill.oar.transactions.data.repository
 
+import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.folders.domain.repository.FolderDetailsRepository
@@ -15,7 +16,6 @@ import dev.ridill.oar.transactions.domain.repository.TransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToLong
@@ -26,10 +26,11 @@ class AddEditTransactionRepositoryImpl(
     private val schedulesRepo: SchedulesRepository,
     private val folderRepo: FolderDetailsRepository
 ) : AddEditTransactionRepository {
-    override suspend fun getTransactionById(id: Long): Transaction? =
-        withContext(Dispatchers.IO) {
-            dao.getTransactionById(id)?.toTransaction()
-        }
+    override suspend fun getTransactionById(
+        id: Long
+    ): Transaction? = withContext(Dispatchers.IO) {
+        dao.getTransactionById(id)?.toTransaction()
+    }
 
     override fun getAmountRecommendations(): Flow<List<Long>> = dao.getTransactionAmountRange()
         .mapLatest { (upperLimit, lowerLimit) ->
@@ -99,10 +100,8 @@ class AddEditTransactionRepositoryImpl(
         schedulesRepo.saveScheduleAndSetReminder(schedule)
     }
 
-    override fun getFolderNameForId(folderId: Long?): Flow<String?> = (
-            folderId?.let { folderRepo.getFolderDetailsById(it) }
-                ?: flowOf(null)
-            )
+    override fun getFolderNameForId(id: Long?): Flow<String?> = folderRepo
+        .getFolderDetailsById(id ?: OarDatabase.INVALID_ID_LONG)
         .mapLatest { it?.name }
         .distinctUntilChanged()
 }

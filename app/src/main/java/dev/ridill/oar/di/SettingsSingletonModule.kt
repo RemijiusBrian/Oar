@@ -10,13 +10,11 @@ import dagger.hilt.components.SingletonComponent
 import dev.ridill.oar.BuildConfig
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.account.domain.service.AccessTokenService
-import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
 import dev.ridill.oar.core.domain.notification.NotificationHelper
-import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
 import dev.ridill.oar.settings.data.local.ConfigDao
 import dev.ridill.oar.settings.data.local.CurrencyListDao
 import dev.ridill.oar.settings.data.remote.GDriveApi
@@ -108,10 +106,8 @@ object SettingsSingletonModule {
         securityPreferencesManager: SecurityPreferencesManager,
         configDao: ConfigDao,
         backupWorkManager: BackupWorkManager,
-        schedulesRepository: SchedulesRepository,
         authRepository: AuthRepository,
         cryptoManager: CryptoManager,
-        cycleRepository: BudgetCycleRepository
     ): BackupRepository = BackupRepositoryImpl(
         context = context,
         backupService = backupService,
@@ -120,10 +116,8 @@ object SettingsSingletonModule {
         securityPreferencesManager = securityPreferencesManager,
         configDao = configDao,
         backupWorkManager = backupWorkManager,
-        schedulesRepository = schedulesRepository,
         authRepo = authRepository,
         cryptoManager = cryptoManager,
-        cycleRepo = cycleRepository
     )
 
     @Provides

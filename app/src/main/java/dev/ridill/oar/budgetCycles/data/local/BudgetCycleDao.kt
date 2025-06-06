@@ -1,33 +1,37 @@
 package dev.ridill.oar.budgetCycles.data.local
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
+import dev.ridill.oar.budgetCycles.data.local.view.BudgetCycleDetailsView
 import dev.ridill.oar.core.data.db.BaseDao
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
 
-    @Query("SELECT * FROM budget_cycle_table ORDER BY DATE(end_date) DESC LIMIT 1")
-    suspend fun getLastCycle(): BudgetCycleEntity?
+    @Query("SELECT * FROM budget_cycle_details_view ORDER BY DATE(endDate) DESC LIMIT 1")
+    suspend fun getLastCycle(): BudgetCycleDetailsView?
 
-    @Query("SELECT * FROM budget_cycle_table WHERE status = 'ACTIVE'")
-    fun getActiveCycle(): Flow<BudgetCycleEntity?>
+    @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
+    fun getActiveCycleFlow(): Flow<BudgetCycleDetailsView?>
 
-    @Query("SELECT * FROM budget_cycle_table WHERE id = :id")
-    suspend fun getCycleById(id: Long): BudgetCycleEntity?
+    @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
+    fun getActiveCycle(): BudgetCycleDetailsView?
 
-    @Query("UPDATE budget_cycle_table SET status = 'COMPLETED' WHERE id = :id")
-    suspend fun markCycleCompleted(id: Long)
+    @Query("SELECT * FROM budget_cycle_table WHERE DATE(start_date) = DATE(:startDate) AND DATE(end_date) = DATE(:endDate)")
+    suspend fun getCycleForDate(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): BudgetCycleEntity?
 
-    @Query("SELECT IFNULL(budget, 0.0) FROM budget_cycle_table WHERE status = 'ACTIVE'")
-    fun getBudgetForActiveCycle(): Flow<Double>
+    @Query("SELECT * FROM budget_cycle_details_view WHERE id = :id")
+    suspend fun getCycleById(id: Long): BudgetCycleDetailsView?
 
-    @Query("SELECT * FROM budget_cycle_table WHERE status = 'COMPLETED' ORDER BY start_date DESC")
-    fun getCompletedCycleHistory(): PagingSource<Int, BudgetCycleEntity>
+    @Query("SELECT * FROM budget_cycle_details_view WHERE id = :id")
+    fun getCycleByIdFlow(id: Long): Flow<BudgetCycleDetailsView?>
 
-    @Query("UPDATE budget_cycle_table SET budget = :budget WHERE status = 'ACTIVE'")
+    @Query("UPDATE budget_cycle_table SET budget = :budget")
     suspend fun updateBudgetForActiveCycle(budget: Double)
 }

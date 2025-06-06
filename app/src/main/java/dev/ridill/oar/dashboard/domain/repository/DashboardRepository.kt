@@ -7,11 +7,10 @@ import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import kotlinx.coroutines.flow.Flow
 
 interface DashboardRepository {
-    fun refreshCurrentDate()
     fun getSignedInUser(): Flow<UserAccount?>
-    fun getCurrentBudget(): Flow<Long>
-    fun getTotalDebitsForCurrentMonth(): Flow<Double>
-    fun getTotalCreditsForCurrentMonth(): Flow<Double>
-    fun getSchedulesActiveThisMonth(): Flow<List<ActiveSchedule>>
-    fun getRecentSpends(): Flow<PagingData<TransactionEntry>>
+    fun getBudgetForActiveCycle(): Flow<Long>
+    fun getTotalDebitsForActiveCycle(): Flow<Double>
+    fun getTotalCreditsForActiveCycle(): Flow<Double>
+    fun getSchedulesActiveThisCycle(): Flow<List<ActiveSchedule>>
+    fun getTransactionsThisCycle(): Flow<PagingData<TransactionEntry>>
 }

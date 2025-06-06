@@ -8,10 +8,10 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.textAsFlow
 import dev.ridill.oar.core.ui.util.UiText
-import dev.ridill.oar.settings.domain.repositoty.BudgetPreferenceRepository
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -20,12 +20,11 @@ import javax.inject.Inject
 @HiltViewModel
 class UpdateBudgetViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val repo: BudgetPreferenceRepository,
     private val eventBus: EventBus<UpdateBudgetEvent>
 ) : ViewModel() {
 
-    val currentBudget = repo.getBudgetPreferenceForMonth()
-        .distinctUntilChanged()
+    val currentBudget = MutableStateFlow(Long.Zero)
+//        .distinctUntilChanged()
 
     val budgetInputState = savedStateHandle.saveable(
         key = "BUDGET_INPUT_STATE",
@@ -51,7 +50,7 @@ class UpdateBudgetViewModel @Inject constructor(
             )
             return@launch
         }
-        repo.saveBudgetPreference(longValue)
+//        repo.saveBudgetPreference(longValue)
         eventBus.send(UpdateBudgetEvent.BudgetUpdated)
     }
 

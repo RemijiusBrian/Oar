@@ -20,7 +20,8 @@ data class Transaction(
     val tagId: Long?,
     val folderId: Long?,
     val scheduleId: Long?,
-    val excluded: Boolean
+    val excluded: Boolean,
+    val cycleId: Long
 ) : Parcelable {
     companion object {
         val DEFAULT = Transaction(
@@ -33,7 +34,8 @@ data class Transaction(
             tagId = null,
             folderId = null,
             excluded = false,
-            scheduleId = null
+            scheduleId = null,
+            cycleId = OarDatabase.INVALID_ID_LONG
         )
     }
 }

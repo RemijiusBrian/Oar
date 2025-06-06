@@ -4,15 +4,17 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import dev.ridill.oar.budgetCycles.domain.model.CycleStatus
 import dev.ridill.oar.core.data.db.OarDatabase
 import java.time.LocalDate
 
 @Entity(
     tableName = "budget_cycle_table",
     indices = [
-        Index("start_date", "end_date", unique = true),
-        Index("status")
+        Index(
+            value = ["start_date", "end_date"],
+            orders = [Index.Order.DESC, Index.Order.DESC],
+            unique = true
+        )
     ]
 )
 data class BudgetCycleEntity(
@@ -27,11 +29,8 @@ data class BudgetCycleEntity(
     val endDate: LocalDate,
 
     @ColumnInfo(name = "budget")
-    val budget: Double,
+    val budget: Long,
 
     @ColumnInfo(name = "currency_code")
-    val currencyCode: String,
-
-    @ColumnInfo(name = "status")
-    val status: CycleStatus
+    val currencyCode: String
 )

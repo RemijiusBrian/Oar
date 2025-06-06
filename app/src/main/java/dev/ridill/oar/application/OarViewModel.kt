@@ -3,16 +3,16 @@ package dev.ridill.oar.application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.remoteConfig.FirebaseRemoteConfigService
 import dev.ridill.oar.core.domain.service.ReceiverService
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.asStateFlow
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.settings.domain.appInit.AppInitWorkManager
 import dev.ridill.oar.settings.domain.appLock.AppLockServiceManager
-import dev.ridill.oar.settings.domain.backup.BackupWorkManager
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -28,10 +28,9 @@ class OarViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val receiverService: ReceiverService,
     private val appLockServiceManager: AppLockServiceManager,
-    private val backupWorkManager: BackupWorkManager,
     private val appInitWorkManager: AppInitWorkManager,
     private val remoteConfigService: FirebaseRemoteConfigService,
-    currencyPreferenceRepo: CurrencyRepository,
+    cycleRepo: BudgetCycleRepository,
     private val eventBus: EventBus<OarEvent>
 ) : ViewModel() {
     private val preferences = preferencesManager.preferences
@@ -58,8 +57,9 @@ class OarViewModel @Inject constructor(
     val screenSecurityEnabled = preferences.mapLatest { it.screenSecurityEnabled }
         .distinctUntilChanged()
 
-    val currencyPreference = currencyPreferenceRepo
-        .getCurrencyPreferenceForMonth()
+    private val activeCycle = cycleRepo.getActiveCycleFlow()
+    val currencyPreference = activeCycle
+        .mapLatest { it?.currency ?: LocaleUtil.defaultCurrency }
         .distinctUntilChanged()
 
     val events = eventBus.eventFlow
@@ -126,7 +126,7 @@ class OarViewModel @Inject constructor(
         appLockAuthErrorMessage.update { message }
     }
 
-    fun startConfigRestore() = backupWorkManager.runConfigRestoreWork()
+    fun startConfigRestore() = appInitWorkManager.startConfigRestoreWorkers()
 
     private fun initRemoteConfig() = viewModelScope.launch {
         remoteConfigService.activate()

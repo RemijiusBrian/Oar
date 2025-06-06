@@ -4,22 +4,41 @@ import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleConfig
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
+import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.core.domain.model.Result
-import java.time.LocalDate
+import kotlinx.coroutines.flow.Flow
+import java.time.YearMonth
 import java.util.Currency
 
 interface BudgetCycleRepository {
+    fun getActiveCycleFlow(): Flow<BudgetCycleEntry?>
+    suspend fun getActiveCycle(): BudgetCycleEntry?
     suspend fun getCycleConfig(): BudgetCycleConfig
-    suspend fun updateScheduleCycleConfig(config: BudgetCycleConfig)
+
+    suspend fun updateCycleConfig(
+        budget: Long,
+        currency: Currency,
+        startDay: CycleStartDay,
+        duration: Long,
+        durationUnit: CycleDurationUnit
+    )
+
     suspend fun getLastCycle(): BudgetCycleEntry?
     fun scheduleCycleCompletion(cycle: BudgetCycleEntry)
     suspend fun scheduleLastCycleOrNew(): Result<Unit, BudgetCycleError>
-    suspend fun createNewCycleAndScheduleCompletion(
-        startDate: LocalDate,
-        endDate: LocalDate,
-        budget: Double,
-        currency: Currency
+    suspend fun createNewCycleAndScheduleCompletion(month: YearMonth): Result<Unit, BudgetCycleError>
+    suspend fun createCycleEntryFromConfigForMonth(month: YearMonth): BudgetCycleEntry
+    suspend fun updateConfigAndCreateNewCycle(
+        budget: Long,
+        currency: Currency,
+        startDay: CycleStartDay,
+        month: YearMonth,
+        duration: Long,
+        durationUnit: CycleDurationUnit
     ): Result<Unit, BudgetCycleError>
 
-    suspend fun completeCurrentCycleAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
+    suspend fun markCycleCompletedAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
+
+    fun getCycleByIdFlow(id: Long): Flow<BudgetCycleEntry?>
 }

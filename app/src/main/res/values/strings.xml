@@ -123,7 +123,6 @@
     <string name="error_invalid_amount">Please enter a valid amount</string>
     <string name="error_invalid_tag_name">Invalid tag name</string>
     <string name="error_app_data_backup_failed">Failed to backup App Data</string>
-    <string name="error_app_data_restore_failed">Failed to restore App Data</string>
     <string name="error_sign_in_failed">Failed to sign in to your account</string>
     <string name="error_sign_out_failed">Sign out failed</string>
     <string name="error_unknown">An Unknown error occurred</string>
@@ -149,6 +148,9 @@
     <string name="error_failed_to_start_cycle">Failed to start your cycle</string>
     <string name="error_cycle_not_active">This cycle is not active right now</string>
     <string name="error_cycle_not_found">Unable find cycle</string>
+    <string name="error_backup_job_restore_failed">Failed to restore backup jobs.</string>
+    <string name="error_schedule_reminders_restore_failed">Failed to restore schedule reminders.</string>
+    <string name="error_app_data_restore_failed">Failed to restore app data.</string>
 
     <!-- Action Labels -->
     <string name="action_confirm">Confirm</string>
@@ -342,7 +344,6 @@
     <string name="downloading_app_data">Downloading App Data</string>
     <string name="verify_your_password">Verify your password</string>
     <string name="restoring_app_data">Restoring App Data</string>
-    <string name="restoring_app_config">Restoring App Configuration</string>
     <string name="data_restore_in_progress">Data restore in progress</string>
     <string name="restarting_app_in_time">Restarting App in %s</string>
     <string name="data_restore_caution_message">Please do not close the app while data restore is in progress. The app will automatically restart once the restore process is completed.</string>
@@ -502,6 +503,9 @@
     <string name="cycle_ends_on">Cycle ends on</string>
     <string name="new_cycle_started">New Cycle Started</string>
     <string name="cycle_completed">Cycle Completed</string>
-    <string name="starting_cycle">Intitializing Budget Cycles</string>
+    <string name="starting_cycle">Initializing Budget Cycles</string>
     <string name="cycle_summary">Your cycle was completed with an aggregate %1$s of %2$s</string>
+    <string name="cycle">Cycle</string>
+    <string name="restoring_backup_jobs">Restoring Backup Jobs</string>
+    <string name="restoring_schedule_reminders">Restoring Schedule Reminders</string>
 </resources>

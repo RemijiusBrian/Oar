@@ -87,6 +87,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import dev.ridill.oar.R
+import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
+import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.Zero
@@ -241,13 +243,13 @@ fun AllTransactionsScreen(
                     repeat(transactionsLazyPagingItems.itemCount) { index ->
                         transactionsLazyPagingItems[index]?.let { item ->
                             when (item) {
-                                is TransactionListItemUIModel.DateSeparator -> {
+                                is TransactionListItemUIModel.CycleSeparator -> {
                                     stickyHeader(
-                                        key = item.date.toString(),
-                                        contentType = "TransactionDateSeparator"
+                                        key = "CycleId-${item.cycle.id}",
+                                        contentType = CycleIndicator::class
                                     ) {
                                         ListSeparator(
-                                            label = item.date.format(DateUtil.Formatters.MMMM_yyyy_spaceSep),
+                                            label = item.cycle.description,
                                             modifier = Modifier
                                                 .animateItem()
                                         )
@@ -257,7 +259,7 @@ fun AllTransactionsScreen(
                                 is TransactionListItemUIModel.TransactionItem -> {
                                     item(
                                         key = item.id,
-                                        contentType = "TransactionListItem"
+                                        contentType = TransactionEntry::class
                                     ) {
                                         val selected = item.id in state.selectedTransactionIds
 

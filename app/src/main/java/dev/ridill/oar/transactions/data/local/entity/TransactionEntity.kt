@@ -70,7 +70,7 @@ data class TransactionEntity(
     val isExcluded: Boolean,
 
     @ColumnInfo("cycle_id")
-    val cycleId: Long = OarDatabase.DEFAULT_ID_LONG, // FIXME: Remove default value to enforce passing valid cycleId
+    val cycleId: Long,
 
     @ColumnInfo(name = "tag_id")
     val tagId: Long?,

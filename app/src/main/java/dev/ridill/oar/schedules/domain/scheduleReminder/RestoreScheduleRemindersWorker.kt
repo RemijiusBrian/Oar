@@ -1,4 +1,4 @@
-package dev.ridill.oar.settings.domain.appInit
+package dev.ridill.oar.schedules.domain.scheduleReminder
 
 import android.content.Context
 import android.content.pm.ServiceInfo
@@ -8,43 +8,46 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dev.ridill.oar.R
-import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
-import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.domain.notification.NotificationHelper
-import dev.ridill.oar.core.domain.util.logI
+import dev.ridill.oar.core.domain.util.logE
+import dev.ridill.oar.core.domain.util.rethrowIfCoroutineCancellation
+import dev.ridill.oar.di.BackupFeature
+import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
+import dev.ridill.oar.settings.domain.appInit.AppInitWorkManager
+import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private const val TAG = "BudgetCycleInitWorker"
-
 @HiltWorker
-class BudgetCycleInitWorker @AssistedInject constructor(
+class RestoreScheduleRemindersWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    private val repo: BudgetCycleRepository,
-    private val notificationHelper: NotificationHelper<BudgetCycleEntry>
-) : CoroutineWorker(appContext, workerParams) {
+    @Assisted params: WorkerParameters,
+    private val repo: SchedulesRepository,
+    @BackupFeature private val notificationHelper: NotificationHelper<String>,
+) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        startForeground()
-        logI(TAG) { "$TAG started" }
-        val result = repo.scheduleLastCycleOrNew()
-        return@withContext when (result) {
-            is dev.ridill.oar.core.domain.model.Result.Error -> {
-                Result.retry()
-            }
-
-            is dev.ridill.oar.core.domain.model.Result.Success -> {
-                Result.success()
-            }
+        startForegroundService()
+        try {
+            repo.setAllFutureScheduleReminders()
+            Result.success()
+        } catch (t: Throwable) {
+            t.rethrowIfCoroutineCancellation()
+            logE(t, RestoreScheduleRemindersWorker::class.simpleName) { "Throwable" }
+            Result.failure(
+                workDataOf(
+                    BackupWorkManager.KEY_MESSAGE to appContext.getString(R.string.error_schedule_reminders_restore_failed)
+                )
+            )
         }
     }
 
-    private suspend fun startForeground() {
+    private suspend fun startForegroundService() {
         val notification = notificationHelper.buildBaseNotification()
-            .setContentTitle(appContext.getString(R.string.starting_cycle))
+            .setContentTitle(appContext.getString(R.string.restoring_schedule_reminders))
             .setProgress(100, 0, true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()

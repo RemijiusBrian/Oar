@@ -16,10 +16,14 @@ import dev.ridill.oar.account.domain.model.AuthState
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.account.presentation.util.AuthorizationService
 import dev.ridill.oar.account.presentation.util.CredentialService
+import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
+import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.BuildUtil
+import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
@@ -29,6 +33,7 @@ import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.onboarding.domain.model.DataRestoreState
 import dev.ridill.oar.onboarding.domain.model.OnboardingPage
 import dev.ridill.oar.onboarding.domain.model.SignInAndDataRestoreState
+import dev.ridill.oar.settings.domain.appInit.AppInitWorkManager
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.modal.BackupDetails
 import dev.ridill.oar.settings.domain.repositoty.BackupRepository
@@ -42,7 +47,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import java.time.YearMonth
 import java.util.Currency
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -56,7 +61,8 @@ class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val backupRepo: BackupRepository,
     private val authRepo: AuthRepository,
-    private val cycleRepo: BudgetCycleRepository
+    private val cycleRepo: BudgetCycleRepository,
+    private val appInitWorkManager: AppInitWorkManager,
 ) : ViewModel(), OnboardingActions {
 
     val signInAndDataRestoreState = savedStateHandle
@@ -68,6 +74,21 @@ class OnboardingViewModel @Inject constructor(
         .getStateFlow(SHOW_ENCRYPTION_PASSWORD_INPUT, false)
     private val _appRestartTimer = MutableStateFlow(Duration.ZERO)
 
+    private val cycleStartDayType = savedStateHandle
+        .getStateFlow(CYCLE_START_DAY_TYPE, CycleStartDayType.LAST_DAY_OF_MONTH)
+    private val specificStartDate = savedStateHandle.getStateFlow(
+        SPECIFIC_CYCLE_START_DATE,
+        DateUtil.dateNow().dayOfMonth
+    )
+    private val selectedStartOfDay = combineTuple(
+        cycleStartDayType,
+        specificStartDate
+    ).mapLatest { (type, date) ->
+        when (type) {
+            CycleStartDayType.LAST_DAY_OF_MONTH -> CycleStartDay.LastDayOfMonth
+            CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> CycleStartDay.SpecificDayOfMonth(date)
+        }
+    }
     val budgetInputState = savedStateHandle.saveable(
         key = "BUDGET_INPUT_STATE",
         saver = TextFieldState.Saver,
@@ -107,6 +128,10 @@ class OnboardingViewModel @Inject constructor(
         )
     }.onStart { collectRestoreWorkState() }
         .asStateFlow(viewModelScope, OnboardingState())
+
+    init {
+        appInitWorkManager.startAppInitWorker()
+    }
 
     val events = eventBus.eventFlow
 
@@ -394,19 +419,24 @@ class OnboardingViewModel @Inject constructor(
                 )
                 return@launch
             }
-            val result = cycleRepo.createNewCycleAndScheduleCompletion(
-                startDate = LocalDate.now(),
-                endDate = LocalDate.now().plusMonths(1),
-                budget = budgetValue.toDouble(),
-                currency = currency.value
+
+            val startDayType = selectedStartOfDay.first()
+            val result = cycleRepo.updateConfigAndCreateNewCycle(
+                budget = budgetValue,
+                currency = currency.value,
+                startDay = startDayType,
+                month = YearMonth.now(),
+                duration = 1L,
+                durationUnit = CycleDurationUnit.MONTH // TODO: Change fixed values
             )
 
             when (result) {
                 is Result.Error -> {
                     eventBus.send(OnboardingEvent.ShowUiMessage(result.message))
                 }
-                is Result.Success -> {
 
+                is Result.Success -> {
+                    preferencesManager.concludeOnboarding()
                     eventBus.send(OnboardingEvent.OnboardingConcluded)
                 }
             }
@@ -431,4 +461,6 @@ class OnboardingViewModel @Inject constructor(
 private const val SIGN_IN_AND_DATA_RESTORE_STATE = "SIGN_IN_AND_DATA_RESTORE_STATE"
 private const val AVAILABLE_BACKUP = "AVAILABLE_BACKUP"
 private const val SHOW_ENCRYPTION_PASSWORD_INPUT = "SHOW_ENCRYPTION_PASSWORD_INPUT"
+private const val CYCLE_START_DAY_TYPE = "SHOW_CYCLE_START_DAY_TYPE"
+private const val SPECIFIC_CYCLE_START_DATE = "SPECIFIC_CYCLE_START_DATE"
 private const val SELECTED_CURRENCY = "SELECTED_CURRENCY"

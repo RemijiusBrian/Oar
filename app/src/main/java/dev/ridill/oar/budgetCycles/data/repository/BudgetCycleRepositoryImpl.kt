@@ -4,16 +4,16 @@ import androidx.room.withTransaction
 import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.data.local.AggregationsDao
 import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
-import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
+import dev.ridill.oar.budgetCycles.data.toEntity
 import dev.ridill.oar.budgetCycles.data.toEntry
 import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManager
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleConfig
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
+import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
-import dev.ridill.oar.budgetCycles.domain.model.CycleStatus
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.model.Result
@@ -33,8 +33,12 @@ import dev.ridill.oar.settings.data.local.entity.ConfigEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
+import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 import java.util.Currency
 import kotlin.math.absoluteValue
@@ -49,13 +53,21 @@ class BudgetCycleRepositoryImpl(
     private val manager: CycleManager
 ) : BudgetCycleRepository {
 
+    override fun getActiveCycleFlow(): Flow<BudgetCycleEntry?> = cycleDao
+        .getActiveCycleFlow()
+        .mapLatest { it?.toEntry() }
+
+    override suspend fun getActiveCycle(): BudgetCycleEntry? = withContext(Dispatchers.IO) {
+        cycleDao.getActiveCycle()?.toEntry()
+    }
+
     override suspend fun getCycleConfig(): BudgetCycleConfig = withContext(Dispatchers.IO) {
-        val budgetAmount = configDao.getBudgetAmount()?.toDoubleOrNull().orZero()
-        val budgetCurrency = configDao.getBudgetCurrencyCode()
+        val budgetAmount = configDao.getCycleBudget()?.toLongOrNull().orZero()
+        val budgetCurrency = configDao.getCycleCurrencyCode()
             ?.let { LocaleUtil.currencyForCode(it) }
             ?: LocaleUtil.defaultCurrency
 
-        val type = configDao.getBudgetStartDayType()
+        val type = configDao.getCycleStartDayType()
             ?.let { tryOrNull { CycleStartDayType.valueOf(it) } }
             ?: CycleStartDayType.LAST_DAY_OF_MONTH
 
@@ -64,59 +76,95 @@ class BudgetCycleRepositoryImpl(
 
             CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> {
                 val dayOfMonth =
-                    configDao.getValueForKey(ConfigKeys.BUDGET_CYCLE_START_DAY_OF_MONTH)
+                    configDao.getValueForKey(ConfigKeys.CYCLE_START_DAY_OF_MONTH)
                         ?.toIntOrNull() ?: 1
                 CycleStartDay.SpecificDayOfMonth(dayOfMonth)
             }
         }
 
+        val duration = configDao.getCycleDuration()?.toLongOrNull() ?: 1L
+        val durationUnit = configDao.getCycleDurationUnit()
+            ?.let { tryOrNull { CycleDurationUnit.valueOf(it) } }
+            ?: CycleDurationUnit.MONTH
+
         return@withContext BudgetCycleConfig(
             budget = budgetAmount,
             currency = budgetCurrency,
-            startDay = startDay
+            startDay = startDay,
+            duration = duration,
+            durationUnit = durationUnit
         )
     }
 
-    override suspend fun updateScheduleCycleConfig(
-        config: BudgetCycleConfig
+    override suspend fun updateCycleConfig(
+        budget: Long,
+        currency: Currency,
+        startDay: CycleStartDay,
+        duration: Long,
+        durationUnit: CycleDurationUnit
     ): Unit = withContext(Dispatchers.IO) {
-        val budgetUpdateJob = async {
-            val entity = ConfigEntity(
-                configKey = ConfigKeys.CYCLE_BUDGET_AMOUNT,
-                configValue = config.budget.toString()
-            )
-            configDao.upsert(entity)
-        }
-        val currencyUpdateJob = async {
-            val entity = ConfigEntity(
-                configKey = ConfigKeys.CYCLE_BUDGET_CURRENCY_CODE,
-                configValue = config.currency.currencyCode
-            )
-            configDao.upsert(entity)
-        }
-
-        val startDayTypeUpdateJob = async {
-            val entity = ConfigEntity(
-                configKey = ConfigKeys.BUDGET_CYCLE_START_DAY_TYPE,
-                configValue = config.startDay.type.name
-            )
-            configDao.upsert(entity)
-        }
-
-        val startDayDataUpdateJob = async {
-            when (config.startDay) {
-                CycleStartDay.LastDayOfMonth -> null
-                is CycleStartDay.SpecificDayOfMonth -> ConfigEntity(
-                    configKey = ConfigKeys.BUDGET_CYCLE_START_DAY_OF_MONTH,
-                    configValue = config.startDay.dayOfMonth.toString()
+        db.withTransaction {
+            val budgetUpdate = async {
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_BUDGET_AMOUNT,
+                    configValue = budget.toString()
                 )
-            }?.let {
-                configDao.upsert(it)
+                configDao.upsert(entity)
             }
+
+            val currencyUpdate = async {
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_CURRENCY_CODE,
+                    configValue = currency.currencyCode
+                )
+                configDao.upsert(entity)
+            }
+
+            val startDayTypeUpdate = async {
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_START_DAY_TYPE,
+                    configValue = startDay.type.name
+                )
+                configDao.upsert(entity)
+            }
+
+            val startDayDataUpdate = async {
+                when (startDay) {
+                    CycleStartDay.LastDayOfMonth -> null
+                    is CycleStartDay.SpecificDayOfMonth -> ConfigEntity(
+                        configKey = ConfigKeys.CYCLE_START_DAY_OF_MONTH,
+                        configValue = startDay.dayOfMonth.toString()
+                    )
+                }?.let {
+                    configDao.upsert(it)
+                }
+            }
+
+            val durationUpdate = async {
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_DURATION,
+                    configValue = duration.toString()
+                )
+                configDao.upsert(entity)
+            }
+
+            val durationUnitUpdate = async {
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_DURATION_UNIT,
+                    configValue = durationUnit.name
+                )
+                configDao.upsert(entity)
+            }
+
+            awaitAll(
+                budgetUpdate,
+                currencyUpdate,
+                startDayTypeUpdate,
+                startDayDataUpdate,
+                durationUpdate,
+                durationUnitUpdate
+            )
         }
-
-
-        awaitAll(budgetUpdateJob, currencyUpdateJob, startDayTypeUpdateJob, startDayDataUpdateJob)
     }
 
     override suspend fun getLastCycle(): BudgetCycleEntry? = withContext(Dispatchers.IO) {
@@ -136,9 +184,10 @@ class BudgetCycleRepositoryImpl(
         withContext(Dispatchers.IO) {
             try {
                 val lastCycle = getLastCycle()
+                val dateNow = DateUtil.dateNow()
                 logD(TAG) { "lastCycle = $lastCycle" }
-                val isLastCycleActiveRightNow = lastCycle?.status == CycleStatus.ACTIVE
-                        && lastCycle.endDate > DateUtil.dateNow()
+                val isLastCycleActiveRightNow = lastCycle?.active == true
+                        && lastCycle.endDate.isAfter(dateNow)
                 logD(TAG) { "isLastCycleActiveRightNow = $isLastCycleActiveRightNow" }
 
                 return@withContext if (isLastCycleActiveRightNow) {
@@ -149,33 +198,7 @@ class BudgetCycleRepositoryImpl(
                     Result.Success(Unit)
                 } else {
                     logI(TAG) { "Creating new cycle" }
-                    val config = getCycleConfig()
-                    logD(TAG) { "config = $config" }
-                    val dateNow = DateUtil.dateNow()
-                    val lastMonthDate = dateNow.withMonth(dateNow.monthValue - 1)
-                    val cycleStartDay = config.startDay
-                    // Create a new cycle
-                    val configStartDate = when (cycleStartDay) {
-                        CycleStartDay.LastDayOfMonth -> lastMonthDate
-                            .with(TemporalAdjusters.lastDayOfMonth())
-
-                        is CycleStartDay.SpecificDayOfMonth -> lastMonthDate
-                            .withDayOfMonth(cycleStartDay.dayOfMonth)
-                    }
-                    val nextMonthDate = dateNow.withMonth(dateNow.monthValue + 1)
-                    val newCycleEndDate = when (cycleStartDay) {
-                        CycleStartDay.LastDayOfMonth -> nextMonthDate
-                            .with(TemporalAdjusters.lastDayOfMonth())
-
-                        is CycleStartDay.SpecificDayOfMonth -> nextMonthDate
-                            .withDayOfMonth(cycleStartDay.dayOfMonth)
-                    }
-                    createNewCycleAndScheduleCompletion(
-                        startDate = configStartDate,
-                        endDate = newCycleEndDate,
-                        budget = config.budget,
-                        currency = config.currency
-                    )
+                    createNewCycleAndScheduleCompletion(month = YearMonth.from(dateNow))
                 }
             } catch (t: Throwable) {
                 t.rethrowIfCoroutineCancellation()
@@ -187,38 +210,31 @@ class BudgetCycleRepositoryImpl(
         }
 
     override suspend fun createNewCycleAndScheduleCompletion(
-        startDate: LocalDate,
-        endDate: LocalDate,
-        budget: Double,
-        currency: Currency
+        month: YearMonth
     ): Result<Unit, BudgetCycleError> = withContext(Dispatchers.IO) {
         try {
-            logI(TAG) { "createNewCycleAndScheduleCompletion() called with: startDate = $startDate, endDate = $endDate, budget = $budget, currency = $currency" }
-            val entity = BudgetCycleEntity(
-                startDate = startDate,
-                endDate = endDate,
-                budget = budget,
-                currencyCode = currency.currencyCode,
-                status = CycleStatus.ACTIVE
-            )
-            val insertedId = cycleDao.upsert(entity).first()
-            if (insertedId == -1L) throw CycleEntryCreationFailedThrowable(entity)
-            logD(TAG) { "entity = $entity created with ID = $insertedId" }
-            scheduleCycleCompletion(
-                entity.copy(
-                    id = insertedId
-                ).toEntry()
-            )
+            logI(TAG) { "createNewCycleAndScheduleCompletion() called with: month = $month" }
+            val entry = createCycleEntryFromConfigForMonth(month)
+            logI(TAG) { "inserting cycle = $entry" }
+            val insertedId = cycleDao.upsert(entry.toEntity()).first()
+                .takeIf { it != -1L }
+                ?: throw CycleEntryCreationFailedThrowable(entry)
+
+            updateActiveCycleId(insertedId)
+            val activeCycle = cycleDao.getActiveCycleFlow().first()
+                ?: throw CycleNotFoundThrowable(insertedId)
+            logD(TAG) { "entry = $entry created with ID = $insertedId" }
+            scheduleCycleCompletion(activeCycle.toEntry())
             Result.Success(Unit)
         } catch (t: CycleEntryCreationFailedThrowable) {
-            logE(t) { "createNewCycleAndScheduleCompletion" }
+            logE(t, TAG) { "createNewCycleAndScheduleCompletion" }
             Result.Error(
                 error = BudgetCycleError.CREATION_FAILED,
                 message = UiText.StringResource(R.string.error_failed_to_start_cycle, true)
             )
         } catch (t: Throwable) {
             t.rethrowIfCoroutineCancellation()
-            logE(t) { "createNewCycleAndScheduleCompletion" }
+            logE(t, TAG) { "createNewCycleAndScheduleCompletion" }
             Result.Error(
                 error = BudgetCycleError.UNKNOWN,
                 message = UiText.StringResource(R.string.error_unknown, true)
@@ -226,62 +242,95 @@ class BudgetCycleRepositoryImpl(
         }
     }
 
-    override suspend fun completeCurrentCycleAndStartNext(
+    override suspend fun createCycleEntryFromConfigForMonth(
+        month: YearMonth
+    ): BudgetCycleEntry = withContext(Dispatchers.IO) {
+        logI(TAG) { "createCycleWithStartDayAndMonth() called with: month = $month" }
+        val config = getCycleConfig()
+        val dateNow = DateUtil.dateNow()
+        val startDay = config.startDay
+        val (startDate, endDate) = when (startDay) {
+            CycleStartDay.LastDayOfMonth -> {
+                val startDate = dateNow
+                    .withMonth(month.monthValue - 1)
+                    .with(TemporalAdjusters.lastDayOfMonth())
+
+                val endDate = dateNow
+                    .with(TemporalAdjusters.lastDayOfMonth())
+
+                startDate to endDate.minusDays(1L)
+            }
+
+            is CycleStartDay.SpecificDayOfMonth -> if (dateNow.dayOfMonth < startDay.dayOfMonth) {
+                val startDate = dateNow
+                    .withMonth(month.monthValue - 1)
+                    .withDayOfMonth(startDay.dayOfMonth)
+
+                val endDate = dateNow
+                    .withDayOfMonth(startDay.dayOfMonth)
+
+                startDate to endDate
+            } else {
+                val startDate = dateNow
+                    .withDayOfMonth(startDay.dayOfMonth)
+
+                val endDate = dateNow
+                    .withMonth(month.monthValue + 1)
+                    .withDayOfMonth(startDay.dayOfMonth)
+
+                startDate to endDate.minusDays(1L)
+            }
+        }
+
+        logD(TAG) { "startDate = $startDate, endDate = $endDate" }
+
+        return@withContext BudgetCycleEntry(
+            id = OarDatabase.DEFAULT_ID_LONG,
+            startDate = startDate,
+            endDate = endDate,
+            budget = config.budget,
+            currency = config.currency,
+            active = false
+        )
+    }
+
+    override suspend fun markCycleCompletedAndStartNext(
         id: Long
     ): Result<BudgetCycleSummary, BudgetCycleError> = withContext(Dispatchers.IO) {
         logI(TAG) { "completeCurrentCycleAndStartNext() called with ID = $id" }
         try {
             db.withTransaction {
-                val cycle = cycleDao.getCycleById(id)?.toEntry()
+                val cycleById = cycleDao.getCycleById(id)
                     ?: throw CycleNotFoundThrowable(id)
-                logD(TAG) { "cycle = $cycle" }
+                logD(TAG) { "cycle = $cycleById" }
 
-                if (cycle.status != CycleStatus.ACTIVE)
-                    throw CycleNotActiveThrowable(id, cycle.status)
-
-                // Change status of current cycle to COMPLETED
-                cycleDao.markCycleCompleted(id)
-                logI(TAG) { "cycle marked as ${CycleStatus.COMPLETED}" }
+                if (!cycleById.active) throw CycleNotActiveThrowable(id)
 
                 // Create Next Cycle Entry
-                val cycleConfig = getCycleConfig()
-                val startDay = cycleConfig.startDay
-                val nextMonthDate = DateUtil.dateNow().withMonth(DateUtil.dateNow().monthValue + 1)
-                val nextEndDate = when (startDay) {
-                    CycleStartDay.LastDayOfMonth -> nextMonthDate
-                        .with(TemporalAdjusters.lastDayOfMonth())
+                val newCycleResult =
+                    createNewCycleAndScheduleCompletion(YearMonth.from(DateUtil.dateNow()))
 
-                    is CycleStartDay.SpecificDayOfMonth -> nextMonthDate
-                        .withDayOfMonth(startDay.dayOfMonth)
-                }
-
-                val newCycleResult = createNewCycleAndScheduleCompletion(
-                    startDate = DateUtil.dateNow(),
-                    endDate = nextEndDate,
-                    budget = cycleConfig.budget,
-                    currency = cycleConfig.currency
-                )
-
-                when (newCycleResult) {
-                    is Result.Error -> return@withTransaction Result.Error(
+                return@withTransaction when (newCycleResult) {
+                    is Result.Error -> Result.Error(
                         error = newCycleResult.error,
                         message = newCycleResult.message
                     )
 
-                    is Result.Success -> Unit
+                    is Result.Success -> {
+                        // Get Aggregate
+                        val cycleConfig = getCycleConfig()
+                        val aggregateForCycle = aggDao.getAggregateAmountForCycle(id)
+                        val aggregateType = AggregateType.fromAmount(aggregateForCycle)
+                        val summary = BudgetCycleSummary(
+                            aggregateAmount = aggregateForCycle.absoluteValue,
+                            aggregateType = aggregateType,
+                            currency = cycleConfig.currency
+                        )
+                        logD(TAG) { "summary = $summary" }
+
+                        Result.Success(summary)
+                    }
                 }
-
-                // Get Aggregate
-                val aggregateForCycle = aggDao.getAggregateAmountForCycle(id)
-                val aggregateType = AggregateType.fromAmount(aggregateForCycle)
-                val summary = BudgetCycleSummary(
-                    aggregateAmount = aggregateForCycle.absoluteValue,
-                    aggregateType = aggregateType,
-                    currency = cycleConfig.currency
-                )
-                logD(TAG) { "summary = $summary" }
-
-                return@withTransaction Result.Success(summary)
             }
         } catch (t: CycleNotFoundThrowable) {
             logE(t) { "completeCurrentCycleAndStartNext" }
@@ -310,11 +359,50 @@ class BudgetCycleRepositoryImpl(
             )
         }
     }
+
+    override fun getCycleByIdFlow(id: Long): Flow<BudgetCycleEntry?> = cycleDao
+        .getCycleByIdFlow(id)
+        .mapLatest { it?.toEntry() }
+        .distinctUntilChanged()
+
+    override suspend fun updateConfigAndCreateNewCycle(
+        budget: Long,
+        currency: Currency,
+        startDay: CycleStartDay,
+        month: YearMonth,
+        duration: Long,
+        durationUnit: CycleDurationUnit
+    ): Result<Unit, BudgetCycleError> = withContext(Dispatchers.IO) {
+        db.withTransaction {
+            updateCycleConfig(
+                budget = budget,
+                currency = currency,
+                startDay = startDay,
+                duration = duration,
+                durationUnit = durationUnit
+            )
+
+            createNewCycleAndScheduleCompletion(
+                month = month
+            )
+        }
+    }
+
+    private suspend fun updateActiveCycleId(id: Long) = withContext(Dispatchers.IO) {
+        configDao.upsert(
+            ConfigEntity(
+                configKey = ConfigKeys.ACTIVE_CYCLE_ID,
+                configValue = id.toString()
+            )
+        )
+    }
 }
 
-class CycleEntryCreationFailedThrowable(entity: BudgetCycleEntity) :
+class CycleEntryCreationFailedThrowable(entity: BudgetCycleEntry) :
     IllegalStateException("Failed to create cycle entity $entity")
 
-class CycleNotFoundThrowable(val id: Long) : IllegalStateException("Cycle not found for ID = $id")
-class CycleNotActiveThrowable(val id: Long, status: CycleStatus) :
-    IllegalStateException("Cycle with ID = $id is not ACTIVE. Current status is '$status'")
+class CycleNotFoundThrowable(val id: Long) :
+    IllegalStateException("Cycle not found for ID = $id")
+
+class CycleNotActiveThrowable(val id: Long) :
+    IllegalStateException("Cycle with ID = $id is not ACTIVE")
