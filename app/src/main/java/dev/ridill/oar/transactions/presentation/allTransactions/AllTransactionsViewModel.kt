@@ -1,8 +1,11 @@
 package dev.ridill.oar.transactions.presentation.allTransactions
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +18,7 @@ import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.addOrRemove
 import dev.ridill.oar.core.domain.util.asStateFlow
 import dev.ridill.oar.core.domain.util.orZero
+import dev.ridill.oar.core.domain.util.textAsFlow
 import dev.ridill.oar.core.ui.navigation.destinations.AddEditTxResult
 import dev.ridill.oar.core.ui.navigation.destinations.NavDestination
 import dev.ridill.oar.core.ui.util.UiText
@@ -41,7 +45,11 @@ class AllTransactionsViewModel @Inject constructor(
 ) : ViewModel(), AllTransactionsActions {
 
     private val searchModeActive = savedStateHandle.getStateFlow(SEARCH_MODE_ACTIVE, false)
-    val searchQuery = savedStateHandle.getStateFlow<String?>(SEARCH_QUERY, null)
+    val searchQueryState = savedStateHandle.saveable(
+        key = "SEARCH_QUERY_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
     private val dateLimits = transactionRepo.getDateLimits()
         .distinctUntilChanged()
         .asStateFlow(viewModelScope, DateUtil.dateNow() to DateUtil.dateNow())
@@ -122,7 +130,7 @@ class AllTransactionsViewModel @Inject constructor(
         )
     }.cachedIn(viewModelScope)
 
-    val searchResults = searchQuery
+    val searchResults = searchQueryState.textAsFlow()
         .debounce(UtilConstants.DEBOUNCE_TIMEOUT)
         .flatMapLatest { query ->
             transactionRepo.getSearchResults(query)
@@ -264,16 +272,12 @@ class AllTransactionsViewModel @Inject constructor(
     override fun onSearchModeToggle(active: Boolean) {
         savedStateHandle[SEARCH_MODE_ACTIVE] = active
         if (!active) {
-            savedStateHandle[SEARCH_QUERY] = null
+            searchQueryState.clearText()
         }
     }
 
-    override fun onSearchQueryChange(value: String) {
-        savedStateHandle[SEARCH_QUERY] = value
-    }
-
     override fun onClearSearchQuery() {
-        savedStateHandle[SEARCH_QUERY] = null
+        searchQueryState.clearText()
     }
 
     override fun onClearAllFiltersClick() {
@@ -533,7 +537,6 @@ class AllTransactionsViewModel @Inject constructor(
     }
 }
 
-private const val SEARCH_QUERY = "SEARCH_QUERY"
 private const val SEARCH_MODE_ACTIVE = "SEARCH_MODE_ACTIVE"
 private const val SELECTED_DATE_RANGE_FLOATS = "SELECTED_DATE_RANGE_FLOATS"
 private const val TRANSACTION_TYPE_FILTER = "TRANSACTION_TYPE_FILTER"

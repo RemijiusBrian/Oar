@@ -6,7 +6,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionTypeFilter
 interface AllTransactionsActions {
     fun onSearchClick()
     fun onSearchModeToggle(active: Boolean)
-    fun onSearchQueryChange(value: String)
     fun onClearSearchQuery()
     fun onClearAllFiltersClick()
     fun onDateFilterRangeChange(range: ClosedFloatingPointRange<Float>)
