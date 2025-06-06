@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.EventBus
@@ -37,7 +38,11 @@ class AddEditTagViewModel @Inject constructor(
     val isLoading get() = _isLoading.asStateFlow()
 
     val tagInput = savedStateHandle.getStateFlow<Tag>(TAG_INPUT, Tag.NEW)
-    val nameInputState = TextFieldState()
+    val nameInputState = savedStateHandle.saveable(
+        key = "NAME_INPUT_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
     val tagInputError = savedStateHandle.getStateFlow<UiText?>(NEW_TAG_ERROR, null)
 
     val showTagDeleteConfirmation = savedStateHandle

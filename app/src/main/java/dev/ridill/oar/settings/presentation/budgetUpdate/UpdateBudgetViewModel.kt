@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.EventBus
@@ -26,7 +27,11 @@ class UpdateBudgetViewModel @Inject constructor(
     val currentBudget = repo.getBudgetPreferenceForMonth()
         .distinctUntilChanged()
 
-    val budgetInputState = TextFieldState()
+    val budgetInputState = savedStateHandle.saveable(
+        key = "BUDGET_INPUT_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
 
     val budgetInputError = savedStateHandle
         .getStateFlow<UiText?>(BUDGET_INPUT_ERROR, null)

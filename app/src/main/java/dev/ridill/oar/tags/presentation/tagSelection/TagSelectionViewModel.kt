@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.core.domain.util.UtilConstants
@@ -23,7 +24,11 @@ class TagSelectionViewModel @Inject constructor(
     private val multiSelection = TagSelectionSheetSpec
         .getMultiSelectionFromSavedStateHandle(savedStateHandle)
 
-    val searchQueryState = TextFieldState()
+    val searchQueryState = savedStateHandle.saveable(
+        key = "SEARCH_QUERY_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
 
     val selectedIds = savedStateHandle
         .getStateFlow<Set<Long>>(SELECTED_IDS, emptySet())
