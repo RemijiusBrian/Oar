@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -138,7 +139,7 @@ import kotlin.math.absoluteValue
 fun AllTransactionsScreen(
     snackbarController: SnackbarController,
     transactionsLazyPagingItems: LazyPagingItems<TransactionListItemUIModel>,
-    searchQuery: () -> String,
+    searchQueryState: TextFieldState,
     searchResultsLazyPagingItems: LazyPagingItems<TransactionEntry>,
     state: AllTransactionsState,
     actions: AllTransactionsActions,
@@ -173,8 +174,7 @@ fun AllTransactionsScreen(
             AllTransactionsTopAppBar(
                 searchModeActive = state.searchModeActive,
                 onSearchModeToggle = actions::onSearchModeToggle,
-                searchQuery = searchQuery,
-                onSearchQueryChange = actions::onSearchQueryChange,
+                searchQueryState = searchQueryState,
                 onClearSearchQuery = actions::onClearSearchQuery,
                 searchResults = searchResultsLazyPagingItems,
                 onFilterOptionsClick = actions::onFilterOptionsClick,
@@ -390,8 +390,7 @@ fun AllTransactionsScreen(
 private fun AllTransactionsTopAppBar(
     searchModeActive: Boolean,
     onSearchModeToggle: (Boolean) -> Unit,
-    searchQuery: () -> String,
-    onSearchQueryChange: (String) -> Unit,
+    searchQueryState: TextFieldState,
     onClearSearchQuery: () -> Unit,
     searchResults: LazyPagingItems<TransactionEntry>,
     onFilterOptionsClick: () -> Unit,
@@ -404,7 +403,7 @@ private fun AllTransactionsTopAppBar(
     modifier: Modifier = Modifier
 ) {
     val isQueryNotEmpty by remember {
-        derivedStateOf { searchQuery().isNotEmpty() }
+        derivedStateOf { searchQueryState.text.isNotEmpty() }
     }
     val searchBarHorizontalPadding by animateDpAsState(
         targetValue = if (searchModeActive) Dp.Zero else MaterialTheme.spacing.medium,
@@ -459,8 +458,7 @@ private fun AllTransactionsTopAppBar(
             SearchBar(
                 inputField = {
                     SearchBarDefaults.InputField(
-                        query = searchQuery(),
-                        onQueryChange = onSearchQueryChange,
+                        state = searchQueryState,
                         onSearch = {},
                         expanded = searchModeActive,
                         onExpandedChange = onSearchModeToggle,

@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +15,7 @@ import dev.ridill.oar.core.domain.service.ExpEvalService
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.Empty
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.UtilConstants
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.asStateFlow
@@ -72,31 +74,39 @@ class AddEditTransactionViewModel @Inject constructor(
 
     private val isScheduleTxMode = savedStateHandle.getStateFlow(IS_SCHEDULE_MODE, false)
 
-    private val txInput = savedStateHandle.getStateFlow(TX_INPUT, Transaction.DEFAULT)
-    private val currency = txInput.mapLatest { it.currency }
+    private val txInput = savedStateHandle.getStateFlow<Transaction?>(TX_INPUT, null)
+    private val currency = txInput.mapLatest { it?.currency ?: LocaleUtil.defaultCurrency }
         .distinctUntilChanged()
 
-    val amountInputState = TextFieldState()
+    val amountInputState = savedStateHandle.saveable(
+        key = "AMOUNT_INPUT_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
 
     private val isAmountInputAnExpression = amountInputState.textAsFlow()
         .mapLatest { evalService.isExpression(it) }
         .distinctUntilChanged()
 
-    val noteInputState = TextFieldState()
+    val noteInputState = savedStateHandle.saveable(
+        key = "NOTE_INPUT_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
 
-    private val selectedTagId = txInput.mapLatest { it.tagId }
+    private val selectedTagId = txInput.mapLatest { it?.tagId }
         .distinctUntilChanged()
 
-    private val timestamp = txInput.mapLatest { it.timestamp }
+    private val timestamp = txInput.mapLatest { it?.timestamp ?: DateUtil.now() }
         .distinctUntilChanged()
 
-    private val transactionFolderId = txInput.mapLatest { it.folderId }
+    private val transactionFolderId = txInput.mapLatest { it?.folderId }
         .distinctUntilChanged()
 
-    private val transactionType = txInput.mapLatest { it.type }
+    private val transactionType = txInput.mapLatest { it?.type ?: TransactionType.DEBIT }
         .distinctUntilChanged()
 
-    private val isTransactionExcluded = txInput.mapLatest { it.excluded }
+    private val isTransactionExcluded = txInput.mapLatest { it?.excluded == true }
         .distinctUntilChanged()
 
     val recentTagsPagingData = tagsRepo.getAllTagsPagingData(
@@ -202,46 +212,51 @@ class AddEditTransactionViewModel @Inject constructor(
         onInit()
     }
 
-    private fun onInit() = viewModelScope.launch {
-        val currentCurrencyPref = currencyRepo.getCurrencyPreferenceForMonth().first()
-        val transaction: Transaction = if (scheduleModeArg) {
-            val schedule = transactionRepo.getScheduleById(transactionIdArg)
-            savedStateHandle[SELECTED_REPETITION] = schedule?.repetition
-                ?: ScheduleRepetition.NO_REPEAT
+    private fun onInit() {
+        if (txInput.value != null) return
 
-            schedule?.toTransaction(
-                dateTime = schedule.nextPaymentTimestamp
-                    ?: DateUtil.now()
-                        .plusDays(1L),
-                txId = transactionIdArg
-            )
-        } else {
-            var transaction = transactionRepo.getTransactionById(transactionIdArg)
-            if (isDuplicateModeArg) {
-                transaction = transaction?.copy(
-                    id = OarDatabase.DEFAULT_ID_LONG
+        viewModelScope.launch {
+            val currentCurrencyPref = currencyRepo.getCurrencyPreferenceForMonth().first()
+            val transaction: Transaction = if (scheduleModeArg) {
+                val schedule = transactionRepo.getScheduleById(transactionIdArg)
+                savedStateHandle[SELECTED_REPETITION] = schedule?.repetition
+                    ?: ScheduleRepetition.NO_REPEAT
+
+                schedule?.toTransaction(
+                    dateTime = schedule.nextPaymentTimestamp
+                        ?: DateUtil.now()
+                            .plusDays(1L),
+                    txId = transactionIdArg
                 )
-            }
-            transaction
-        } ?: Transaction.DEFAULT.copy(
-            currency = currentCurrencyPref
-        )
-        savedStateHandle[IS_SCHEDULE_MODE] = scheduleModeArg
-        val dateNow = DateUtil.now()
-        val timestamp = if (isScheduleTxMode.value && transaction.timestamp <= dateNow)
-            dateNow.plusDays(1)
-        else transaction.timestamp
+            } else {
+                var transaction = transactionRepo.getTransactionById(transactionIdArg)
+                if (isDuplicateModeArg) {
+                    transaction = transaction?.copy(
+                        id = OarDatabase.DEFAULT_ID_LONG
+                    )
+                }
+                transaction
+            } ?: (txInput.value ?: Transaction.DEFAULT).copy(
+                currency = currentCurrencyPref
+            )
 
-        savedStateHandle[TX_INPUT] = transaction.copy(
-            folderId = linkFolderIdArg ?: transaction.folderId,
-            timestamp = timestamp
-        )
-        amountInputState.setTextAndPlaceCursorAtEnd(transaction.amount)
-        noteInputState.setTextAndPlaceCursorAtEnd(transaction.note)
+            savedStateHandle[IS_SCHEDULE_MODE] = scheduleModeArg
+            val dateNow = DateUtil.now()
+            val timestamp = if (isScheduleTxMode.value && transaction.timestamp <= dateNow)
+                dateNow.plusDays(1)
+            else transaction.timestamp
+
+            savedStateHandle[TX_INPUT] = transaction.copy(
+                folderId = linkFolderIdArg ?: transaction.folderId,
+                timestamp = timestamp
+            )
+            amountInputState.setTextAndPlaceCursorAtEnd(transaction.amount)
+            noteInputState.setTextAndPlaceCursorAtEnd(transaction.note)
+        }
     }
 
     fun onCurrencySelect(currency: Currency) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(currency = currency)
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(currency = currency)
     }
 
     override fun onAmountFocusLost() {
@@ -265,7 +280,7 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     override fun onRecommendedAmountClick(amount: Long) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
             amount = TextFormat.number(
                 value = amount,
                 isGroupingUsed = false
@@ -274,14 +289,14 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     override fun onTagSelect(tagId: Long) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
-            tagId = tagId.takeIf { it != txInput.value.tagId }
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
+            tagId = tagId.takeIf { it != txInput.value?.tagId }
         )
     }
 
     override fun onViewAllTagsClick() {
         viewModelScope.launch {
-            eventBus.send(AddEditTransactionEvent.LaunchTagSelection(txInput.value.tagId))
+            eventBus.send(AddEditTransactionEvent.LaunchTagSelection(txInput.value?.tagId))
         }
     }
 
@@ -294,10 +309,10 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     override fun onDateSelectionConfirm(millis: Long) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
             timestamp = DateUtil.dateFromMillisWithTime(
                 millis = millis,
-                time = txInput.value.timestamp.toLocalTime()
+                time = txInput.value?.timestamp?.toLocalTime() ?: DateUtil.timeNow()
             )
         )
         savedStateHandle[SHOW_DATE_PICKER] = false
@@ -313,10 +328,11 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     override fun onTimeSelectionConfirm(hour: Int, minute: Int) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
-            timestamp = txInput.value.timestamp
-                .withHour(hour)
-                .withMinute(minute)
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
+            timestamp = txInput.value?.timestamp
+                ?.withHour(hour)
+                ?.withMinute(minute)
+                ?: DateUtil.now()
         )
         savedStateHandle[SHOW_TIME_PICKER] = false
     }
@@ -327,13 +343,13 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     override fun onTypeChange(type: TransactionType) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
             type = type
         )
     }
 
     override fun onExclusionToggle(excluded: Boolean) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
             excluded = excluded
         )
     }
@@ -344,7 +360,8 @@ class AddEditTransactionViewModel @Inject constructor(
         val transformedAmount = when (result.transformation) {
             AmountTransformation.DIVIDE_BY -> amount / result.factor.toDoubleOrNull().orZero()
             AmountTransformation.MULTIPLIER -> amount * result.factor.toDoubleOrNull().orZero()
-            AmountTransformation.PERCENT -> amount * (result.factor.toFloatOrNull().orZero() / 100f)
+            AmountTransformation.PERCENT -> amount * (result.factor.toFloatOrNull()
+                .orZero() / 100f)
         }
         amountInputState.setTextAndPlaceCursorAtEnd(
             text = transformedAmount
@@ -374,7 +391,13 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     private fun onDuplicateOptionClick() = viewModelScope.launch {
-        eventBus.send(AddEditTransactionEvent.NavigateToDuplicateTransactionCreation(txInput.value.id))
+        txInput.value?.id?.let {
+            eventBus.send(
+                AddEditTransactionEvent.NavigateToDuplicateTransactionCreation(
+                    it
+                )
+            )
+        }
     }
 
     override fun onDeleteDismiss() {
@@ -396,12 +419,12 @@ class AddEditTransactionViewModel @Inject constructor(
 
     override fun onSelectFolderClick() {
         viewModelScope.launch {
-            eventBus.send(AddEditTransactionEvent.LaunchFolderSelection(txInput.value.folderId))
+            eventBus.send(AddEditTransactionEvent.LaunchFolderSelection(txInput.value?.folderId))
         }
     }
 
     fun onFolderSelectionResult(id: Long) {
-        savedStateHandle[TX_INPUT] = txInput.value.copy(
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(
             folderId = id.takeIf { it != NavDestination.ARG_INVALID_ID_LONG }
         )
     }
@@ -409,13 +432,13 @@ class AddEditTransactionViewModel @Inject constructor(
     private fun toggleScheduling(enable: Boolean) {
         savedStateHandle[IS_SCHEDULE_MODE] = enable
         if (enable) {
-            if (txInput.value.timestamp <= DateUtil.now()) {
+            if (txInput.value?.timestamp?.isAfter(DateUtil.now()) == true) {
                 savedStateHandle[TX_INPUT] = txInput.value
-                    .copy(timestamp = DateUtil.now().plusDays(1))
+                    ?.copy(timestamp = DateUtil.now().plusDays(1))
             }
         } else {
             savedStateHandle[TX_INPUT] = txInput.value
-                .copy(timestamp = DateUtil.now())
+                ?.copy(timestamp = DateUtil.now())
         }
     }
 
@@ -435,9 +458,9 @@ class AddEditTransactionViewModel @Inject constructor(
     override fun onSaveClick() {
         viewModelScope.launch {
             val noteInput = noteInputState.text.trim().toString()
-            val txInput = txInput.value.copy(
+            val txInput = txInput.value?.copy(
                 note = noteInput
-            )
+            ) ?: return@launch
             val amountInput = amountInputState.text.trim().toString()
             if (amountInput.isEmpty()) {
                 eventBus.send(
@@ -512,7 +535,8 @@ class AddEditTransactionViewModel @Inject constructor(
         data class NavigateUpWithResult(val result: AddEditTxResult) : AddEditTransactionEvent
         data class LaunchFolderSelection(val preselectedId: Long?) : AddEditTransactionEvent
         data class LaunchTagSelection(val preselectedId: Long?) : AddEditTransactionEvent
-        data class NavigateToDuplicateTransactionCreation(val id: Long) : AddEditTransactionEvent
+        data class NavigateToDuplicateTransactionCreation(val id: Long) :
+            AddEditTransactionEvent
     }
 }
 

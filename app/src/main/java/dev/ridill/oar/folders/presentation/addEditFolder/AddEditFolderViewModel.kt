@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.EventBus
@@ -33,7 +34,11 @@ class AddEditFolderViewModel @Inject constructor(
     val isLoading get() = _isLoading.asStateFlow()
 
     val folderInput = savedStateHandle.getStateFlow(FOLDER_INPUT, Folder.NEW)
-    val folderNameState = TextFieldState()
+    val folderNameState = savedStateHandle.saveable(
+        key = "FOLDER_NAME_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
     val errorMessage = savedStateHandle.getStateFlow<UiText?>(ERROR_MESSAGE, null)
 
     val events = eventBus.eventFlow

@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +25,11 @@ class AllTagsViewModel @Inject constructor(
     private val repo: TagsRepository
 ) : ViewModel(), AllTagsActions {
 
-    val searchQueryState = TextFieldState()
+    val searchQueryState = savedStateHandle.saveable(
+        key = "SEARCH_QUERY_STATE",
+        saver = TextFieldState.Saver,
+        init = { TextFieldState() }
+    )
     val allTagsPagingData = searchQueryState.textAsFlow()
         .debounce(UtilConstants.DEBOUNCE_TIMEOUT)
         .flatMapLatest {
