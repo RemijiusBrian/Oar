@@ -16,17 +16,15 @@ import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.settings.data.local.ConfigDao
-import dev.ridill.oar.settings.data.local.CurrencyListDao
 import dev.ridill.oar.settings.data.remote.GDriveApi
 import dev.ridill.oar.settings.data.remote.interceptors.GoogleAccessTokenInterceptor
-import dev.ridill.oar.settings.data.repository.AppInitRepositoryImpl
 import dev.ridill.oar.settings.data.repository.BackupRepositoryImpl
+import dev.ridill.oar.settings.domain.appInit.AppInitWorkManager
 import dev.ridill.oar.settings.domain.appLock.AppLockServiceManager
 import dev.ridill.oar.settings.domain.backup.BackupService
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.notification.AppInitNotificationHelper
 import dev.ridill.oar.settings.domain.notification.BackupNotificationHelper
-import dev.ridill.oar.settings.domain.repositoty.AppInitRepository
 import dev.ridill.oar.settings.domain.repositoty.BackupRepository
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -136,16 +134,16 @@ object SettingsSingletonModule {
         @ApplicationContext context: Context
     ): AppLockServiceManager = AppLockServiceManager(context)
 
-    @Provides
-    fun provideAppInitRepository(
-        currencyListDao: CurrencyListDao
-    ): AppInitRepository = AppInitRepositoryImpl(currencyListDao)
-
     @AppInitFeature
     @Provides
     fun provideAppInitNotificationHelper(
         @ApplicationContext context: Context
     ): NotificationHelper<Unit> = AppInitNotificationHelper(context)
+
+    @Provides
+    fun provideAppInitWorkManager(
+        @ApplicationContext context: Context
+    ): AppInitWorkManager = AppInitWorkManager(context)
 }
 
 @Qualifier

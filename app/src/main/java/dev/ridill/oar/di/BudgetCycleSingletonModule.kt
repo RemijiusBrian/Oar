@@ -10,7 +10,7 @@ import dev.ridill.oar.aggregations.data.local.AggregationsDao
 import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
 import dev.ridill.oar.budgetCycles.data.repository.BudgetCycleRepositoryImpl
 import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManager
-import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManagerImpl
+import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleAlarmManager
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.budgetCycles.presentation.notification.CycleNotificationHelper
@@ -29,7 +29,7 @@ object BudgetCycleSingletonModule {
     @Provides
     fun provideCycleManager(
         @ApplicationContext context: Context
-    ): CycleManager = CycleManagerImpl(context)
+    ): CycleManager = CycleAlarmManager(context)
 
     @Provides
     fun provideCycleRepository(

@@ -174,14 +174,13 @@ class BudgetCycleRepositoryImpl(
         cycleDao.getLastCycle()?.toEntry()
     }
 
-    override fun scheduleCycleCompletion(cycle: BudgetCycleEntry) {
+    override fun scheduleCycleCompletion(cycle: BudgetCycleEntry): Result<Unit, BudgetCycleError> =
         manager.scheduleCycleCompletion(
             cycleId = cycle.id,
             endDate = cycle.endDate
                 .plusDays(1)
                 .atStartOfDay()
         )
-    }
 
     override suspend fun scheduleLastCycleOrNew(): Result<Unit, BudgetCycleError> =
         withContext(Dispatchers.IO) {
@@ -198,7 +197,6 @@ class BudgetCycleRepositoryImpl(
                     // Schedule it's completion alarm
                     logI(TAG) { "Continuing ongoing cycle" }
                     scheduleCycleCompletion(lastCycle)
-                    Result.Success(Unit)
                 } else {
                     logI(TAG) { "Creating new cycle" }
                     createNewCycleAndScheduleCompletion(month = YearMonth.from(dateNow))
@@ -219,16 +217,21 @@ class BudgetCycleRepositoryImpl(
             logI(TAG) { "createNewCycleAndScheduleCompletion() called with: month = $month" }
             val entry = createCycleEntryFromConfigForMonth(month)
             logI(TAG) { "inserting cycle = $entry" }
-            val insertedId = cycleDao.upsert(entry.toEntity()).first()
-                .takeIf { it != -1L }
+            val existingCycle = cycleDao
+                .getCycleForDate(startDate = entry.startDate, endDate = entry.endDate)
+            logI(TAG) { "existing cycle found = $existingCycle" }
+
+            val cycleId = existingCycle?.id
+                ?: cycleDao.upsert(entry.toEntity()).first()
+                    .takeIf { it != -1L }
                 ?: throw CycleEntryCreationFailedThrowable(entry)
 
-            updateActiveCycleId(insertedId)
+            logI(TAG) { "continuing with cycleId = $cycleId" }
+            updateActiveCycleId(cycleId)
             val activeCycle = cycleDao.getActiveCycleFlow().first()
-                ?: throw CycleNotFoundThrowable(insertedId)
-            logD(TAG) { "entry = $entry created with ID = $insertedId" }
+                ?: throw CycleNotFoundThrowable(cycleId)
+            logD(TAG) { "entry = $entry created with ID = $cycleId" }
             scheduleCycleCompletion(activeCycle.toEntry())
-            Result.Success(Unit)
         } catch (t: CycleEntryCreationFailedThrowable) {
             logE(t, TAG) { "createNewCycleAndScheduleCompletion" }
             Result.Error(
@@ -260,7 +263,7 @@ class BudgetCycleRepositoryImpl(
                 val endDate = dateNow
                     .with(TemporalAdjusters.lastDayOfMonth())
 
-                startDate to endDate.minusDays(1L)
+                startDate to endDate
             }
 
             CycleStartDay.LastDayOfMonth -> {
@@ -308,7 +311,7 @@ class BudgetCycleRepositoryImpl(
         )
     }
 
-    override suspend fun markCycleCompletedAndStartNext(
+    override suspend fun completeCycleAndStartNext(
         id: Long
     ): Result<BudgetCycleSummary, BudgetCycleError> = withContext(Dispatchers.IO) {
         logI(TAG) { "completeCurrentCycleAndStartNext() called with ID = $id" }

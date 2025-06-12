@@ -22,12 +22,12 @@ import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.model.Result
-import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.asStateFlow
+import dev.ridill.oar.core.domain.util.logD
 import dev.ridill.oar.core.domain.util.logI
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.onboarding.domain.model.DataRestoreState
@@ -220,10 +220,7 @@ class OnboardingViewModel @Inject constructor(
 
     override fun onGivePermissionsClick() {
         viewModelScope.launch {
-            if (BuildUtil.isNotificationRuntimePermissionNeeded())
-                eventBus.send(OnboardingEvent.LaunchNotificationPermissionRequest)
-            else
-                eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.ACCOUNT_SIGN_IN_AND_DATA_RESTORE))
+            eventBus.send(OnboardingEvent.LaunchPermissionsRequest)
         }
     }
 
@@ -234,13 +231,20 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun onPermissionsRequestResult(result: Map<String, Boolean>) {
+        logD { "onPermissionsRequestResult() called with: result = $result" }
         viewModelScope.launch {
             val isSMSPermissionGranted = result[Manifest.permission.RECEIVE_SMS] == true
             preferencesManager.updateTransactionAutoDetectEnabled(isSMSPermissionGranted)
 
             val areAllGranted = result.all { it.value }
-            if (areAllGranted)
+            if (areAllGranted) {
                 eventBus.send(OnboardingEvent.NavigateToPage(OnboardingPage.ACCOUNT_SIGN_IN_AND_DATA_RESTORE))
+                return@launch
+            }
+
+            if (result[Manifest.permission.SCHEDULE_EXACT_ALARM] == false) {
+                eventBus.send(OnboardingEvent.LaunchAlarmPermissionsSettings)
+            }
         }
     }
 
@@ -449,7 +453,8 @@ class OnboardingViewModel @Inject constructor(
         data class NavigateToPage(val page: OnboardingPage) : OnboardingEvent
         data object OnboardingConcluded : OnboardingEvent
         data class ShowUiMessage(val uiText: UiText) : OnboardingEvent
-        data object LaunchNotificationPermissionRequest : OnboardingEvent
+        data object LaunchPermissionsRequest : OnboardingEvent
+        data object LaunchAlarmPermissionsSettings : OnboardingEvent
         data class StartAutoSignInFlow(val filterByAuthorizedAccounts: Boolean) :
             OnboardingEvent
 

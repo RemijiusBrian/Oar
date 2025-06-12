@@ -17,7 +17,7 @@ class AlarmManagerScheduleReminder(
     override fun setReminder(schedule: Schedule) {
         val timeMillis = schedule.nextPaymentTimestamp
             ?.let { DateUtil.toMillis(it) } ?: return
-        val intent = Intent(context, ScheduleReminderReceiver::class.java).apply {
+        val intent = Intent(context, ScheduledPaymentReminderReceiver::class.java).apply {
             action = ScheduleReminder.ACTION
             putExtra(ScheduleReminder.EXTRA_SCHEDULE_ID, schedule.id)
         }
@@ -42,7 +42,7 @@ class AlarmManagerScheduleReminder(
             PendingIntent.getBroadcast(
                 context,
                 id.hashCode(),
-                Intent(context, ScheduleReminderReceiver::class.java),
+                Intent(context, ScheduledPaymentReminderReceiver::class.java),
                 UtilConstants.pendingIntentFlags
             )
         )

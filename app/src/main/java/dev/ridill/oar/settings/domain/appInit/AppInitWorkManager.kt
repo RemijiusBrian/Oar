@@ -76,4 +76,25 @@ class AppInitWorkManager(
             .then(restoreScheduleRemindersWorker)
             .enqueue()
     }
+
+    fun startAlarmsAndReminderInitWorkers() {
+        val budgetCycleInitWorker = OneTimeWorkRequestBuilder<BudgetCycleInitWorker>()
+            .setId(budgetCycleInitWorkerName.toUUID())
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        val restoreScheduleRemindersWorker =
+            OneTimeWorkRequestBuilder<RestoreScheduleRemindersWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setId(restoreScheduleRemindersWorkerName.toUUID())
+                .build()
+
+        workManager.beginUniqueWork(
+            configRestoreWorkerName,
+            ExistingWorkPolicy.REPLACE,
+            budgetCycleInitWorker
+        )
+            .then(restoreScheduleRemindersWorker)
+            .enqueue()
+    }
 }

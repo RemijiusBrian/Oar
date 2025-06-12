@@ -151,6 +151,7 @@
     <string name="error_backup_job_restore_failed">Failed to restore backup jobs.</string>
     <string name="error_schedule_reminders_restore_failed">Failed to restore schedule reminders.</string>
     <string name="error_app_data_restore_failed">Failed to restore app data.</string>
+    <string name="error_failed_to_schedule_cycle">Failed to schedule cycle</string>
 
     <!-- Action Labels -->
     <string name="action_confirm">Confirm</string>

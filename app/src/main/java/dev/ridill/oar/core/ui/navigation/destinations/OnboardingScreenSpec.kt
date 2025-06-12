@@ -2,6 +2,8 @@ package dev.ridill.oar.core.ui.navigation.destinations
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest.Builder
@@ -94,8 +96,16 @@ data object OnboardingScreenSpec : ScreenSpec {
                         pagerState.animateScrollToPage(event.page.ordinal)
                 }
 
-                OnboardingViewModel.OnboardingEvent.LaunchNotificationPermissionRequest -> {
+                OnboardingViewModel.OnboardingEvent.LaunchPermissionsRequest -> {
                     permissionsState.launchRequest()
+                }
+
+                OnboardingViewModel.OnboardingEvent.LaunchAlarmPermissionsSettings -> {
+                    if (BuildUtil.isApiLevelAtLeast31) {
+                        context.startActivity(
+                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        )
+                    }
                 }
 
                 is OnboardingViewModel.OnboardingEvent.ShowUiMessage -> {
@@ -167,7 +177,7 @@ data object OnboardingScreenSpec : ScreenSpec {
         if (BuildUtil.isNotificationRuntimePermissionNeeded())
             add(Manifest.permission.POST_NOTIFICATIONS)
 
-        if (BuildUtil.isScheduleAlarmRuntimePermissionRequired())
-            add(Manifest.permission.SCHEDULE_EXACT_ALARM)
+//        if (BuildUtil.isScheduleAlarmRuntimePermissionRequired())
+//            add(Manifest.permission.SCHEDULE_EXACT_ALARM)
     }
 }
