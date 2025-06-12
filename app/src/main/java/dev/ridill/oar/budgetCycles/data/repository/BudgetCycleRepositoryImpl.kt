@@ -72,6 +72,8 @@ class BudgetCycleRepositoryImpl(
             ?: CycleStartDayType.LAST_DAY_OF_MONTH
 
         val startDay = when (type) {
+            CycleStartDayType.FIRST_DAY_OF_MONTH -> CycleStartDay.FirstDayOfMonth
+
             CycleStartDayType.LAST_DAY_OF_MONTH -> CycleStartDay.LastDayOfMonth
 
             CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> {
@@ -129,15 +131,16 @@ class BudgetCycleRepositoryImpl(
             }
 
             val startDayDataUpdate = async {
-                when (startDay) {
-                    CycleStartDay.LastDayOfMonth -> null
-                    is CycleStartDay.SpecificDayOfMonth -> ConfigEntity(
-                        configKey = ConfigKeys.CYCLE_START_DAY_OF_MONTH,
-                        configValue = startDay.dayOfMonth.toString()
-                    )
-                }?.let {
-                    configDao.upsert(it)
+                val day = when (startDay) {
+                    is CycleStartDay.FirstDayOfMonth -> 1
+                    is CycleStartDay.SpecificDayOfMonth -> startDay.dayOfMonth
+                    is CycleStartDay.LastDayOfMonth -> -1
                 }
+                val entity = ConfigEntity(
+                    configKey = ConfigKeys.CYCLE_START_DAY_OF_MONTH,
+                    configValue = day.toString()
+                )
+                configDao.upsert(entity)
             }
 
             val durationUpdate = async {
@@ -250,6 +253,16 @@ class BudgetCycleRepositoryImpl(
         val dateNow = DateUtil.dateNow()
         val startDay = config.startDay
         val (startDate, endDate) = when (startDay) {
+            CycleStartDay.FirstDayOfMonth -> {
+                val startDate = dateNow
+                    .withDayOfMonth(1)
+
+                val endDate = dateNow
+                    .with(TemporalAdjusters.lastDayOfMonth())
+
+                startDate to endDate.minusDays(1L)
+            }
+
             CycleStartDay.LastDayOfMonth -> {
                 val startDate = dateNow
                     .withMonth(month.monthValue - 1)
@@ -257,8 +270,9 @@ class BudgetCycleRepositoryImpl(
 
                 val endDate = dateNow
                     .with(TemporalAdjusters.lastDayOfMonth())
+                    .minusDays(1L)
 
-                startDate to endDate.minusDays(1L)
+                startDate to endDate
             }
 
             is CycleStartDay.SpecificDayOfMonth -> if (dateNow.dayOfMonth < startDay.dayOfMonth) {

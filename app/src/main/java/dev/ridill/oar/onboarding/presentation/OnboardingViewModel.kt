@@ -62,7 +62,7 @@ class OnboardingViewModel @Inject constructor(
     private val backupRepo: BackupRepository,
     private val authRepo: AuthRepository,
     private val cycleRepo: BudgetCycleRepository,
-    private val appInitWorkManager: AppInitWorkManager,
+    appInitWorkManager: AppInitWorkManager,
 ) : ViewModel(), OnboardingActions {
 
     val signInAndDataRestoreState = savedStateHandle
@@ -75,7 +75,7 @@ class OnboardingViewModel @Inject constructor(
     private val _appRestartTimer = MutableStateFlow(Duration.ZERO)
 
     private val cycleStartDayType = savedStateHandle
-        .getStateFlow(CYCLE_START_DAY_TYPE, CycleStartDayType.LAST_DAY_OF_MONTH)
+        .getStateFlow(CYCLE_START_DAY_TYPE, CycleStartDayType.FIRST_DAY_OF_MONTH)
     private val specificStartDate = savedStateHandle.getStateFlow(
         SPECIFIC_CYCLE_START_DATE,
         DateUtil.dateNow().dayOfMonth
@@ -85,6 +85,7 @@ class OnboardingViewModel @Inject constructor(
         specificStartDate
     ).mapLatest { (type, date) ->
         when (type) {
+            CycleStartDayType.FIRST_DAY_OF_MONTH -> CycleStartDay.FirstDayOfMonth
             CycleStartDayType.LAST_DAY_OF_MONTH -> CycleStartDay.LastDayOfMonth
             CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> CycleStartDay.SpecificDayOfMonth(date)
         }
