@@ -65,9 +65,4 @@ object SettingsViewModelModule {
     @Provides
     fun provideBackupEncryptionEventBus(): EventBus<BackupEncryptionViewModel.BackupEncryptionEvent> =
         EventBus()
-
-    @Provides
-    fun provideAppInitWorkManager(
-        @ApplicationContext context: Context
-    ): AppInitWorkManager = AppInitWorkManager(context)
 }

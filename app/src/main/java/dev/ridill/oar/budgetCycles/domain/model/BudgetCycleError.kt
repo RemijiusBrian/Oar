@@ -6,5 +6,6 @@ enum class BudgetCycleError : Error {
     CREATION_FAILED,
     CYCLE_NOT_ACTIVE,
     CYCLE_NOT_FOUND,
+    CYCLE_SCHEDULE_FAILED,
     UNKNOWN
 }

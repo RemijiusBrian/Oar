@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ScheduleReminderReceiver : BroadcastReceiver() {
+class ScheduledPaymentReminderReceiver : BroadcastReceiver() {
 
     @ApplicationScope
     @Inject

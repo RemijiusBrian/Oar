@@ -16,7 +16,7 @@ import dev.ridill.oar.core.domain.util.logE
 import dev.ridill.oar.core.domain.util.logI
 import dev.ridill.oar.core.domain.util.rethrowIfCoroutineCancellation
 import dev.ridill.oar.di.AppInitFeature
-import dev.ridill.oar.settings.domain.repositoty.AppInitRepository
+import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -24,20 +24,15 @@ import kotlinx.coroutines.withContext
 class CurrencyInitWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted params: WorkerParameters,
-    private val repo: AppInitRepository,
-    @AppInitFeature private val notificationHelper: NotificationHelper<Unit>
+    @AppInitFeature private val notificationHelper: NotificationHelper<Unit>,
+    private val currencyRepo: CurrencyRepository
 ) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         startForeground()
         try {
-            if (!repo.needsInit()) {
-                logI(CurrencyInitWorker::class.simpleName) { "App init unnecessary" }
-                return@withContext Result.success()
-            }
 
             logI(CurrencyInitWorker::class.simpleName) { "Running currencyList init" }
-            repo.initCurrenciesList()
-
+            currencyRepo.initCurrenciesList()
             logI(CurrencyInitWorker::class.simpleName) { "Initialization complete" }
             Result.success()
         } catch (t: Throwable) {

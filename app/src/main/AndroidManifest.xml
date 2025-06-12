@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -41,7 +39,7 @@
         <receiver android:name=".transactions.domain.notification.DeleteTransactionActionReceiver" />
         <receiver android:name=".transactions.domain.notification.MarkTransactionExcludedActionReceiver" />
         <receiver android:name=".settings.domain.notification.LockAppImmediateReceiver" />
-        <receiver android:name=".schedules.domain.scheduleReminder.ScheduleReminderReceiver" />
+        <receiver android:name=".schedules.domain.scheduleReminder.ScheduledPaymentReminderReceiver" />
         <receiver android:name=".schedules.domain.scheduleReminder.MarkScheduleAsPaidActionReceiver" />
         <receiver
             android:name=".transactions.domain.autoDetection.TransactionSmsReceiver"
@@ -53,7 +51,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".schedules.domain.scheduleReminder.ScheduleRemindersOnBootReceiver"
+            android:name=".application.BootReceiver"
             android:enabled="false"
             android:exported="true">
             <intent-filter>
@@ -61,7 +59,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".schedules.domain.scheduleReminder.ScheduleRemindersOnTimeSetReceiver"
+            android:name=".application.TimeSetReceiver"
             android:enabled="false"
             android:exported="true">
             <intent-filter>
