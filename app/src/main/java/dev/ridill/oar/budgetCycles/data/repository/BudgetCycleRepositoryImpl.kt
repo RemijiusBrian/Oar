@@ -28,7 +28,7 @@ import dev.ridill.oar.core.domain.util.tryOrNull
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.folders.domain.model.AggregateType
 import dev.ridill.oar.settings.data.local.ConfigDao
-import dev.ridill.oar.settings.data.local.ConfigKeys
+import dev.ridill.oar.settings.data.local.ConfigKey
 import dev.ridill.oar.settings.data.local.entity.ConfigEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -78,7 +78,7 @@ class BudgetCycleRepositoryImpl(
 
             CycleStartDayType.SPECIFIC_DAY_OF_MONTH -> {
                 val dayOfMonth =
-                    configDao.getValueForKey(ConfigKeys.CYCLE_START_DAY_OF_MONTH)
+                    configDao.getValueForKey(ConfigKey.CYCLE_START_DAY_OF_MONTH)
                         ?.toIntOrNull() ?: 1
                 CycleStartDay.SpecificDayOfMonth(dayOfMonth)
             }
@@ -108,7 +108,7 @@ class BudgetCycleRepositoryImpl(
         db.withTransaction {
             val budgetUpdate = async {
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_BUDGET_AMOUNT,
+                    configKey = ConfigKey.CYCLE_BUDGET_AMOUNT,
                     configValue = budget.toString()
                 )
                 configDao.upsert(entity)
@@ -116,7 +116,7 @@ class BudgetCycleRepositoryImpl(
 
             val currencyUpdate = async {
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_CURRENCY_CODE,
+                    configKey = ConfigKey.CYCLE_CURRENCY_CODE,
                     configValue = currency.currencyCode
                 )
                 configDao.upsert(entity)
@@ -124,7 +124,7 @@ class BudgetCycleRepositoryImpl(
 
             val startDayTypeUpdate = async {
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_START_DAY_TYPE,
+                    configKey = ConfigKey.CYCLE_START_DAY_TYPE,
                     configValue = startDay.type.name
                 )
                 configDao.upsert(entity)
@@ -137,7 +137,7 @@ class BudgetCycleRepositoryImpl(
                     is CycleStartDay.LastDayOfMonth -> -1
                 }
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_START_DAY_OF_MONTH,
+                    configKey = ConfigKey.CYCLE_START_DAY_OF_MONTH,
                     configValue = day.toString()
                 )
                 configDao.upsert(entity)
@@ -145,7 +145,7 @@ class BudgetCycleRepositoryImpl(
 
             val durationUpdate = async {
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_DURATION,
+                    configKey = ConfigKey.CYCLE_DURATION,
                     configValue = duration.toString()
                 )
                 configDao.upsert(entity)
@@ -153,7 +153,7 @@ class BudgetCycleRepositoryImpl(
 
             val durationUnitUpdate = async {
                 val entity = ConfigEntity(
-                    configKey = ConfigKeys.CYCLE_DURATION_UNIT,
+                    configKey = ConfigKey.CYCLE_DURATION_UNIT,
                     configValue = durationUnit.name
                 )
                 configDao.upsert(entity)
@@ -167,6 +167,32 @@ class BudgetCycleRepositoryImpl(
                 durationUpdate,
                 durationUnitUpdate
             )
+        }
+    }
+
+    override suspend fun updateBudgetForActiveCycle(value: Long) = withContext(Dispatchers.IO) {
+        db.withTransaction {
+            configDao.upsert(
+                ConfigEntity(
+                    configKey = ConfigKey.CYCLE_BUDGET_AMOUNT,
+                    configValue = value.toString()
+                )
+            )
+            cycleDao.updateBudgetForActiveCycle(value)
+        }
+    }
+
+    override suspend fun updateCurrencyForActiveCycle(
+        currency: Currency
+    ) = withContext(Dispatchers.IO) {
+        db.withTransaction {
+            configDao.upsert(
+                ConfigEntity(
+                    configKey = ConfigKey.CYCLE_CURRENCY_CODE,
+                    configValue = currency.currencyCode
+                )
+            )
+            cycleDao.updateCurrencyCodeForActiveCycle(currency.currencyCode)
         }
     }
 
@@ -408,7 +434,7 @@ class BudgetCycleRepositoryImpl(
     private suspend fun updateActiveCycleId(id: Long) = withContext(Dispatchers.IO) {
         configDao.upsert(
             ConfigEntity(
-                configKey = ConfigKeys.ACTIVE_CYCLE_ID,
+                configKey = ConfigKey.ACTIVE_CYCLE_ID,
                 configValue = id.toString()
             )
         )

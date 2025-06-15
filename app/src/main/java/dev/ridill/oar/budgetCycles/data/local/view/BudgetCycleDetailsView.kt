@@ -1,7 +1,7 @@
 package dev.ridill.oar.budgetCycles.data.local.view
 
 import androidx.room.DatabaseView
-import dev.ridill.oar.settings.data.local.ConfigKeys
+import dev.ridill.oar.settings.data.local.ConfigKey
 import java.time.LocalDate
 
 @DatabaseView(
@@ -16,7 +16,7 @@ import java.time.LocalDate
             ELSE 0
         END AS active
         FROM budget_cycle_table bdgt
-        LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = '${ConfigKeys.ACTIVE_CYCLE_ID}' AND cnfg.config_value = bdgt.id)
+        LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = '${ConfigKey.ACTIVE_CYCLE_ID}' AND cnfg.config_value = bdgt.id)
     """,
     viewName = "budget_cycle_details_view"
 )

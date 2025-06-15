@@ -24,6 +24,9 @@ interface BudgetCycleRepository {
         durationUnit: CycleDurationUnit
     )
 
+    suspend fun updateBudgetForActiveCycle(value: Long)
+    suspend fun updateCurrencyForActiveCycle(currency: Currency)
+
     suspend fun getLastCycle(): BudgetCycleEntry?
     fun scheduleCycleCompletion(cycle: BudgetCycleEntry): Result<Unit, BudgetCycleError>
     suspend fun scheduleLastCycleOrNew(): Result<Unit, BudgetCycleError>

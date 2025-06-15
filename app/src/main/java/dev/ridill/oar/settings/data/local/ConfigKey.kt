@@ -1,6 +1,6 @@
 package dev.ridill.oar.settings.data.local
 
-object ConfigKeys {
+object ConfigKey {
     const val BACKUP_INTERVAL = "BACKUP_INTERVAL"
     const val CYCLE_BUDGET_AMOUNT = "CYCLE_BUDGET_AMOUNT"
     const val CYCLE_CURRENCY_CODE = "CYCLE_CURRENCY_CODE"

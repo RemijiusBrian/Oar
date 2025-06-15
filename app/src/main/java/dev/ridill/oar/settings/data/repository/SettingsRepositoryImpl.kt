@@ -48,14 +48,7 @@ class SettingsRepositoryImpl(
     override suspend fun updateCurrencyPreference(
         currency: Currency
     ) = withContext(Dispatchers.IO) {
-        val config = cycleRepo.getCycleConfig()
-        cycleRepo.updateCycleConfig(
-            budget = config.budget,
-            currency = currency,
-            startDay = config.startDay,
-            duration = config.duration,
-            durationUnit = config.durationUnit
-        )
+        cycleRepo.updateCurrencyForActiveCycle(currency)
     }
 
     override fun getTransactionAutoDetectEnabled(): Flow<Boolean> = preferences

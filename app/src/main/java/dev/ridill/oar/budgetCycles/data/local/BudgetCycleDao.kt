@@ -5,6 +5,7 @@ import androidx.room.Query
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.local.view.BudgetCycleDetailsView
 import dev.ridill.oar.core.data.db.BaseDao
+import dev.ridill.oar.settings.data.local.ConfigKey
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -32,6 +33,21 @@ interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
     @Query("SELECT * FROM budget_cycle_details_view WHERE id = :id")
     fun getCycleByIdFlow(id: Long): Flow<BudgetCycleDetailsView?>
 
-    @Query("UPDATE budget_cycle_table SET budget = :budget")
-    suspend fun updateBudgetForActiveCycle(budget: Double)
+    @Query(
+        """
+        UPDATE budget_cycle_table
+        SET budget = :budget
+        WHERE id = (SELECT config_value FROM config_table WHERE config_key = '${ConfigKey.ACTIVE_CYCLE_ID}')
+        """
+    )
+    suspend fun updateBudgetForActiveCycle(budget: Long)
+
+    @Query(
+        """
+        UPDATE budget_cycle_table
+        SET currency_code = :currencyCode
+        WHERE id = (SELECT config_value FROM config_table WHERE config_key = '${ConfigKey.ACTIVE_CYCLE_ID}')
+        """
+    )
+    suspend fun updateCurrencyCodeForActiveCycle(currencyCode: String)
 }
