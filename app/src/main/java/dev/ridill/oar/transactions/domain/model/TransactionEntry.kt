@@ -1,7 +1,6 @@
 package dev.ridill.oar.transactions.domain.model
 
 import androidx.compose.ui.graphics.Color
-import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.ui.util.TextFormat
 import java.time.LocalDateTime

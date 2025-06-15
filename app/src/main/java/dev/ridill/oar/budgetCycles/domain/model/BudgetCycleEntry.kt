@@ -13,12 +13,5 @@ data class BudgetCycleEntry(
     val active: Boolean
 ) {
     val description: String
-        get() = if (startDate.month == endDate.month)
-            startDate.format(DateUtil.Formatters.MMM_yy_spaceSep)
-        else buildString {
-            append(startDate.format(DateUtil.Formatters.localizedDateMedium))
-            append(" - ")
-            append(endDate.format(DateUtil.Formatters.localizedDateMedium))
-
-        }
+        get() = DateUtil.prettyDateRange(startDate, endDate)
 }

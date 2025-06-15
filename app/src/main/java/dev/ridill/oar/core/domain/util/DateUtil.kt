@@ -72,6 +72,17 @@ object DateUtil {
         .withNano(time.nano)
         .toLocalDateTime()
 
+    fun prettyDateRange(
+        start: LocalDate,
+        end: LocalDate
+    ): String = if (start.month == end.month) end.format(Formatters.MMM_yy_spaceSep)
+    else buildString {
+        append(start.format(Formatters.localizedDateMedium))
+        append(" - ")
+        append(end.format(Formatters.localizedDateMedium))
+
+    }
+
     object Formatters {
         val isoLocalDateTime: DateTimeFormatter
             get() = DateTimeFormatter.ISO_LOCAL_DATE_TIME
