@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.core.domain.service.ReceiverService
@@ -32,12 +33,14 @@ object SchedulesSingletonModule {
         transactionDao: TransactionDao,
         scheduler: ScheduleReminder,
         receiverService: ReceiverService,
+        cycleRepo: BudgetCycleRepository
     ): SchedulesRepository = SchedulesRepositoryImpl(
         db = db,
         schedulesDao = schedulesDao,
         transactionDao = transactionDao,
         scheduler = scheduler,
-        receiverService = receiverService
+        receiverService = receiverService,
+        cycleRepo = cycleRepo
     )
 
     @Provides

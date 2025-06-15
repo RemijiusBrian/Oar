@@ -1,6 +1,7 @@
 package dev.ridill.oar.transactions.presentation.addEditTransaction
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
+import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.service.ExpEvalService
 import dev.ridill.oar.core.domain.util.DateUtil
@@ -30,7 +32,6 @@ import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.schedules.data.toTransaction
 import dev.ridill.oar.schedules.domain.model.ScheduleRepetition
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.tags.domain.repository.TagsRepository
 import dev.ridill.oar.transactions.domain.model.AmountTransformation
 import dev.ridill.oar.transactions.domain.model.Transaction
@@ -38,7 +39,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionType
 import dev.ridill.oar.transactions.domain.repository.AddEditTransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
@@ -49,12 +49,13 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditTransactionViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val cycleRepo: BudgetCycleRepository,
     private val transactionRepo: AddEditTransactionRepository,
     tagsRepo: TagsRepository,
-    private val currencyRepo: CurrencyRepository,
     private val evalService: ExpEvalService,
     private val eventBus: EventBus<AddEditTransactionEvent>
 ) : ViewModel(), AddEditTransactionActions {
+
     private val transactionIdArg = AddEditTransactionScreenSpec
         .getTransactionIdFromSavedStateHandle(savedStateHandle)
 
@@ -83,6 +84,13 @@ class AddEditTransactionViewModel @Inject constructor(
         saver = TextFieldState.Saver,
         init = { TextFieldState() }
     )
+
+    private val cycleDescription = txInput
+        .mapLatest { it?.cycleId ?: OarDatabase.INVALID_ID_LONG }
+        .flatMapLatest { cycleRepo.getCycleByIdFlow(it) }
+        .mapLatest { it?.description }
+        .distinctUntilChanged()
+
 
     private val isAmountInputAnExpression = amountInputState.textAsFlow()
         .mapLatest { evalService.isExpression(it) }
@@ -167,7 +175,8 @@ class AddEditTransactionViewModel @Inject constructor(
         linkedFolderName,
         isScheduleTxMode,
         selectedRepetition,
-        showRepetitionSelection
+        showRepetitionSelection,
+        cycleDescription,
     ).mapLatest { (
                       isLoading,
                       menuOptions,
@@ -184,7 +193,8 @@ class AddEditTransactionViewModel @Inject constructor(
                       linkedFolderName,
                       isScheduleTxMode,
                       selectedRepetition,
-                      showRepetitionSelection
+                      showRepetitionSelection,
+                      cycleDescription,
                   ) ->
         AddEditTransactionState(
             isLoading = isLoading,
@@ -202,7 +212,8 @@ class AddEditTransactionViewModel @Inject constructor(
             linkedFolderName = linkedFolderName,
             isScheduleTxMode = isScheduleTxMode,
             selectedRepetition = selectedRepetition,
-            showRepeatModeSelection = showRepetitionSelection
+            showRepeatModeSelection = showRepetitionSelection,
+            cycleDescription = cycleDescription
         )
     }.asStateFlow(viewModelScope, AddEditTransactionState())
 
@@ -216,13 +227,14 @@ class AddEditTransactionViewModel @Inject constructor(
         if (txInput.value != null) return
 
         viewModelScope.launch {
-            val currentCurrencyPref = currencyRepo.getCurrencyPreferenceForMonth().first()
+            val activeCycle = cycleRepo.getActiveCycle()
             val transaction: Transaction = if (scheduleModeArg) {
                 val schedule = transactionRepo.getScheduleById(transactionIdArg)
                 savedStateHandle[SELECTED_REPETITION] = schedule?.repetition
                     ?: ScheduleRepetition.NO_REPEAT
 
                 schedule?.toTransaction(
+                    cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG,
                     dateTime = schedule.nextPaymentTimestamp
                         ?: DateUtil.now()
                             .plusDays(1L),
@@ -232,14 +244,14 @@ class AddEditTransactionViewModel @Inject constructor(
                 var transaction = transactionRepo.getTransactionById(transactionIdArg)
                 if (isDuplicateModeArg) {
                     transaction = transaction?.copy(
-                        id = OarDatabase.DEFAULT_ID_LONG
+                        id = OarDatabase.DEFAULT_ID_LONG,
                     )
                 }
                 transaction
             } ?: (txInput.value ?: Transaction.DEFAULT).copy(
-                currency = currentCurrencyPref
+                cycleId = activeCycle?.id ?: OarDatabase.INVALID_ID_LONG,
+                currency = activeCycle?.currency ?: LocaleUtil.defaultCurrency,
             )
-
             savedStateHandle[IS_SCHEDULE_MODE] = scheduleModeArg
             val dateNow = DateUtil.now()
             val timestamp = if (isScheduleTxMode.value && transaction.timestamp <= dateNow)
@@ -393,9 +405,8 @@ class AddEditTransactionViewModel @Inject constructor(
     private fun onDuplicateOptionClick() = viewModelScope.launch {
         txInput.value?.id?.let {
             eventBus.send(
-                AddEditTransactionEvent.NavigateToDuplicateTransactionCreation(
-                    it
-                )
+                AddEditTransactionEvent
+                    .NavigateToDuplicateTransactionCreation(it)
             )
         }
     }

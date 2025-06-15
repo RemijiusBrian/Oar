@@ -46,6 +46,7 @@
     <string name="notification_channel_backups_name">Data backup</string>
     <string name="notification_channel_app_lock_name">App Lock</string>
     <string name="notification_channel_app_init_name">App Init</string>
+    <string name="notification_channel_budget_cycle_name">Budget Cycle</string>
 
     <!-- Content Description -->
     <string name="cd_balance_and_budget_amounts">You have a balance of %1$s from your budget of %2$s</string>
@@ -122,7 +123,6 @@
     <string name="error_invalid_amount">Please enter a valid amount</string>
     <string name="error_invalid_tag_name">Invalid tag name</string>
     <string name="error_app_data_backup_failed">Failed to backup App Data</string>
-    <string name="error_app_data_restore_failed">Failed to restore App Data</string>
     <string name="error_sign_in_failed">Failed to sign in to your account</string>
     <string name="error_sign_out_failed">Sign out failed</string>
     <string name="error_unknown">An Unknown error occurred</string>
@@ -145,6 +145,13 @@
     <string name="error_fatal_backup_failure_password_corruption">Your encryption password has become unsuitable for encryption and your backup job is cancelled. Please set another password below and schedule backup afterwards.</string>
     <string name="error_fatal_backup_failure_auth_failure">Your google account authentication has failed and hence your backup job is cancelled. Please login in to your google account again and schedule backup afterwards.</string>
     <string name="error_fatal_backup_failure_storage_quota_exceeded">Your google drive storage quota has been exhausted and your backup job is cancelled. Please resolve this issue with your drive and schedule backup afterwards.</string>
+    <string name="error_failed_to_start_cycle">Failed to start your cycle</string>
+    <string name="error_cycle_not_active">This cycle is not active right now</string>
+    <string name="error_cycle_not_found">Unable find cycle</string>
+    <string name="error_backup_job_restore_failed">Failed to restore backup jobs.</string>
+    <string name="error_schedule_reminders_restore_failed">Failed to restore schedule reminders.</string>
+    <string name="error_app_data_restore_failed">Failed to restore app data.</string>
+    <string name="error_failed_to_schedule_cycle">Failed to schedule cycle</string>
 
     <!-- Action Labels -->
     <string name="action_confirm">Confirm</string>
@@ -215,8 +222,8 @@
     <string name="onboarding_page_sign_in_message">Sign in to your account to be able to backup and restore your app data</string>
     <string name="onboarding_page_restore_data_title">Restore Your App Data</string>
     <string name="onboarding_page_restore_data_message">Check to see if you have some data backed up and restore it if you do</string>
-    <string name="onboarding_page_set_budget_title">Set your monthly Budget</string>
-    <string name="onboarding_page_set_budget_message">Enter your budget for each month</string>
+    <string name="onboarding_page_setup_budget_cycle_title">When does your budget cycle start?</string>
+    <string name="onboarding_page_set_budget_message">Enter your budget for each cycle</string>
     <string name="you_can_change_budget_later_in_settings">You can always change this later in the app settings</string>
 
     <string name="part_of_day_morning">Morning</string>
@@ -338,7 +345,6 @@
     <string name="downloading_app_data">Downloading App Data</string>
     <string name="verify_your_password">Verify your password</string>
     <string name="restoring_app_data">Restoring App Data</string>
-    <string name="restoring_app_config">Restoring App Configuration</string>
     <string name="data_restore_in_progress">Data restore in progress</string>
     <string name="restarting_app_in_time">Restarting App in %s</string>
     <string name="data_restore_caution_message">Please do not close the app while data restore is in progress. The app will automatically restart once the restore process is completed.</string>
@@ -496,4 +502,11 @@
     <string name="save">Save</string>
     <string name="cycle_started_on">Cycle started on</string>
     <string name="cycle_ends_on">Cycle ends on</string>
+    <string name="new_cycle_started">New Cycle Started</string>
+    <string name="cycle_completed">Cycle Completed</string>
+    <string name="starting_cycle">Initializing Budget Cycles</string>
+    <string name="cycle_summary">Your cycle was completed with an aggregate %1$s of %2$s</string>
+    <string name="cycle">Cycle</string>
+    <string name="restoring_backup_jobs">Restoring Backup Jobs</string>
+    <string name="restoring_schedule_reminders">Restoring Schedule Reminders</string>
 </resources>

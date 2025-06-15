@@ -11,14 +11,13 @@ import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Currency
 
 interface TransactionRepository {
     fun getAllTransactionsPaged(
         query: String? = String.Empty,
-        dateRange: Pair<LocalDate, LocalDate>? = null,
+        cycleIds: Set<Long>? = null,
         type: TransactionType? = null,
         showExcluded: Boolean = true,
         tagIds: Set<Long>? = null,
@@ -28,7 +27,7 @@ interface TransactionRepository {
 
     fun getDateSeparatedTransactions(
         query: String? = String.Empty,
-        dateRange: Pair<LocalDate, LocalDate>? = null,
+        cycleIds: Set<Long>? = null,
         type: TransactionType? = null,
         showExcluded: Boolean = true,
         tagIds: Set<Long>? = null,
@@ -37,6 +36,7 @@ interface TransactionRepository {
     ): Flow<PagingData<TransactionListItemUIModel>>
 
     suspend fun saveTransaction(
+        cycleId: Long,
         amount: Double,
         id: Long = OarDatabase.DEFAULT_ID_LONG,
         note: String? = null,

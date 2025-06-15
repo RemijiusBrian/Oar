@@ -5,7 +5,7 @@ import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
 import dev.ridill.oar.settings.data.local.ConfigDao
-import dev.ridill.oar.settings.data.local.ConfigKeys
+import dev.ridill.oar.settings.data.local.ConfigKey
 import dev.ridill.oar.settings.data.local.entity.ConfigEntity
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.modal.BackupInterval
@@ -43,7 +43,7 @@ class BackupSettingsRepositoryImpl(
     override suspend fun updateBackupIntervalAndScheduleJob(interval: BackupInterval) =
         withContext(Dispatchers.IO) {
             val entity = ConfigEntity(
-                configKey = ConfigKeys.BACKUP_INTERVAL,
+                configKey = ConfigKey.BACKUP_INTERVAL,
                 configValue = interval.name
             )
             dao.upsert(entity)

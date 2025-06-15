@@ -70,11 +70,6 @@ data object DashboardScreenSpec : ScreenSpec {
             }
         }
 
-        OnLifecycleStartEffect(
-            viewModel,
-            block = viewModel::refreshCurrentDate
-        )
-
         DashboardScreen(
             snackbarController = snackbarController,
             recentSpends = recentSpendsLazyPagingItems,

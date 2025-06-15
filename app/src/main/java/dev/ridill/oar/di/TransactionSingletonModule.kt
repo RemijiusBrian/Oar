@@ -58,7 +58,6 @@ object TransactionSingletonModule {
         @ApplicationScope applicationScope: CoroutineScope,
     ): TransactionAutoDetectService = TransactionAutoDetectService(
         extractor = extractor,
-        currencyPrefRepo = currencyRepository,
         transactionRepo = transactionRepository,
         crashlyticsManager = crashlyticsManager,
         notificationHelper = notificationHelper,

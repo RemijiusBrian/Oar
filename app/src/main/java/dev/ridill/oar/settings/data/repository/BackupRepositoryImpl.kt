@@ -8,14 +8,13 @@ import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.data.util.tryNetworkCall
+import dev.ridill.oar.core.data.util.trySuspend
 import dev.ridill.oar.core.domain.crypto.CryptoManager
 import dev.ridill.oar.core.domain.model.DataError
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.logD
 import dev.ridill.oar.core.domain.util.logI
-import dev.ridill.oar.core.domain.util.tryOrNull
-import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
 import dev.ridill.oar.settings.data.local.ConfigDao
 import dev.ridill.oar.settings.data.remote.GDriveApi
 import dev.ridill.oar.settings.data.remote.MEDIA_PART_KEY
@@ -52,7 +51,6 @@ class BackupRepositoryImpl(
     private val securityPreferencesManager: SecurityPreferencesManager,
     private val configDao: ConfigDao,
     private val backupWorkManager: BackupWorkManager,
-    private val schedulesRepository: SchedulesRepository,
     private val authRepo: AuthRepository
 ) : BackupRepository {
     override suspend fun checkForBackup(): Result<BackupDetails, DataError> =
@@ -215,7 +213,7 @@ class BackupRepositoryImpl(
     }
 
     override suspend fun tryClearLocalCache() {
-        tryOrNull("Clearing cacheDir exception") {
+        trySuspend {
             backupService.clearCache()
         }
     }
@@ -225,25 +223,14 @@ class BackupRepositoryImpl(
     override suspend fun setBackupError(error: FatalBackupError?) =
         preferencesManager.updateFatalBackupError(error)
 
-    override suspend fun restoreAppConfig() = withContext(Dispatchers.IO) {
-        // Schedule backup job
-        scheduleBackupJob()
-
-        // Set reminders
-        setReminders()
-    }
-
-    private suspend fun scheduleBackupJob() {
+    override suspend fun restoreBackupJobs(): Unit = withContext(Dispatchers.IO) {
         val backupInterval = configDao.getBackupInterval()
             ?.let { BackupInterval.valueOf(it) }
-            ?: return
-        if (backupInterval == BackupInterval.MANUAL) return
+            ?: return@withContext
+        if (backupInterval == BackupInterval.MANUAL) backupWorkManager.cancelPeriodicBackupWork()
         backupWorkManager.schedulePeriodicBackupWork(backupInterval)
     }
 
-    private suspend fun setReminders() {
-        schedulesRepository.setAllFutureScheduleReminders()
-    }
 }
 
 const val JSON_MIME_TYPE = "application/json"

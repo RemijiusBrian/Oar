@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.folders.data.local.entity.FolderEntity
 import dev.ridill.oar.schedules.data.local.entity.ScheduleEntity
@@ -15,6 +16,11 @@ import java.time.LocalDateTime
 @Entity(
     tableName = "transaction_table",
     foreignKeys = [
+        ForeignKey(
+            entity = BudgetCycleEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["cycle_id"]
+        ),
         ForeignKey(
             entity = TagEntity::class,
             parentColumns = ["id"],
@@ -33,6 +39,7 @@ import java.time.LocalDateTime
         )
     ],
     indices = [
+        Index("cycle_id"),
         Index("tag_id"),
         Index("folder_id"),
         Index("schedule_id"),
@@ -61,6 +68,9 @@ data class TransactionEntity(
 
     @ColumnInfo(name = "is_excluded")
     val isExcluded: Boolean,
+
+    @ColumnInfo("cycle_id")
+    val cycleId: Long,
 
     @ColumnInfo(name = "tag_id")
     val tagId: Long?,

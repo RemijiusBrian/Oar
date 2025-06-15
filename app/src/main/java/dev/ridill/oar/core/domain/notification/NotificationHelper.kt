@@ -10,6 +10,11 @@ interface NotificationHelper<T> {
     fun registerChannel()
     fun buildBaseNotification(): NotificationCompat.Builder
     fun postNotification(id: Int, data: T) {}
+    fun postNotification(
+        id: Int,
+        builder: NotificationCompat.Builder.() -> NotificationCompat.Builder
+    ) {}
+
     fun updateNotification(id: Int, notification: Notification) {}
     fun dismissNotification(id: Int) {}
     fun dismissAllNotifications() {}
