@@ -2,6 +2,7 @@ package dev.ridill.oar.transactions.data
 
 import androidx.compose.ui.graphics.Color
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
+import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.core.ui.util.TextFormat
@@ -49,8 +50,7 @@ fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
 fun TransactionDetailsView.toTransactionListItem(): TransactionEntry {
     val cycle = CycleIndicator(
         id = cycleId,
-        startDate = cycleStartDate,
-        endDate = cycleEndDate,
+        description = DateUtil.prettyDateRange(cycleStartDate, cycleEndDate),
     )
     val tag = if (tagId != null
         && tagName != null
