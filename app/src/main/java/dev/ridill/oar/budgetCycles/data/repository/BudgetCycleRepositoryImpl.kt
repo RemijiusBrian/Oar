@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.data.local.AggregationsDao
 import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
+import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.toEntity
 import dev.ridill.oar.budgetCycles.data.toEntry
 import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManager
@@ -343,15 +344,29 @@ class BudgetCycleRepositoryImpl(
         logI(TAG) { "completeCurrentCycleAndStartNext() called with ID = $id" }
         try {
             db.withTransaction {
+                val dateNow = DateUtil.dateNow()
                 val cycleById = cycleDao.getCycleById(id)
                     ?: throw CycleNotFoundThrowable(id)
                 logD(TAG) { "cycle = $cycleById" }
 
                 if (!cycleById.active) throw CycleNotActiveThrowable(id)
 
+                if (cycleById.endDate != dateNow) {
+                    // Update active cycles endDate to today
+                    cycleDao.upsert(
+                        BudgetCycleEntity(
+                            id = id,
+                            startDate = cycleById.startDate,
+                            endDate = dateNow,
+                            budget = cycleById.budget,
+                            currencyCode = cycleById.currencyCode,
+                        )
+                    )
+                }
+
                 // Create Next Cycle Entry
                 val newCycleResult =
-                    createNewCycleAndScheduleCompletion(YearMonth.from(DateUtil.dateNow()))
+                    createNewCycleAndScheduleCompletion(YearMonth.from(dateNow))
 
                 return@withTransaction when (newCycleResult) {
                     is Result.Error -> Result.Error(
