@@ -30,18 +30,25 @@ interface BudgetCycleRepository {
     suspend fun getLastCycle(): BudgetCycleEntry?
     fun scheduleCycleCompletion(cycle: BudgetCycleEntry): Result<Unit, BudgetCycleError>
     suspend fun scheduleLastCycleOrNew(): Result<Unit, BudgetCycleError>
-    suspend fun createNewCycleAndScheduleCompletion(month: YearMonth): Result<Unit, BudgetCycleError>
-    suspend fun createCycleEntryFromConfigForMonth(month: YearMonth): BudgetCycleEntry
+    suspend fun createNewCycleAndScheduleCompletion(
+        month: YearMonth,
+        startNow: Boolean = false
+    ): Result<Unit, BudgetCycleError>
+    suspend fun createCycleEntryFromConfigForMonth(
+        month: YearMonth,
+        startNow: Boolean = false
+    ): BudgetCycleEntry
     suspend fun updateConfigAndCreateNewCycle(
         budget: Long,
         currency: Currency,
         startDay: CycleStartDay,
         month: YearMonth,
         duration: Long,
-        durationUnit: CycleDurationUnit
+        durationUnit: CycleDurationUnit,
+        startNow: Boolean = false
     ): Result<Unit, BudgetCycleError>
 
-    suspend fun completeCycleAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
+    suspend fun completeCycleNowAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
 
     fun getCycleByIdFlow(id: Long): Flow<BudgetCycleEntry?>
 }

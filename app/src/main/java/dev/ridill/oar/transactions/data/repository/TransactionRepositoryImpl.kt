@@ -53,8 +53,7 @@ class TransactionRepositoryImpl(
         pagingSourceFactory = {
             transactionDao.getTransactionsPaged(
                 query = query,
-                startDate = null,
-                endDate = null,
+                cycleIds = cycleIds,
                 type = type,
                 showExcluded = showExcluded,
                 tagIds = tagIds?.takeIf { it.isNotEmpty() },

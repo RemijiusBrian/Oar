@@ -7,5 +7,6 @@ enum class BudgetCycleError : Error {
     CYCLE_NOT_ACTIVE,
     CYCLE_NOT_FOUND,
     CYCLE_SCHEDULE_FAILED,
+    ILLEGAL_CYCLE,
     UNKNOWN
 }

@@ -11,7 +11,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionAmountLimits
 import dev.ridill.oar.transactions.domain.model.TransactionDateLimits
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDateTime
 
 @Dao
 interface TransactionDao : BaseDao<TransactionEntity> {
@@ -43,7 +42,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
         """
         SELECT * FROM transaction_details_view
         WHERE (:query IS NOT NULL AND (transactionAmount LIKE :query || '%' OR transactionNote LIKE '%' || :query || '%' OR tagName LIKE '%' || :query || '%' OR folderName LIKE '%' || :query || '%'))
-            AND ((:startDate IS NULL OR :endDate IS NULL) OR (DATETIME(transactionTimestamp) BETWEEN DATETIME(:startDate) AND DATETIME(:endDate)))
+            AND (COALESCE(:cycleIds, 0) = 0 OR transactionId IN (:cycleIds))
             AND (:type IS NULL OR transactionType = :type)
             AND (COALESCE(:tagIds, 0) = 0 OR tagId IN (:tagIds))
             AND (:folderId IS NULL OR folderId = :folderId)
@@ -54,8 +53,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
     )
     fun getTransactionsPaged(
         query: String?,
-        startDate: LocalDateTime?,
-        endDate: LocalDateTime?,
+        cycleIds: Set<Long>?,
         type: TransactionType?,
         showExcluded: Boolean,
         tagIds: Set<Long>?,
@@ -68,9 +66,6 @@ interface TransactionDao : BaseDao<TransactionEntity> {
 
     @Query("UPDATE transaction_table SET is_excluded = :exclude WHERE id IN (:ids)")
     suspend fun toggleExclusionByIds(ids: Set<Long>, exclude: Boolean)
-
-    @Query("DELETE FROM transaction_table WHERE id = :id")
-    suspend fun deleteById(id: Long)
 
     @Query("DELETE FROM transaction_table WHERE id IN (:ids)")
     suspend fun deleteMultipleTransactionsById(ids: Set<Long>)
