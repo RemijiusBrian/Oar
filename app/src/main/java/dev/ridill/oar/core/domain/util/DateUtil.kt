@@ -75,12 +75,11 @@ object DateUtil {
     fun prettyDateRange(
         start: LocalDate,
         end: LocalDate
-    ): String = if (start.month == end.month) end.format(Formatters.MMM_yy_spaceSep)
+    ): String = if (start == end) start.format(Formatters.localizedDateMedium)
     else buildString {
-        append(start.format(Formatters.localizedDateMedium))
+        append(start.format(Formatters.ddth_MMM_yyyy_spaceSep))
         append(" - ")
-        append(end.format(Formatters.localizedDateMedium))
-
+        append(end.format(Formatters.ddth_MMM_yyyy_spaceSep))
     }
 
     object Formatters {
@@ -96,11 +95,11 @@ object DateUtil {
         val localizedDateMediumTimeShort: DateTimeFormatter
             get() = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
 
-        /**
-         * Eg. MAR 2025
-         */
-        val MMMM_yyyy_spaceSep: DateTimeFormatter
-            get() = DateTimeFormatter.ofPattern("MMMM yyyy")
+        val ddth_MMM_yyyy_spaceSep: DateTimeFormatter
+            get() = DateTimeFormatterBuilder()
+                .appendText(ChronoField.DAY_OF_MONTH, ordinalsMap)
+                .appendPattern(" MMM yyyy")
+                .toFormatter()
 
         /**
          * Eg. MAR 99
