@@ -40,7 +40,7 @@ class CycleCompletionReceiver : BroadcastReceiver() {
     }
 
     private fun completeCycleAndNotify(id: Long, context: Context) = applicationContext.launch {
-        when (val result = repo.completeCycleAndStartNext(id)) {
+        when (val result = repo.completeCycleNowAndStartNext(id)) {
             is Result.Error -> {
                 notificationHelper.postNotification(id.hashCode()) {
                     this.setContentTitle(context.getString(R.string.error_failed_to_start_cycle))

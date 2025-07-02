@@ -238,11 +238,12 @@ class BudgetCycleRepositoryImpl(
         }
 
     override suspend fun createNewCycleAndScheduleCompletion(
-        month: YearMonth
+        month: YearMonth,
+        startNow: Boolean
     ): Result<Unit, BudgetCycleError> = withContext(Dispatchers.IO) {
         try {
             logI(TAG) { "createNewCycleAndScheduleCompletion() called with: month = $month" }
-            val entry = createCycleEntryFromConfigForMonth(month)
+            val entry = createCycleEntryFromConfigForMonth(month = month, startNow = startNow)
             logI(TAG) { "inserting cycle = $entry" }
             val existingCycle = cycleDao
                 .getCycleForDate(startDate = entry.startDate, endDate = entry.endDate)
@@ -276,7 +277,8 @@ class BudgetCycleRepositoryImpl(
     }
 
     override suspend fun createCycleEntryFromConfigForMonth(
-        month: YearMonth
+        month: YearMonth,
+        startNow: Boolean
     ): BudgetCycleEntry = withContext(Dispatchers.IO) {
         logI(TAG) { "createCycleWithStartDayAndMonth() called with: month = $month" }
         val config = getCycleConfig()
@@ -284,8 +286,8 @@ class BudgetCycleRepositoryImpl(
         val startDay = config.startDay
         val (startDate, endDate) = when (startDay) {
             CycleStartDay.FirstDayOfMonth -> {
-                val startDate = dateNow
-                    .withDayOfMonth(1)
+                val startDate = if (startNow) dateNow
+                else dateNow.withDayOfMonth(1)
 
                 val endDate = dateNow
                     .with(TemporalAdjusters.lastDayOfMonth())
@@ -294,7 +296,8 @@ class BudgetCycleRepositoryImpl(
             }
 
             CycleStartDay.LastDayOfMonth -> {
-                val startDate = dateNow
+                val startDate = if (startNow) dateNow
+                else dateNow
                     .withMonth(month.monthValue - 1)
                     .with(TemporalAdjusters.lastDayOfMonth())
 
@@ -306,7 +309,8 @@ class BudgetCycleRepositoryImpl(
             }
 
             is CycleStartDay.SpecificDayOfMonth -> if (dateNow.dayOfMonth < startDay.dayOfMonth) {
-                val startDate = dateNow
+                val startDate = if (startNow) dateNow
+                else dateNow
                     .withMonth(month.monthValue - 1)
                     .withDayOfMonth(startDay.dayOfMonth)
 
@@ -315,7 +319,8 @@ class BudgetCycleRepositoryImpl(
 
                 startDate to endDate
             } else {
-                val startDate = dateNow
+                val startDate = if (startNow) dateNow
+                else dateNow
                     .withDayOfMonth(startDay.dayOfMonth)
 
                 val endDate = dateNow
@@ -338,26 +343,29 @@ class BudgetCycleRepositoryImpl(
         )
     }
 
-    override suspend fun completeCycleAndStartNext(
+    override suspend fun completeCycleNowAndStartNext(
         id: Long
     ): Result<BudgetCycleSummary, BudgetCycleError> = withContext(Dispatchers.IO) {
         logI(TAG) { "completeCurrentCycleAndStartNext() called with ID = $id" }
         try {
             db.withTransaction {
-                val dateNow = DateUtil.dateNow()
                 val cycleById = cycleDao.getCycleById(id)
                     ?: throw CycleNotFoundThrowable(id)
                 logD(TAG) { "cycle = $cycleById" }
 
                 if (!cycleById.active) throw CycleNotActiveThrowable(id)
 
-                if (cycleById.endDate != dateNow) {
-                    // Update active cycles endDate to today
+                val enforcedCycleEndDate = DateUtil.dateNow().minusDays(1L)
+                if (cycleById.startDate.isAfter(enforcedCycleEndDate))
+                    throw IllegalCycleThrowable()
+
+                if (cycleById.endDate != enforcedCycleEndDate) {
+                    // Update active cycles endDate to yesterday
                     cycleDao.upsert(
                         BudgetCycleEntity(
                             id = id,
                             startDate = cycleById.startDate,
-                            endDate = dateNow,
+                            endDate = enforcedCycleEndDate,
                             budget = cycleById.budget,
                             currencyCode = cycleById.currencyCode,
                         )
@@ -365,8 +373,10 @@ class BudgetCycleRepositoryImpl(
                 }
 
                 // Create Next Cycle Entry
-                val newCycleResult =
-                    createNewCycleAndScheduleCompletion(YearMonth.from(dateNow))
+                val newCycleResult = createNewCycleAndScheduleCompletion(
+                    month = YearMonth.from(enforcedCycleEndDate),
+                    startNow = true
+                )
 
                 return@withTransaction when (newCycleResult) {
                     is Result.Error -> Result.Error(
@@ -402,6 +412,12 @@ class BudgetCycleRepositoryImpl(
                 error = BudgetCycleError.CYCLE_NOT_ACTIVE,
                 message = UiText.StringResource(R.string.error_cycle_not_active, true)
             )
+        } catch (t: IllegalCycleThrowable) {
+            logE(t) { "completeCurrentCycleAndStartNext" }
+            Result.Error(
+                error = BudgetCycleError.ILLEGAL_CYCLE,
+                message = UiText.StringResource(R.string.error_illegal_cycle_action, true)
+            )
         } catch (t: CycleEntryCreationFailedThrowable) {
             logE(t) { "completeCurrentCycleAndStartNext" }
             Result.Error(
@@ -429,7 +445,8 @@ class BudgetCycleRepositoryImpl(
         startDay: CycleStartDay,
         month: YearMonth,
         duration: Long,
-        durationUnit: CycleDurationUnit
+        durationUnit: CycleDurationUnit,
+        startNow: Boolean
     ): Result<Unit, BudgetCycleError> = withContext(Dispatchers.IO) {
         db.withTransaction {
             updateCycleConfig(
@@ -441,7 +458,8 @@ class BudgetCycleRepositoryImpl(
             )
 
             createNewCycleAndScheduleCompletion(
-                month = month
+                month = month,
+                startNow = startNow
             )
         }
     }
@@ -464,3 +482,5 @@ class CycleNotFoundThrowable(val id: Long) :
 
 class CycleNotActiveThrowable(val id: Long) :
     IllegalStateException("Cycle with ID = $id is not ACTIVE")
+
+class IllegalCycleThrowable : IllegalStateException("Illegal cycle")
