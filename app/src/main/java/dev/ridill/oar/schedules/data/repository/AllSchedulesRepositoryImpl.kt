@@ -5,9 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import androidx.room.withTransaction
 import dev.ridill.oar.R
-import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.animPreferences.AnimPreferencesManager
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
@@ -31,7 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 class AllSchedulesRepositoryImpl(
-    private val db: OarDatabase,
     private val dao: SchedulesDao,
     private val repo: SchedulesRepository,
     private val animPreferencesManager: AnimPreferencesManager,
@@ -97,12 +94,10 @@ class AllSchedulesRepositoryImpl(
         id: Long
     ): Result<Unit, ScheduleError> = withContext(Dispatchers.IO) {
         try {
-            db.withTransaction {
-                val schedule = repo.getScheduleById(id)
-                    ?: throw ScheduleNotFoundThrowable()
-                repo.createTransactionFromScheduleAndSetNextReminder(schedule)
-                Result.Success(Unit)
-            }
+            val schedule = repo.getScheduleById(id)
+                ?: throw ScheduleNotFoundThrowable()
+            repo.createTransactionFromScheduleAndSetNextReminder(schedule)
+            Result.Success(Unit)
         } catch (_: ScheduleNotFoundThrowable) {
             Result.Error(
                 ScheduleError.SCHEDULE_NOT_FOUND,

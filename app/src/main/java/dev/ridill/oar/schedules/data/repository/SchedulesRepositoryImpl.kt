@@ -75,8 +75,8 @@ class SchedulesRepositoryImpl(
         schedule: Schedule,
         dateTime: LocalDateTime
     ) = withContext(Dispatchers.IO) {
+        val activeCycle = cycleRepo.getActiveCycle()
         db.withTransaction {
-            val activeCycle = cycleRepo.getActiveCycle()
             val transaction = TransactionEntity(
                 amount = schedule.amount,
                 note = schedule.note.orEmpty(),

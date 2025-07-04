@@ -4,7 +4,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.animPreferences.AnimPreferencesManager
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.schedules.data.local.SchedulesDao
@@ -18,12 +17,10 @@ import dev.ridill.oar.schedules.presentation.allSchedules.AllSchedulesViewModel
 object SchedulesViewModelModule {
     @Provides
     fun provideAllSchedulesRepository(
-        db: OarDatabase,
         dao: SchedulesDao,
         schedulesRepository: SchedulesRepository,
         animPreferencesManager: AnimPreferencesManager
     ): AllSchedulesRepository = AllSchedulesRepositoryImpl(
-        db = db,
         dao = dao,
         repo = schedulesRepository,
         animPreferencesManager = animPreferencesManager
