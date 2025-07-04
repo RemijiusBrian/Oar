@@ -1,8 +1,6 @@
 package dev.ridill.oar.transactions.domain.repository
 
 import androidx.paging.PagingData
-import dev.ridill.oar.core.domain.model.BasicError
-import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.transactions.domain.model.AggregateAmountItem
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
@@ -33,7 +31,7 @@ interface AllTransactionsRepository {
         query: String?
     ): Flow<PagingData<TransactionEntry>>
 
-    suspend fun deleteTransactionsByIds(ids: Set<Long>): Result<Unit, BasicError>
+    suspend fun deleteTransactionsByIds(ids: Set<Long>)
     suspend fun setTagIdToTransactions(tagId: Long?, transactionIds: Set<Long>)
     fun getShowExcludedOption(): Flow<Boolean>
     suspend fun toggleShowExcludedOption(show: Boolean)

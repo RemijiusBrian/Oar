@@ -342,7 +342,9 @@ fun AddEditTransactionScreen(
             ),
             content = stringResource(R.string.action_irreversible_message),
             onConfirm = actions::onDeleteConfirm,
-            onDismiss = actions::onDeleteDismiss
+            onDismiss = actions::onDeleteDismiss,
+            additionalNote = stringResource(R.string.delete_transaction_confirmation_note)
+                .takeIf { !state.isScheduleTxMode }
         )
     }
 

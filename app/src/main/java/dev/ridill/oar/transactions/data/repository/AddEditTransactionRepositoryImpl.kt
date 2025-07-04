@@ -55,7 +55,7 @@ class AddEditTransactionRepositoryImpl(
         dao.upsert(transaction.toEntity()).first()
     }
 
-    override suspend fun deleteTransaction(id: Long) = repo.deleteSafely(id)
+    override suspend fun deleteTransaction(id: Long) = repo.deleteById(id)
 
     override suspend fun toggleExclusionById(id: Long, excluded: Boolean) =
         withContext(Dispatchers.IO) {

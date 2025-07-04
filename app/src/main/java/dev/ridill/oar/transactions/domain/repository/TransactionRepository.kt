@@ -2,8 +2,6 @@ package dev.ridill.oar.transactions.domain.repository
 
 import androidx.paging.PagingData
 import dev.ridill.oar.core.data.db.OarDatabase
-import dev.ridill.oar.core.domain.model.BasicError
-import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.Empty
 import dev.ridill.oar.transactions.domain.model.Transaction
@@ -49,7 +47,6 @@ interface TransactionRepository {
         currency: Currency? = null
     ): Transaction
 
-    suspend fun deleteSafely(id: Long): Result<Unit, BasicError>
-    suspend fun deleteSafely(ids: Set<Long>): Result<Unit, BasicError>
+    suspend fun deleteById(vararg ids: Long)
     suspend fun toggleExcluded(id: Long, excluded: Boolean)
 }

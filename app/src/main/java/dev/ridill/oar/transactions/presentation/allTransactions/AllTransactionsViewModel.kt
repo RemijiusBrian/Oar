@@ -10,7 +10,6 @@ import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
-import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.core.domain.util.UtilConstants
@@ -487,15 +486,8 @@ class AllTransactionsViewModel @Inject constructor(
     }
 
     private suspend fun deleteTransactions(ids: Set<Long>) {
-        when (val result = transactionRepo.deleteTransactionsByIds(ids)) {
-            is Result.Error -> {
-                eventBus.send(AllTransactionsEvent.ShowUiMessage(result.message))
-            }
-
-            is Result.Success -> {
-                eventBus.send(AllTransactionsEvent.ShowUiMessage(UiText.StringResource(R.string.transactions_deleted)))
-            }
-        }
+        transactionRepo.deleteTransactionsByIds(ids)
+        eventBus.send(AllTransactionsEvent.ShowUiMessage(UiText.StringResource(R.string.transactions_deleted)))
     }
 
     override fun onAggregationDismiss() {
