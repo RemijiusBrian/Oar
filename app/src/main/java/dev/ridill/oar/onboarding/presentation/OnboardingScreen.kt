@@ -41,7 +41,7 @@ import dev.ridill.oar.core.ui.theme.onPrimaryBrandColor
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.onboarding.domain.model.OnboardingPage
 import dev.ridill.oar.onboarding.presentation.components.PermissionsPage
-import dev.ridill.oar.onboarding.presentation.components.SetBudgetPage
+import dev.ridill.oar.onboarding.presentation.components.SetupBudgetCyclesPage
 import dev.ridill.oar.onboarding.presentation.components.SignInAndDataRestore
 import dev.ridill.oar.onboarding.presentation.components.WelcomeMessagePage
 
@@ -118,9 +118,9 @@ fun OnboardingScreen(
                             )
                         }
 
-                        OnboardingPage.SET_BUDGET.ordinal -> {
-                            SetBudgetPage(
-                                inputState = budgetInputState,
+                        OnboardingPage.SETUP_BUDGET_CYCLES.ordinal -> {
+                            SetupBudgetCyclesPage(
+                                budgetInput = budgetInputState,
                                 selectedCurrency = state.appCurrency,
                                 onCurrencyClick = navigateToCurrencySelection,
                                 onStartBudgetingClick = actions::onStartBudgetingClick

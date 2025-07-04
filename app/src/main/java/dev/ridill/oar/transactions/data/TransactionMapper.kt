@@ -1,6 +1,8 @@
 package dev.ridill.oar.transactions.data
 
 import androidx.compose.ui.graphics.Color
+import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
+import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.core.ui.util.TextFormat
@@ -27,7 +29,8 @@ fun TransactionEntity.toTransaction(): Transaction = Transaction(
     tagId = tagId,
     excluded = isExcluded,
     scheduleId = scheduleId,
-    currency = LocaleUtil.currencyForCode(currencyCode)
+    currency = LocaleUtil.currencyForCode(currencyCode),
+    cycleId = cycleId
 )
 
 fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
@@ -40,10 +43,15 @@ fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
     isExcluded = excluded,
     tagId = tagId,
     folderId = folderId,
-    scheduleId = scheduleId
+    scheduleId = scheduleId,
+    cycleId = cycleId
 )
 
 fun TransactionDetailsView.toTransactionListItem(): TransactionEntry {
+    val cycle = CycleIndicator(
+        id = cycleId,
+        description = DateUtil.prettyDateRange(cycleStartDate, cycleEndDate),
+    )
     val tag = if (tagId != null
         && tagName != null
         && tagColorCode != null
@@ -69,6 +77,7 @@ fun TransactionDetailsView.toTransactionListItem(): TransactionEntry {
         timestamp = transactionTimestamp,
         type = transactionType,
         excluded = excluded,
+        cycle = cycle,
         tag = tag,
         folder = folder,
         scheduleId = scheduleId,

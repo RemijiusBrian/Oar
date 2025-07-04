@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -86,6 +87,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import dev.ridill.oar.R
+import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.Zero
@@ -138,7 +140,7 @@ import kotlin.math.absoluteValue
 fun AllTransactionsScreen(
     snackbarController: SnackbarController,
     transactionsLazyPagingItems: LazyPagingItems<TransactionListItemUIModel>,
-    searchQuery: () -> String,
+    searchQueryState: TextFieldState,
     searchResultsLazyPagingItems: LazyPagingItems<TransactionEntry>,
     state: AllTransactionsState,
     actions: AllTransactionsActions,
@@ -173,8 +175,7 @@ fun AllTransactionsScreen(
             AllTransactionsTopAppBar(
                 searchModeActive = state.searchModeActive,
                 onSearchModeToggle = actions::onSearchModeToggle,
-                searchQuery = searchQuery,
-                onSearchQueryChange = actions::onSearchQueryChange,
+                searchQueryState = searchQueryState,
                 onClearSearchQuery = actions::onClearSearchQuery,
                 searchResults = searchResultsLazyPagingItems,
                 onFilterOptionsClick = actions::onFilterOptionsClick,
@@ -241,13 +242,13 @@ fun AllTransactionsScreen(
                     repeat(transactionsLazyPagingItems.itemCount) { index ->
                         transactionsLazyPagingItems[index]?.let { item ->
                             when (item) {
-                                is TransactionListItemUIModel.DateSeparator -> {
+                                is TransactionListItemUIModel.CycleSeparator -> {
                                     stickyHeader(
-                                        key = item.date.toString(),
-                                        contentType = "TransactionDateSeparator"
+                                        key = "CycleId-${item.cycle.id}",
+                                        contentType = CycleIndicator::class
                                     ) {
                                         ListSeparator(
-                                            label = item.date.format(DateUtil.Formatters.MMMM_yyyy_spaceSep),
+                                            label = item.cycle.description,
                                             modifier = Modifier
                                                 .animateItem()
                                         )
@@ -257,7 +258,7 @@ fun AllTransactionsScreen(
                                 is TransactionListItemUIModel.TransactionItem -> {
                                     item(
                                         key = item.id,
-                                        contentType = "TransactionListItem"
+                                        contentType = TransactionEntry::class
                                     ) {
                                         val selected = item.id in state.selectedTransactionIds
 
@@ -390,8 +391,7 @@ fun AllTransactionsScreen(
 private fun AllTransactionsTopAppBar(
     searchModeActive: Boolean,
     onSearchModeToggle: (Boolean) -> Unit,
-    searchQuery: () -> String,
-    onSearchQueryChange: (String) -> Unit,
+    searchQueryState: TextFieldState,
     onClearSearchQuery: () -> Unit,
     searchResults: LazyPagingItems<TransactionEntry>,
     onFilterOptionsClick: () -> Unit,
@@ -404,7 +404,7 @@ private fun AllTransactionsTopAppBar(
     modifier: Modifier = Modifier
 ) {
     val isQueryNotEmpty by remember {
-        derivedStateOf { searchQuery().isNotEmpty() }
+        derivedStateOf { searchQueryState.text.isNotEmpty() }
     }
     val searchBarHorizontalPadding by animateDpAsState(
         targetValue = if (searchModeActive) Dp.Zero else MaterialTheme.spacing.medium,
@@ -459,8 +459,7 @@ private fun AllTransactionsTopAppBar(
             SearchBar(
                 inputField = {
                     SearchBarDefaults.InputField(
-                        query = searchQuery(),
-                        onQueryChange = onSearchQueryChange,
+                        state = searchQueryState,
                         onSearch = {},
                         expanded = searchModeActive,
                         onExpandedChange = onSearchModeToggle,

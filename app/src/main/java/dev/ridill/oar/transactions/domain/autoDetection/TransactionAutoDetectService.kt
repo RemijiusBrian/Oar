@@ -1,22 +1,21 @@
 package dev.ridill.oar.transactions.domain.autoDetection
 
 import android.telephony.SmsMessage
+import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.crashlytics.CrashlyticsManager
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.core.domain.util.DateUtil
+import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.core.domain.util.rethrowIfCoroutineCancellation
 import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.di.ApplicationScope
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.transactions.domain.model.Transaction
 import dev.ridill.oar.transactions.domain.repository.TransactionRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class TransactionAutoDetectService(
-    private val currencyPrefRepo: CurrencyRepository,
     private val extractor: TransactionDataExtractor,
     private val transactionRepo: TransactionRepository,
     private val crashlyticsManager: CrashlyticsManager,
@@ -37,6 +36,7 @@ class TransactionAutoDetectService(
                     if (data.paymentTimestamp.isAfter(dateTimeNow)) continue
 
                     val insertedTx = transactionRepo.saveTransaction(
+                        cycleId = OarDatabase.INVALID_ID_LONG,
                         amount = data.amount,
                         timestamp = data.paymentTimestamp,
                         note = data.note.orEmpty(),
@@ -49,8 +49,9 @@ class TransactionAutoDetectService(
                         data = insertedTx.copy(
                             amount = TextFormat.currency(
                                 parsedAmount,
-                                currencyPrefRepo.getCurrencyPreferenceForMonth(dateTimeNow.toLocalDate())
-                                    .first()
+                                LocaleUtil.defaultCurrency
+//                                currencyPrefRepo.getCurrencyPreferenceForMonth(dateTimeNow.toLocalDate())
+//                                    .first()
                             )
                         )
                     )

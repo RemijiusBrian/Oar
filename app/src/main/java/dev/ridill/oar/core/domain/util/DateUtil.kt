@@ -72,6 +72,16 @@ object DateUtil {
         .withNano(time.nano)
         .toLocalDateTime()
 
+    fun prettyDateRange(
+        start: LocalDate,
+        end: LocalDate
+    ): String = if (start == end) start.format(Formatters.localizedDateMedium)
+    else buildString {
+        append(start.format(Formatters.ddth_MMM_yyyy_spaceSep))
+        append(" - ")
+        append(end.format(Formatters.ddth_MMM_yyyy_spaceSep))
+    }
+
     object Formatters {
         val isoLocalDateTime: DateTimeFormatter
             get() = DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -85,11 +95,11 @@ object DateUtil {
         val localizedDateMediumTimeShort: DateTimeFormatter
             get() = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
 
-        /**
-         * Eg. MAR 2025
-         */
-        val MMMM_yyyy_spaceSep: DateTimeFormatter
-            get() = DateTimeFormatter.ofPattern("MMMM yyyy")
+        val ddth_MMM_yyyy_spaceSep: DateTimeFormatter
+            get() = DateTimeFormatterBuilder()
+                .appendText(ChronoField.DAY_OF_MONTH, ordinalsMap)
+                .appendPattern(" MMM yyyy")
+                .toFormatter()
 
         /**
          * Eg. MAR 99

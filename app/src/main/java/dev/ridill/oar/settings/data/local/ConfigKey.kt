@@ -1,0 +1,12 @@
+package dev.ridill.oar.settings.data.local
+
+object ConfigKey {
+    const val BACKUP_INTERVAL = "BACKUP_INTERVAL"
+    const val CYCLE_BUDGET_AMOUNT = "CYCLE_BUDGET_AMOUNT"
+    const val CYCLE_CURRENCY_CODE = "CYCLE_CURRENCY_CODE"
+    const val CYCLE_START_DAY_TYPE = "CYCLE_START_DAY_TYPE"
+    const val CYCLE_START_DAY_OF_MONTH = "CYCLE_START_DAY_OF_MONTH"
+    const val CYCLE_DURATION = "CYCLE_DURATION"
+    const val CYCLE_DURATION_UNIT = "CYCLE_DURATION_UNIT"
+    const val ACTIVE_CYCLE_ID = "ACTIVE_CYCLE_ID"
+}

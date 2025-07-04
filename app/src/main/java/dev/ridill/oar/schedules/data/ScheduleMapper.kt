@@ -23,6 +23,7 @@ fun ScheduleEntity.toSchedule(): Schedule = Schedule(
 )
 
 fun Schedule.toTransaction(
+    cycleId: Long,
     dateTime: LocalDateTime = DateUtil.now(),
     txId: Long = OarDatabase.DEFAULT_ID_LONG
 ): Transaction = Transaction(
@@ -35,7 +36,8 @@ fun Schedule.toTransaction(
     folderId = folderId,
     excluded = false,
     scheduleId = id,
-    currency = currency
+    currency = currency,
+    cycleId = OarDatabase.INVALID_ID_LONG
 )
 
 fun Schedule.toEntity(): ScheduleEntity = ScheduleEntity(

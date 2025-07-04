@@ -32,7 +32,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.components.DisplayMediumText
 import dev.ridill.oar.core.ui.components.OarTextField
-import dev.ridill.oar.core.ui.components.SpacerExtraLarge
 import dev.ridill.oar.core.ui.components.SpacerSmall
 import dev.ridill.oar.core.ui.components.rememberAmountOutputTransformation
 import dev.ridill.oar.core.ui.theme.BorderWidthStandard
@@ -40,15 +39,15 @@ import dev.ridill.oar.core.ui.theme.spacing
 import java.util.Currency
 
 @Composable
-fun SetBudgetPage(
-    inputState: TextFieldState,
+fun SetupBudgetCyclesPage(
+    budgetInput: TextFieldState,
     selectedCurrency: Currency,
     onCurrencyClick: () -> Unit,
     onStartBudgetingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isInputNotEmpty by remember {
-        derivedStateOf { inputState.text.isNotEmpty() }
+        derivedStateOf { budgetInput.text.isNotEmpty() }
     }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -59,13 +58,13 @@ fun SetBudgetPage(
             .verticalScroll(rememberScrollState())
     ) {
         DisplayMediumText(
-            text = stringResource(R.string.onboarding_page_set_budget_title),
+            text = stringResource(R.string.onboarding_page_setup_budget_cycle_title),
             modifier = Modifier
                 .padding(vertical = MaterialTheme.spacing.medium)
         )
-        SpacerExtraLarge()
+
         BudgetInput(
-            state = inputState,
+            state = budgetInput,
             selectedCurrency = selectedCurrency,
             onCurrencyClick = onCurrencyClick
         )
@@ -104,9 +103,8 @@ private fun BudgetInput(
     ) {
         Text(
             text = stringResource(R.string.onboarding_page_set_budget_message),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.labelMedium
         )
-        SpacerSmall()
         OarTextField(
             state = state,
             modifier = Modifier

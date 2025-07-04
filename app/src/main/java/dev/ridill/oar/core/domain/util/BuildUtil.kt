@@ -11,11 +11,17 @@ object BuildUtil {
     val isInternal: Boolean get() = BuildConfig.FLAVOR == "internal"
 
     val isApiLevelAtLeast30: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+        get() = Build.VERSION.SDK_INT >= 30
+
+    val isApiLevelAtLeast31: Boolean
+        get() = Build.VERSION.SDK_INT >= 31
 
     fun isDynamicColorsSupported(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     fun isNotificationRuntimePermissionNeeded(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+    fun isScheduleAlarmRuntimePermissionRequired(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 }

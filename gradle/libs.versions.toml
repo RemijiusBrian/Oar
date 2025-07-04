@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.10.1"
 kotlin = "2.0.20"
 google-services = "4.4.2"
 com-google-devtools-ksp = "2.0.20-1.0.24"
@@ -7,17 +7,17 @@ com-google-devtools-ksp = "2.0.20-1.0.24"
 core-ktx = "1.16.0"
 kotlin-bom = "2.0.21"
 activity-compose = "1.10.1"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 junit = "4.13.2"
 androidx-junit = "1.2.1"
 espresso-core = "3.6.1"
 
-compose-bom = "2025.05.01"
+compose-bom = "2025.06.00"
 compose-material3 = "1.4.0-alpha15"
 navigation-compose = "2.9.0"
 compose-material = "1.8.2"
 
-androidx-lifecycle = "2.9.0"
+androidx-lifecycle = "2.9.1"
 
 core-splashscreen = "1.0.1"
 
@@ -34,7 +34,7 @@ androidx-work = "2.10.1"
 datastore-preferences = "1.1.7"
 
 androidx-biometric = "1.2.0-alpha05"
-androidx-security-crypto = "1.1.0-alpha07"
+androidx-security-crypto = "1.1.0-beta01"
 
 firebase-bom = "33.14.0"
 firebase-crashlytics-gradle = "3.0.3"

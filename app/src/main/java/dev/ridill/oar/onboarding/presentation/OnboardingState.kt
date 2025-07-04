@@ -13,5 +13,6 @@ data class OnboardingState(
     val dataRestoreState: DataRestoreState = DataRestoreState.IDLE,
     val showEncryptionPasswordInput: Boolean = false,
     val appRestartTimer: Duration = Duration.ZERO,
-    val appCurrency: Currency = LocaleUtil.defaultCurrency
+    val appCurrency: Currency = LocaleUtil.defaultCurrency,
+    val isLoading: Boolean = false
 )

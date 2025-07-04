@@ -53,8 +53,8 @@ android {
         create("internal") {
             dimension = "env"
             applicationIdSuffix = ".internal"
-            versionCode = 18
-            versionName = "0.4.0"
+            versionCode = 1
+            versionName = "0.1.0"
         }
 
         create("production") {
@@ -117,7 +117,8 @@ kotlin {
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
             "-opt-in=kotlinx.coroutines.FlowPreview",
             "-opt-in=androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi",
-            "-opt-in=androidx.compose.ui.text.ExperimentalTextApi"
+            "-opt-in=androidx.compose.ui.text.ExperimentalTextApi",
+            "-opt-in=androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi",
         )
     }
 }

@@ -8,7 +8,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.core.domain.util.EventBus
+import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.domain.util.asStateFlow
+import dev.ridill.oar.core.domain.util.ifNaN
 import dev.ridill.oar.core.ui.navigation.destinations.AddEditTxResult
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.dashboard.domain.repository.DashboardRepository
@@ -20,15 +22,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val repo: DashboardRepository,
+    repo: DashboardRepository,
     private val notificationHelper: NotificationHelper<Transaction>,
     private val eventBus: EventBus<DashboardEvent>
 ) : ViewModel() {
     private val signedInUser = repo.getSignedInUser()
 
-    private val budget = repo.getCurrentBudget()
-    private val totalDebit = repo.getTotalDebitsForCurrentMonth()
-    private val totalCredit = repo.getTotalCreditsForCurrentMonth()
+    private val budget = repo.getBudgetForActiveCycle()
+    private val totalDebit = repo.getTotalDebitsForActiveCycle()
+    private val totalCredit = repo.getTotalCreditsForActiveCycle()
 
     private val budgetInclCredits = combineTuple(
         budget,
@@ -52,12 +54,12 @@ class DashboardViewModel @Inject constructor(
                       debit
                   ) ->
         debit / budget
-    }.mapLatest { it.toFloat() }
+    }.mapLatest { it.toFloat().ifNaN { Float.Zero } }
         .distinctUntilChanged()
 
-    private val activeSchedules = repo.getSchedulesActiveThisMonth()
+    private val activeSchedules = repo.getSchedulesActiveThisCycle()
 
-    val recentSpendsPagingData = repo.getRecentSpends()
+    val recentSpendsPagingData = repo.getTransactionsThisCycle()
         .cachedIn(viewModelScope)
 
     val state = combineTuple(
@@ -90,8 +92,6 @@ class DashboardViewModel @Inject constructor(
     init {
         cancelNotifications()
     }
-
-    fun refreshCurrentDate() = repo.refreshCurrentDate()
 
     fun onNavResult(result: AddEditTxResult) = viewModelScope.launch {
         val event = when (result) {
