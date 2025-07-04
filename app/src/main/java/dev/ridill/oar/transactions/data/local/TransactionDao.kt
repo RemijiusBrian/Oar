@@ -42,7 +42,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
         """
         SELECT * FROM transaction_details_view
         WHERE (:query IS NOT NULL AND (transactionAmount LIKE :query || '%' OR transactionNote LIKE '%' || :query || '%' OR tagName LIKE '%' || :query || '%' OR folderName LIKE '%' || :query || '%'))
-            AND (COALESCE(:cycleIds, 0) = 0 OR transactionId IN (:cycleIds))
+            AND (COALESCE(:cycleIds, 0) = 0 OR cycleId IN (:cycleIds))
             AND (:type IS NULL OR transactionType = :type)
             AND (COALESCE(:tagIds, 0) = 0 OR tagId IN (:tagIds))
             AND (:folderId IS NULL OR folderId = :folderId)

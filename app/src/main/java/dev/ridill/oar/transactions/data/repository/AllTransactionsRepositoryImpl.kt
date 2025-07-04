@@ -6,8 +6,6 @@ import dev.ridill.oar.aggregations.data.local.AggregationsDao
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
-import dev.ridill.oar.core.domain.model.BasicError
-import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.Empty
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
@@ -95,9 +93,8 @@ class AllTransactionsRepositoryImpl(
             transactionsDao.toggleExclusionByIds(ids, excluded)
         }
 
-    override suspend fun deleteTransactionsByIds(
-        ids: Set<Long>
-    ): Result<Unit, BasicError> = repo.deleteSafely(ids)
+    override suspend fun deleteTransactionsByIds(ids: Set<Long>) =
+        repo.deleteById(*(ids.toLongArray()))
 
     override suspend fun addTransactionsToFolderByIds(
         ids: Set<Long>,

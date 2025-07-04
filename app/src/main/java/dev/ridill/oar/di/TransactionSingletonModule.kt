@@ -10,8 +10,6 @@ import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.crashlytics.CrashlyticsManager
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.core.domain.remoteConfig.FirebaseRemoteConfigService
-import dev.ridill.oar.schedules.domain.repository.SchedulesRepository
-import dev.ridill.oar.settings.domain.repositoty.CurrencyRepository
 import dev.ridill.oar.transactions.data.local.TransactionDao
 import dev.ridill.oar.transactions.data.repository.TransactionRepositoryImpl
 import dev.ridill.oar.transactions.domain.autoDetection.RegexTransactionDataExtractor
@@ -30,13 +28,9 @@ object TransactionSingletonModule {
 
     @Provides
     fun provideTransactionRepository(
-        db: OarDatabase,
         transactionDao: TransactionDao,
-        schedulesRepo: SchedulesRepository
     ): TransactionRepository = TransactionRepositoryImpl(
-        db = db,
-        transactionDao = transactionDao,
-        schedulesRepo = schedulesRepo
+        dao = transactionDao
     )
 
     @Provides
@@ -51,7 +45,6 @@ object TransactionSingletonModule {
     @Provides
     fun provideTransactionSmsService(
         extractor: TransactionDataExtractor,
-        currencyRepository: CurrencyRepository,
         transactionRepository: TransactionRepository,
         crashlyticsManager: CrashlyticsManager,
         notificationHelper: NotificationHelper<Transaction>,

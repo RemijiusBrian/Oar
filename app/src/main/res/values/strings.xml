@@ -248,6 +248,7 @@
         <item quantity="one">Delete Schedule?</item>
         <item quantity="other">Delete Schedules?</item>
     </plurals>
+    <string name="delete_transaction_confirmation_note">Note: If this transaction was created by a schedule, deleting will not revert the schedule state</string>
     <string name="delete_tag_confirmation_note">Note: Transactions assigned with this tag will not be deleted</string>
     <string name="delete_folder_confirmation_note">Note: Deleting folder alone will not delete the transactions associated with this folder</string>
     <string name="delete_selected_schedules_confirmation_title">Delete Selected Schedules?</string>
