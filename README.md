@@ -10,31 +10,32 @@
     .
     <a href="https://github.com/RemijiusBrian/Oar/issues">Request Feature</a>
   </p>
-</p>
-
-
 
 ## About The Project
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/6122cd3b-f43d-4f64-8168-977744b6bfe0" width="200" height="400">
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/ba05ae7f-cf1b-4b1a-b021-b70b4c64bb89" width="200" height="400">
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/9687aeda-a8ff-4746-8547-272a9f79a910" width="200" height="400">
 
-#### Dark Theme
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/1991e6b4-401a-48da-9758-cd67f1360bcc" width="200" height="400">
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/992acb02-984e-4b82-98be-de9ea5199aed" width="200" height="400">
-<img src="https://github.com/RemijiusBrian/Oar/assets/69680701/a35d0b0e-610b-4e53-b92a-617a2097f49f" width="200" height="400">
+![Feature](images/feature.png)
+![Screenshot 1](images/screenshot-1.jpg)
+![Screenshot 2](images/screenshot-2.jpg)
+![Screenshot 3](images/screenshot-3.jpg)
+![Screenshot 4](images/screenshot-4.jpg)
+![Screenshot 5](images/screenshot-5.jpg)
 
-Oar is a user-friendly Android application designed to empower individuals in managing their finances effectively. With Oar, users can effortlessly track and control their expenses, helping them maintain financial discipline and achieve their financial goals. This mobile app provides a comprehensive expense tracking and budget management solution, allowing users to take control of their financial well-being.
+Oar is a user-friendly Android application designed to empower individuals in managing their
+finances effectively. With Oar, users can effortlessly track and control their expenses, helping
+them maintain financial discipline and achieve their financial goals. This mobile app provides a
+comprehensive expense tracking and budget management solution, allowing users to take control of
+their financial well-being.
 
 ## Built With
 
 Oar uses Jetpack Compose for its UI and Kotlin as its programming language.
 User data is stored locally within the app using the SQLite database and Room Persistence library.
-Oar also provides an online backup feature that leverages the Google Drive API to backup app data directly to the users Google Drive.
+Oar also provides an online backup feature that leverages the Google Drive API to backup app data
+directly to the users Google Drive.
+
+---
 
 ## Contributing
-
-
 
 ### Creating A Pull Request
 
@@ -46,4 +47,4 @@ Oar also provides an online backup feature that leverages the Google Drive API t
 
 ## Authors
 
-* **Remijius Brian** - *Android Developer* - [Remijius Brian](https://github.com/RemijiusBrian) - **
+* **Ridill** - *Android Developer* - [Ridill](https://github.com/RemijiusBrian) - **
