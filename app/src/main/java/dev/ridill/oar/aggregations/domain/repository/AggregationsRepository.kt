@@ -7,12 +7,12 @@ import java.util.Currency
 
 interface AggregationsRepository {
     fun getAmountAggregate(
-        cycleIds: Set<Long>?,
-        selectedTxIds: Set<Long>?,
-        type: TransactionType?,
-        tagIds: Set<Long>?,
-        currency: Currency?,
-        addExcluded: Boolean
+        cycleIds: Set<Long>? = null,
+        selectedTxIds: Set<Long>? = null,
+        type: TransactionType? = null,
+        tagIds: Set<Long>? = null,
+        currency: Currency? = null,
+        addExcluded: Boolean = false
     ): Flow<List<AggregateAmountItem>>
 
     fun getTotalDebitsForCycle(id: Long, currency: Currency): Flow<Double>

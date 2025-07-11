@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.OutputTransformation
@@ -485,6 +487,34 @@ fun ListSearchSheet(
             )
 
             additionalEndContent?.invoke(this)
+        }
+    }
+}
+
+@Composable
+fun <T> ItemListSheet(
+    onDismiss: () -> Unit,
+    items: List<T>,
+    modifier: Modifier = Modifier,
+    key: ((item: T) -> Any)? = null,
+    contentType: (item: T) -> Any? = { null },
+    itemContent: @Composable LazyItemScope.(item: T) -> Unit,
+) {
+    OarModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = modifier
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(
+                bottom = PaddingScrollEnd
+            )
+        ) {
+            items(
+                items = items,
+                key = key,
+                contentType = contentType,
+                itemContent = itemContent
+            )
         }
     }
 }

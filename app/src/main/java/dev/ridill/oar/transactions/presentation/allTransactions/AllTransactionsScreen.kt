@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,15 +24,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -43,7 +37,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,7 +54,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -70,15 +62,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -87,25 +76,23 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import dev.ridill.oar.R
+import dev.ridill.oar.aggregations.presentation.AmountAggregatesList
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
-import dev.ridill.oar.core.ui.components.BodyMediumText
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.DisplaySmallText
 import dev.ridill.oar.core.ui.components.FadedVisibility
+import dev.ridill.oar.core.ui.components.ItemListSheet
 import dev.ridill.oar.core.ui.components.ListLabel
 import dev.ridill.oar.core.ui.components.ListSeparator
 import dev.ridill.oar.core.ui.components.OarModalBottomSheet
 import dev.ridill.oar.core.ui.components.OarRangeSlider
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.OptionListItem
 import dev.ridill.oar.core.ui.components.SnackbarController
-import dev.ridill.oar.core.ui.components.SpacerMedium
-import dev.ridill.oar.core.ui.components.SpacerSmall
-import dev.ridill.oar.core.ui.components.TitleMediumText
-import dev.ridill.oar.core.ui.components.VerticalNumberSpinnerContent
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
 import dev.ridill.oar.core.ui.components.slideInHorizontallyWithFadeIn
 import dev.ridill.oar.core.ui.components.slideInVerticallyWithFadeIn
@@ -118,12 +105,9 @@ import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.core.ui.util.isEmpty
-import dev.ridill.oar.folders.domain.model.AggregateType
-import dev.ridill.oar.settings.presentation.components.PreferenceIconSize
 import dev.ridill.oar.settings.presentation.components.SwitchPreference
 import dev.ridill.oar.tags.domain.model.Tag
 import dev.ridill.oar.tags.presentation.components.ElevatedTagChip
-import dev.ridill.oar.transactions.domain.model.AggregateAmountItem
 import dev.ridill.oar.transactions.domain.model.AllTransactionsMultiSelectionOption
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
@@ -133,8 +117,6 @@ import dev.ridill.oar.transactions.presentation.components.TransactionListItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.util.Currency
-import kotlin.math.absoluteValue
 
 @Composable
 fun AllTransactionsScreen(
@@ -198,7 +180,7 @@ fun AllTransactionsScreen(
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it }
             ) {
-                AmountAggregates(
+                AmountAggregatesList(
                     aggregatesList = state.aggregatesList,
                     modifier = Modifier
                 )
@@ -261,13 +243,14 @@ fun AllTransactionsScreen(
                                         contentType = TransactionEntry::class
                                     ) {
                                         val selected = item.id in state.selectedTransactionIds
-
                                         val clickableModifier =
                                             if (state.transactionMultiSelectionModeActive) Modifier
-                                                .toggleable(
-                                                    value = selected,
-                                                    onValueChange = {
-                                                        actions.onTransactionSelectionChange(item.id)
+                                                .selectable(
+                                                    selected = selected,
+                                                    onClick = {
+                                                        actions.onTransactionSelectionChange(
+                                                            item.id
+                                                        )
                                                     }
                                                 )
                                             else Modifier.combinedClickable(
@@ -450,7 +433,7 @@ private fun AllTransactionsTopAppBar(
                     IconButton(onClick = onMultiSelectionOptionsClick) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.cd_options)
+                            contentDescription = stringResource(R.string.cd_tap_for_more_options)
                         )
                     }
                 }
@@ -590,40 +573,22 @@ private fun MultiSelectionOptionsSheet(
     onOptionClick: (AllTransactionsMultiSelectionOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OarModalBottomSheet(
-        onDismissRequest = onDismiss,
+    ItemListSheet(
+        onDismiss = onDismiss,
+        items = AllTransactionsMultiSelectionOption.entries,
+        key = { it.name },
+        contentType = { AllTransactionsMultiSelectionOption::class },
         modifier = modifier
-    ) {
-        LazyColumn {
-            items(
-                items = AllTransactionsMultiSelectionOption.entries,
-                key = { it.name },
-                contentType = { "MultiSelectionOptionItem" }
-            ) { option ->
-                Row(
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable(
-                            onClick = { onOptionClick(option) }
-                        )
-                        .fillMaxWidth()
-                        .minimumInteractiveComponentSize()
-                        .padding(
-                            horizontal = MaterialTheme.spacing.medium,
-                            vertical = MaterialTheme.spacing.small
-                        )
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(option.iconRes),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(PreferenceIconSize)
-                    )
-                    SpacerMedium()
-                    BodyMediumText(stringResource(option.labelRes))
-                }
-            }
-        }
+    ) { option ->
+        OptionListItem(
+            iconRes = option.iconRes,
+            label = stringResource(option.labelRes),
+            onClick = { onOptionClick(option) },
+            onClickLabel = stringResource(R.string.cd_option_name, stringResource(option.labelRes)),
+            modifier = Modifier
+                .fillParentMaxWidth()
+                .animateItem()
+        )
     }
 }
 
@@ -857,84 +822,3 @@ private fun TagFilterSection(
 }
 
 private val TagFilterFlowRowMinHeight = 80.dp
-
-@Composable
-private fun AmountAggregates(
-    aggregatesList: List<AggregateAmountItem>,
-    modifier: Modifier = Modifier,
-    insets: WindowInsets = BottomAppBarDefaults.windowInsets
-) {
-    val insetPadding = insets.asPaddingValues()
-    Surface(
-        tonalElevation = BottomAppBarDefaults.ContainerElevation,
-        color = BottomAppBarDefaults.containerColor,
-    ) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(insetPadding)
-                .padding(BottomAppBarDefaults.ContentPadding)
-                .padding(vertical = MaterialTheme.spacing.small)
-        ) {
-            BodyMediumText(
-                text = stringResource(R.string.aggregate),
-                modifier = Modifier
-                    .padding(
-                        horizontal = MaterialTheme.spacing.medium,
-                        vertical = MaterialTheme.spacing.extraSmall
-                    )
-            )
-
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                contentPadding = PaddingValues(
-                    start = MaterialTheme.spacing.medium,
-                    end = PaddingScrollEnd
-                )
-            ) {
-                itemsIndexed(
-                    items = aggregatesList,
-                    key = { _, item -> item.currency.currencyCode },
-                    contentType = { _, _ -> AggregateAmountItem::class.java }
-                ) { index, item ->
-                    AggregateAmount(
-                        amount = item.amount.absoluteValue,
-                        currency = item.currency,
-                        aggregateType = item.aggregateType ?: AggregateType.BALANCED,
-                        showTrailingPlus = index != aggregatesList.lastIndex,
-                        modifier = Modifier
-                            .animateItem()
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AggregateAmount(
-    amount: Double,
-    currency: Currency,
-    aggregateType: AggregateType,
-    showTrailingPlus: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-    ) {
-        VerticalNumberSpinnerContent(amount) {
-            TitleMediumText(
-                text = TextFormat.currencyAmount(it, currency),
-                color = aggregateType.color
-            )
-        }
-
-        SpacerSmall()
-
-        FadedVisibility(showTrailingPlus) {
-            TitleMediumText("+")
-        }
-    }
-}
