@@ -2,6 +2,7 @@ package dev.ridill.oar.budgetCycles.data.local
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.local.view.BudgetCycleDetailsView
 import dev.ridill.oar.core.data.db.BaseDao
@@ -12,12 +13,15 @@ import java.time.LocalDate
 @Dao
 interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view ORDER BY DATE(endDate) DESC LIMIT 1")
     suspend fun getLastCycle(): BudgetCycleDetailsView?
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
     fun getActiveCycleFlow(): Flow<BudgetCycleDetailsView?>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
     fun getActiveCycle(): BudgetCycleDetailsView?
 
@@ -27,9 +31,11 @@ interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
         endDate: LocalDate
     ): BudgetCycleEntity?
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view WHERE id = :id")
     suspend fun getCycleById(id: Long): BudgetCycleDetailsView?
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view WHERE id = :id")
     fun getCycleByIdFlow(id: Long): Flow<BudgetCycleDetailsView?>
 

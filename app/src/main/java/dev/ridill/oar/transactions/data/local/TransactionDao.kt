@@ -3,6 +3,7 @@ package dev.ridill.oar.transactions.data.local
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import dev.ridill.oar.core.data.db.BaseDao
 import dev.ridill.oar.transactions.data.local.entity.TransactionEntity
@@ -38,6 +39,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
     suspend fun getTransactionsByIds(ids: Set<Long>): List<TransactionEntity>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT * FROM transaction_details_view

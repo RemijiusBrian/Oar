@@ -2,6 +2,7 @@ package dev.ridill.oar.aggregations.data.local
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import dev.ridill.oar.transactions.data.local.relation.AmountAndCurrencyRelation
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,7 @@ interface AggregationsDao {
         GROUP BY currencyCode
     """
     )
+    @RewriteQueriesToDropUnusedColumns
     fun getAggregatesGroupedByCurrencyCode(
         cycleIds: Set<Long>?,
         selectedTxIds: Set<Long>?,
