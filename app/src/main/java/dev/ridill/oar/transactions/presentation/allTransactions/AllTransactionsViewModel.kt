@@ -457,7 +457,12 @@ class AllTransactionsViewModel @Inject constructor(
     fun onAddEditTxNavResult(result: AddEditTxResult) = viewModelScope.launch {
         val event = when (result) {
             AddEditTxResult.TRANSACTION_DELETED ->
-                AllTransactionsEvent.ShowUiMessage(UiText.StringResource(R.string.transaction_deleted))
+                AllTransactionsEvent.ShowUiMessage(
+                    UiText.PluralResource(
+                        R.plurals.transaction_deleted,
+                        1
+                    )
+                )
 
             AddEditTxResult.TRANSACTION_SAVED ->
                 AllTransactionsEvent.ShowUiMessage(UiText.StringResource(R.string.transaction_saved))

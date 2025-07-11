@@ -1,8 +1,11 @@
 package dev.ridill.oar.folders.presentation.folderDetails
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,7 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.HorizontalDivider
@@ -31,14 +37,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.paging.compose.LazyPagingItems
 import dev.ridill.oar.R
-import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
+import dev.ridill.oar.aggregations.presentation.AmountAggregatesList
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
@@ -46,11 +55,13 @@ import dev.ridill.oar.core.ui.components.AmountWithTypeIndicator
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.ExcludedIcon
+import dev.ridill.oar.core.ui.components.ItemListSheet
 import dev.ridill.oar.core.ui.components.ListLabel
 import dev.ridill.oar.core.ui.components.ListSeparator
 import dev.ridill.oar.core.ui.components.MultiActionConfirmationDialog
 import dev.ridill.oar.core.ui.components.OarPlainTooltip
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.OptionListItem
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.SpacerExtraSmall
 import dev.ridill.oar.core.ui.components.SpacerSmall
@@ -61,11 +72,13 @@ import dev.ridill.oar.core.ui.components.icons.CalendarClock
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
 import dev.ridill.oar.core.ui.navigation.destinations.FolderDetailsScreenSpec
 import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
+import dev.ridill.oar.core.ui.theme.elevation
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.core.ui.util.isEmpty
 import dev.ridill.oar.core.ui.util.mergedContentDescription
 import dev.ridill.oar.folders.domain.model.AggregateType
+import dev.ridill.oar.folders.domain.model.FolderTransactionsMultiSelectionOption
 import dev.ridill.oar.transactions.domain.model.TagIndicator
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
@@ -89,31 +102,79 @@ fun FolderDetailsScreen(
         derivedStateOf { transactionPagingItems.isEmpty() }
     }
 
+    BackHandler(
+        enabled = state.transactionMultiSelectionModeActive,
+        onBack = actions::onMultiSelectionModeDismiss
+    )
+
     val layoutDirection = LocalLayoutDirection.current
     OarScaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(FolderDetailsScreenSpec.labelRes)) },
-                navigationIcon = { BackArrowButton(onClick = navigateUp) },
-                actions = {
-                    IconButton(onClick = navigateToEditFolder) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = stringResource(R.string.cd_edit_folder)
+                title = {
+                    if (state.transactionMultiSelectionModeActive) {
+                        Text(
+                            stringResource(
+                                R.string.count_selected,
+                                state.selectedTransactionIds.size
+                            )
                         )
+                    } else {
+                        Text(stringResource(FolderDetailsScreenSpec.labelRes))
                     }
+                },
+                navigationIcon = {
+                    if (state.transactionMultiSelectionModeActive) {
+                        IconButton(onClick = actions::onMultiSelectionModeDismiss) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = stringResource(R.string.cd_clear_transaction_selection)
+                            )
+                        }
+                    } else {
+                        BackArrowButton(onClick = navigateUp)
+                    }
+                },
+                actions = {
+                    if (state.transactionMultiSelectionModeActive) {
+                        IconButton(onClick = actions::onMultiSelectionOptionsClick) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.cd_tap_for_more_options)
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = navigateToEditFolder) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = stringResource(R.string.cd_edit_folder)
+                            )
+                        }
 
-                    IconButton(onClick = actions::onDeleteClick) {
-                        Icon(
-                            imageVector = Icons.Rounded.DeleteForever,
-                            contentDescription = stringResource(R.string.cd_delete_folder)
-                        )
+                        IconButton(onClick = actions::onDeleteClick) {
+                            Icon(
+                                imageVector = Icons.Rounded.DeleteForever,
+                                contentDescription = stringResource(R.string.cd_delete_folder)
+                            )
+                        }
                     }
                 }
             )
         },
         floatingActionButton = {
             NewTransactionFab(onClick = { navigateToAddEditTransaction(null) })
+        },
+        bottomBar = {
+            AnimatedVisibility(
+                visible = state.transactionMultiSelectionModeActive,
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                AmountAggregatesList(
+                    aggregatesList = state.aggregatesList,
+                    modifier = Modifier
+                )
+            }
         },
         snackbarController = snackbarController,
     ) { paddingValues ->
@@ -188,6 +249,7 @@ fun FolderDetailsScreen(
                                     key = item.id,
                                     contentType = TransactionEntry::class
                                 ) {
+                                    val selected = item.id in state.selectedTransactionIds
                                     TransactionInFolderItem(
                                         note = item.note,
                                         amount = TextFormat.currency(item.amount, item.currency),
@@ -195,6 +257,12 @@ fun FolderDetailsScreen(
                                         type = item.type,
                                         tag = item.tag,
                                         excluded = item.excluded,
+                                        multiSelectionActive = state.transactionMultiSelectionModeActive,
+                                        selected = selected,
+                                        onSelectionChange = {
+                                            actions.onTransactionSelectionChange(item.id)
+                                        },
+                                        onLongPress = { actions.onTransactionLongPress(item.id) },
                                         onClick = { navigateToAddEditTransaction(item.id) },
                                         onRevealed = actions::onTransactionSwipeActionRevealed,
                                         onRemoveFromFolderClick = {
@@ -240,6 +308,37 @@ fun FolderDetailsScreen(
                 )
             }
         }
+    }
+
+    if (state.showMultiSelectionOptions) {
+        FolderTransactionsOptionsSheet(
+            onDismiss = actions::onMultiSelectionOptionDismiss,
+            onOptionClick = actions::onMultiSelectionOptionClick
+        )
+    }
+
+    if (state.showDeleteTransactionsConfirmation) {
+        ConfirmationDialog(
+            title = pluralStringResource(
+                R.plurals.delete_transactions_confirmation_title,
+                state.selectedTransactionIds.size
+            ),
+            content = stringResource(R.string.action_irreversible_message),
+            onConfirm = actions::onDeleteTransactionsConfirm,
+            onDismiss = actions::onDeleteTransactionsDismiss
+        )
+    }
+
+    if (state.showRemoveTransactionsConfirmation) {
+        ConfirmationDialog(
+            title = pluralStringResource(
+                R.plurals.remove_transactions_from_folder_confirmation_title,
+                state.selectedTransactionIds.size
+            ),
+            content = stringResource(R.string.action_irreversible_message),
+            onConfirm = actions::onRemoveTransactionsFromFolderConfirm,
+            onDismiss = actions::onRemoveTransactionsFromFolderDismiss
+        )
     }
 }
 
@@ -388,12 +487,33 @@ private fun TransactionInFolderItem(
     type: TransactionType,
     tag: TagIndicator?,
     excluded: Boolean,
+    multiSelectionActive: Boolean,
+    selected: Boolean,
     onClick: () -> Unit,
+    onSelectionChange: () -> Unit,
+    onLongPress: () -> Unit,
     onRemoveFromFolderClick: () -> Unit,
     onRevealed: () -> Unit,
     showSwipePreview: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
 ) {
+    val clickableModifier = if (multiSelectionActive) Modifier
+        .selectable(
+            selected = selected,
+            onClick = onSelectionChange
+        )
+    else Modifier.combinedClickable(
+        onClick = onClick,
+        onClickLabel = stringResource(R.string.cd_tap_to_edit_transaction),
+        onLongClick = {
+            hapticFeedback.performHapticFeedback(
+                HapticFeedbackType.LongPress
+            )
+            onLongPress()
+        },
+        onLongClickLabel = stringResource(R.string.cd_long_press_to_toggle_selection)
+    )
     var isRevealed by remember { mutableStateOf(false) }
     SwipeActionsContainer(
         isRevealed = isRevealed,
@@ -429,13 +549,36 @@ private fun TransactionInFolderItem(
             leadingContentLine1 = timestamp.format(DateUtil.Formatters.ddth),
             leadingContentLine2 = timestamp.format(DateUtil.Formatters.EEE),
             type = type,
+            tonalElevation = if (selected) MaterialTheme.elevation.level1 else MaterialTheme.elevation.level0,
             tag = tag,
             excluded = excluded,
             modifier = modifier
-                .clickable(
-                    onClick = onClick,
-                    onClickLabel = stringResource(R.string.cd_tap_to_edit_transaction)
-                )
+                .then(clickableModifier)
+        )
+    }
+}
+
+@Composable
+private fun FolderTransactionsOptionsSheet(
+    onDismiss: () -> Unit,
+    onOptionClick: (FolderTransactionsMultiSelectionOption) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ItemListSheet(
+        onDismiss = onDismiss,
+        items = FolderTransactionsMultiSelectionOption.entries,
+        key = { it.name },
+        contentType = { FolderTransactionsMultiSelectionOption::class },
+        modifier = modifier
+    ) { option ->
+        OptionListItem(
+            iconRes = option.iconRes,
+            label = stringResource(option.labelRes),
+            onClick = { onOptionClick(option) },
+            onClickLabel = stringResource(R.string.cd_option_name, stringResource(option.labelRes)),
+            modifier = Modifier
+                .fillParentMaxWidth()
+                .animateItem()
         )
     }
 }

@@ -45,13 +45,16 @@ class FolderDetailsRepositoryImpl(
         dao.deleteFolderAndTransactionsById(id)
     }
 
-    override suspend fun removeTransactionFromFolderById(
-        transactionId: Long
-    ) = withContext(Dispatchers.IO) {
-        transactionDao.setFolderIdToTransactionsByIds(
-            ids = setOf(transactionId),
-            folderId = null
-        )
+    override suspend fun removeTransactionFromFolderById(ids: Set<Long>) =
+        withContext(Dispatchers.IO) {
+            transactionDao.setFolderIdToTransactionsByIds(
+                ids = ids,
+                folderId = null
+            )
+        }
+
+    override suspend fun deleteTransactionsByIds(ids: Set<Long>) = withContext(Dispatchers.IO) {
+        transactionDao.deleteMultipleTransactionsById(ids)
     }
 
     override suspend fun addTransactionToFolder(

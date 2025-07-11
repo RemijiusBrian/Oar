@@ -37,7 +37,7 @@ class DeleteTransactionActionReceiver : BroadcastReceiver() {
             notificationHelper.updateNotification(
                 id = id.hashCode(),
                 notification = notificationHelper.buildBaseNotification()
-                    .setContentTitle(context.getString(R.string.transaction_deleted))
+                    .setContentTitle(context.resources.getQuantityString(R.plurals.transaction_deleted, 1))
                     .setTimeoutAfter(NotificationHelper.Utils.TIMEOUT_MILLIS)
                     .build()
             )

@@ -82,9 +82,12 @@ data object FolderDetailsScreenSpec : ScreenSpec {
                     )
                 }
 
-                is FolderDetailsViewModel.FolderDetailsEvent.TransactionRemovedFromGroup -> {
+                is FolderDetailsViewModel.FolderDetailsEvent.TransactionRemovedFromFolder -> {
                     snackbarController.showSnackbar(
-                        message = context.getString(R.string.transaction_removed_from_folder),
+                        message = context.resources.getQuantityString(
+                            R.plurals.transaction_removed_from_this_folder,
+                            1
+                        ),
                         actionLabel = context.getString(R.string.action_undo),
                         onSnackbarResult = {
                             if (it == SnackbarResult.ActionPerformed) {

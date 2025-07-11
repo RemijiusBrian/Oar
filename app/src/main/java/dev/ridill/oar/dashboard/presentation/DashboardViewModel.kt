@@ -96,7 +96,12 @@ class DashboardViewModel @Inject constructor(
     fun onNavResult(result: AddEditTxResult) = viewModelScope.launch {
         val event = when (result) {
             AddEditTxResult.TRANSACTION_DELETED ->
-                DashboardEvent.ShowUiMessage(UiText.StringResource(R.string.transaction_deleted))
+                DashboardEvent.ShowUiMessage(
+                    UiText.PluralResource(
+                        R.plurals.transaction_deleted,
+                        1
+                    )
+                )
 
             AddEditTxResult.TRANSACTION_SAVED ->
                 DashboardEvent.ShowUiMessage(UiText.StringResource(R.string.transaction_saved))

@@ -71,7 +71,7 @@
     <string name="cd_remove_from_folder">Remove from folder</string>
     <string name="cd_folder_list_item_with_aggregate_amount">Folder %1$s created on %2$s</string>
     <string name="cd_folder_list_item_without_aggregate_amount">Folder %1$s created on %2$s with aggregate amount of %3$s %4$s</string>
-    <string name="cd_options">Options</string>
+    <string name="cd_tap_for_more_options">Tap for more options</string>
     <string name="cd_filter_options">Filter Options</string>
     <string name="cd_excluded">Excluded</string>
     <string name="cd_new_folder">New Folder</string>
@@ -248,6 +248,10 @@
         <item quantity="one">Delete Schedule?</item>
         <item quantity="other">Delete Schedules?</item>
     </plurals>
+    <plurals name="remove_transactions_from_folder_confirmation_title">
+        <item quantity="one">Remove Transaction from Folder?</item>
+        <item quantity="other">Remove Transactions from Folder?</item>
+    </plurals>
     <string name="delete_transaction_confirmation_note">Note: If this transaction was created by a schedule, deleting will not revert the schedule state</string>
     <string name="delete_tag_confirmation_note">Note: Transactions assigned with this tag will not be deleted</string>
     <string name="delete_folder_confirmation_note">Note: Deleting folder alone will not delete the transactions associated with this folder</string>
@@ -320,7 +324,6 @@
     <string name="recent_spends">Recent Spends</string>
     <string name="amount_zero">0</string>
     <string name="add_a_note">Add a Note</string>
-    <string name="transaction_deleted">Transaction Deleted</string>
     <string name="transaction_saved">Transaction Saved</string>
     <string name="choose_theme">Choose Theme</string>
     <string name="budget_updated">Your budget has been updated</string>
@@ -410,7 +413,6 @@
     <string name="delete_folder_and_transactions">Delete Folder and Transactions</string>
     <string name="add_to_folder">Add to a folder</string>
     <string name="transaction_folder_indicator_label">Add to a Folder</string>
-    <string name="transaction_removed_from_folder">Transaction removed from folder</string>
     <string name="enter_folder_name">Enter Folder Name</string>
     <string name="folder_sort_criteria_by_name">Name</string>
     <string name="folder_sort_criteria_by_created">Created</string>
@@ -511,4 +513,13 @@
     <string name="cycle">Cycle</string>
     <string name="restoring_backup_jobs">Restoring Backup Jobs</string>
     <string name="restoring_schedule_reminders">Restoring Schedule Reminders</string>
+    <string name="cd_option_name">Option %s</string>
+    <plurals name="transaction_deleted">
+        <item quantity="one">Transaction Deleted</item>
+        <item quantity="other">Transactions Deleted</item>
+    </plurals>
+    <plurals name="transaction_removed_from_this_folder">
+        <item quantity="one">Transaction removed from this folder</item>
+        <item quantity="other">Transactions removed from this folder</item>
+    </plurals>
 </resources>
