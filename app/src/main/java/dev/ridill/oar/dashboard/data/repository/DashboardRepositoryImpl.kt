@@ -17,6 +17,7 @@ import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import dev.ridill.oar.transactions.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -31,6 +32,9 @@ class DashboardRepositoryImpl(
 ) : DashboardRepository {
 
     private fun activeCycle() = cycleRepo.getActiveCycleFlow()
+    private fun activeCurrencyCode() = activeCycle()
+        .mapLatest { it?.currency?.currencyCode }
+        .distinctUntilChanged()
 
     override fun getSignedInUser(): Flow<UserAccount?> = authRepo.getAuthState()
         .mapLatest { state ->
@@ -44,34 +48,28 @@ class DashboardRepositoryImpl(
         .mapLatest { it?.budget.orZero() }
         .distinctUntilChanged()
 
-    override fun getTotalDebitsForActiveCycle(): Flow<Double> = activeCycle()
-        .flatMapLatest { cycle ->
-            aggRepo.getAmountAggregate(
-                cycleIds = cycle?.id?.let { setOf(it) },
-                selectedTxIds = null,
-                type = TransactionType.DEBIT,
-                tagIds = null,
-                addExcluded = false,
-                currency = cycle?.currency,
-            )
-        }
-        .mapLatest { it.firstOrNull() }
-        .mapLatest { it?.amount.orZero() }
-        .mapLatest { it.absoluteValue }
-        .distinctUntilChanged()
+    override fun getTotalDebitsForActiveCycle(): Flow<Double> =
+        getAmountAggregateForActiveCycle(TransactionType.DEBIT)
 
-    override fun getTotalCreditsForActiveCycle(): Flow<Double> = activeCycle()
+    override fun getTotalCreditsForActiveCycle(): Flow<Double> =
+        getAmountAggregateForActiveCycle(TransactionType.CREDIT)
+
+    private fun getAmountAggregateForActiveCycle(
+        type: TransactionType
+    ): Flow<Double> = activeCycle()
         .flatMapLatest { cycle ->
             aggRepo.getAmountAggregate(
                 cycleIds = cycle?.id?.let { setOf(it) },
                 selectedTxIds = null,
-                type = TransactionType.CREDIT,
+                type = type,
                 tagIds = null,
                 addExcluded = false,
                 currency = cycle?.currency,
             )
         }
-        .mapLatest { it.firstOrNull() }
+        .combine(activeCurrencyCode()) { aggregate, activeCurrency ->
+            aggregate.find { it.currency.currencyCode == activeCurrency }
+        }
         .mapLatest { it?.amount.orZero() }
         .mapLatest { it.absoluteValue }
         .distinctUntilChanged()
