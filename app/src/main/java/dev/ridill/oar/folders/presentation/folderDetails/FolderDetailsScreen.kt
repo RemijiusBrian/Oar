@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -515,6 +516,11 @@ private fun TransactionInFolderItem(
         onLongClickLabel = stringResource(R.string.cd_long_press_to_toggle_selection)
     )
     var isRevealed by remember { mutableStateOf(false) }
+    LaunchedEffect(multiSelectionActive) {
+        if (multiSelectionActive) {
+            isRevealed = false
+        }
+    }
     SwipeActionsContainer(
         isRevealed = isRevealed,
         onRevealedChange = { revealed ->
@@ -540,7 +546,8 @@ private fun TransactionInFolderItem(
                 }
             }
         },
-        animatePreview = showSwipePreview
+        animatePreview = showSwipePreview,
+        gesturesEnabled = !multiSelectionActive
     ) {
         TransactionListItem(
             note = note,
