@@ -25,9 +25,9 @@ class CycleAlarmManager(
 
     override fun scheduleCycleCompletion(
         cycleId: Long,
-        endDateTime: LocalDateTime
+        endDate: LocalDateTime
     ): Result<Unit, BudgetCycleError> = try {
-        val endTimeMillis = DateUtil.toMillis(endDateTime)
+        val endTimeMillis = DateUtil.toMillis(endDate)
 
         val intent = Intent(context, CycleCompletionReceiver::class.java).apply {
             this.action = CycleManager.action(context)
@@ -47,7 +47,7 @@ class CycleAlarmManager(
             pendingIntent
         )
 
-        logD("CycleManager") { "Scheduled cycle ID = $cycleId to complete at $endDateTime" }
+        logD("CycleManager") { "Scheduled cycle ID = $cycleId to complete at $endDate" }
 
         Result.Success(Unit)
     } catch (t: Throwable) {

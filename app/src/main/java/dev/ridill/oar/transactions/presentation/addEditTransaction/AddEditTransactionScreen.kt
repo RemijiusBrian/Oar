@@ -283,10 +283,12 @@ fun AddEditTransactionScreen(
                     .align(Alignment.End)
             )
 
-            SimplePreference(
-                titleRes = R.string.cycle,
-                summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
-            )
+            AnimatedVisibility(!state.isScheduleTxMode) {
+                SimplePreference(
+                    titleRes = R.string.cycle,
+                    summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
+                )
+            }
 
             AnimatedVisibility(
                 visible = state.isScheduleTxMode,

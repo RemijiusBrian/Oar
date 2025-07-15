@@ -277,7 +277,7 @@ private fun ScreenContent(
                     modifier = Modifier
                         .circularReveal(
                             transitionProgress = lockScreenVisibilityProgress.asState(),
-                            revealFrom = Offset(1f, 0f)
+                            revealFrom = Offset(0f, 0f)
                         )
                 )
             }
