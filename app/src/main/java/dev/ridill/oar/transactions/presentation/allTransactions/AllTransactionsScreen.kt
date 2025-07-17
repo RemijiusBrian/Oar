@@ -83,6 +83,8 @@ import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
+import dev.ridill.oar.core.ui.components.CreateFloatingActionMenu
+import dev.ridill.oar.core.ui.components.CreateOption
 import dev.ridill.oar.core.ui.components.DisplaySmallText
 import dev.ridill.oar.core.ui.components.FadedVisibility
 import dev.ridill.oar.core.ui.components.ItemListSheet
@@ -112,7 +114,6 @@ import dev.ridill.oar.transactions.domain.model.AllTransactionsMultiSelectionOpt
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionTypeFilter
-import dev.ridill.oar.transactions.presentation.components.NewTransactionFab
 import dev.ridill.oar.transactions.presentation.components.TransactionListItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -127,6 +128,8 @@ fun AllTransactionsScreen(
     state: AllTransactionsState,
     actions: AllTransactionsActions,
     navigateToAddEditTransaction: (Long?) -> Unit,
+    navigateToCreateSchedule: () -> Unit,
+    navigateToCreateFolder: () -> Unit,
     navigateUp: () -> Unit
 ) {
     val hapticFeedback = LocalHapticFeedback.current
@@ -171,7 +174,24 @@ fun AllTransactionsScreen(
         },
         floatingActionButton = {
             FadedVisibility(!state.searchModeActive) {
-                NewTransactionFab(onClick = { navigateToAddEditTransaction(null) })
+                CreateFloatingActionMenu(
+                    onOptionClick = { option ->
+                        when (option) {
+                            CreateOption.CREATE_TRANSACTION -> {
+                                navigateToAddEditTransaction(null)
+                            }
+
+                            CreateOption.CREATE_SCHEDULE -> {
+                                navigateToCreateSchedule()
+                            }
+
+                            CreateOption.CREATE_FOLDER -> {
+                                navigateToCreateFolder()
+                            }
+                        }
+                    }
+                )
+//                NewTransactionFab(onClick = { navigateToAddEditTransaction(null) })
             }
         },
         bottomBar = {

@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -38,8 +40,8 @@ import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ButtonWithLoadingIndicator
 import dev.ridill.oar.core.ui.components.DisplayMediumText
 import dev.ridill.oar.core.ui.components.DisplaySmallText
-import dev.ridill.oar.core.ui.components.PasswordField
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.PasswordField
 import dev.ridill.oar.core.ui.components.SecureTextFieldKeyboardOptions
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.Spacer
@@ -57,15 +59,19 @@ fun BackupEncryptionScreen(
     actions: BackupEncryptionActions,
     navigateUp: () -> Unit
 ) {
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         isLoading = state.isLoading,
         topBar = {
             TopAppBar(
-                title = {},
-                navigationIcon = { BackArrowButton(onClick = navigateUp) }
+                title = { Text(stringResource(BackupEncryptionScreenSpec.labelRes)) },
+                navigationIcon = { BackArrowButton(onClick = navigateUp) },
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
         snackbarController = snackbarController,
+        modifier = Modifier
+            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
             modifier = Modifier

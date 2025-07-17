@@ -103,7 +103,7 @@ fun ScheduleListItem(
                     )
                 } else {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_outline_wallet_done),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_wallet_done),
                         contentDescription = null
                     )
                 }

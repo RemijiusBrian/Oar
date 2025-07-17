@@ -5,23 +5,23 @@ import androidx.annotation.StringRes
 import dev.ridill.oar.R
 
 enum class AddEditTxOption(
-    @StringRes val labelRes: Int,
-    @DrawableRes val iconRes: Int
+    @param:StringRes val labelRes: Int,
+    @param:DrawableRes val iconRes: Int
 ) {
     DELETE(
         labelRes = R.string.delete,
-        iconRes = R.drawable.ic_rounded_delete
+        iconRes = R.drawable.ic_outlined_delete
     ),
     CONVERT_TO_SCHEDULE(
         labelRes = R.string.convert_to_schedule,
-        iconRes = R.drawable.ic_rounded_time_forward
+        iconRes = R.drawable.ic_time_schedule
     ),
     CONVERT_TO_NORMAL_TRANSACTION(
         labelRes = R.string.convert_to_normal_transaction,
-        iconRes = R.drawable.ic_filled_coins
+        iconRes = R.drawable.ic_outlined_coins
     ),
     DUPLICATE(
         labelRes = R.string.duplicate,
-        iconRes = R.drawable.ic_rounded_duplicate
+        iconRes = R.drawable.ic_outlined_duplicate
     ),
 }

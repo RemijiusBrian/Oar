@@ -2,6 +2,7 @@ package dev.ridill.oar.core.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -255,9 +256,13 @@ data class ColorFamily(
 )
 
 val unspecified_scheme = ColorFamily(
-    Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
+    color = Color.Unspecified,
+    onColor = Color.Unspecified,
+    colorContainer = Color.Unspecified,
+    onColorContainer = Color.Unspecified
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun OarTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -291,7 +296,8 @@ fun OarTheme(
             colorScheme = colorScheme,
             typography = Typography,
             shapes = Shapes,
-            content = content
+            content = content,
+            motionScheme = MaterialTheme.motionScheme
         )
     }
 }

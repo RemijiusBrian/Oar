@@ -134,7 +134,7 @@ private fun NewFolderItem(
         headlineContent = { Text(stringResource(R.string.create_new_folder)) },
         trailingContent = {
             Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.ic_outline_add_folder),
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_add_folder),
                 contentDescription = stringResource(R.string.cd_create_new_folder)
             )
         },

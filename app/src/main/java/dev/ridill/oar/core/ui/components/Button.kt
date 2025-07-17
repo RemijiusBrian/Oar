@@ -2,6 +2,7 @@ package dev.ridill.oar.core.ui.components
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,16 +10,23 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.common.SignInButton
 import dev.ridill.oar.R
+import dev.ridill.oar.core.ui.theme.OarTheme
 
 @Composable
 fun BackArrowButton(
@@ -36,6 +44,7 @@ fun BackArrowButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ButtonWithLoadingIndicator(
     @StringRes textRes: Int,
@@ -58,7 +67,7 @@ fun ButtonWithLoadingIndicator(
             label = "TextLoadingCrossfade"
         ) { isLoading ->
             if (isLoading) {
-                CircularProgressIndicator(
+                LoadingIndicator(
                     modifier = Modifier
                         .size(ButtonDefaults.IconSize),
                     color = colors.contentColor
@@ -67,6 +76,23 @@ fun ButtonWithLoadingIndicator(
                 Text(stringResource(textRes))
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun PreviewButtonWithLoadingIndicator() {
+    OarTheme {
+        var isLoading by remember { mutableStateOf(false) }
+        ButtonWithLoadingIndicator(
+            textRes = R.string.action_confirm,
+            loading = isLoading,
+            onClick = {
+                isLoading = !isLoading
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+        )
     }
 }
 

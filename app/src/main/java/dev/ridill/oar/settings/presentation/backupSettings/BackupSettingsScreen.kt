@@ -18,13 +18,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddToDrive
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -39,8 +40,8 @@ import androidx.compose.ui.unit.Dp
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
-import dev.ridill.oar.core.ui.components.RadioOptionListDialog
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.RadioOptionListDialog
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.icons.Google
 import dev.ridill.oar.core.ui.navigation.destinations.BackupSettingsScreenSpec
@@ -54,6 +55,7 @@ import dev.ridill.oar.settings.presentation.components.PreferenceIconSize
 import dev.ridill.oar.settings.presentation.components.SimplePreference
 import dev.ridill.oar.settings.presentation.components.SimpleSettingsPreference
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BackupSettingsScreen(
     context: Context,
@@ -62,11 +64,11 @@ fun BackupSettingsScreen(
     actions: BackupSettingsActions,
     navigateUp: () -> Unit
 ) {
-    val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         snackbarController = snackbarController,
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(BackupSettingsScreenSpec.labelRes)) },
                 navigationIcon = { BackArrowButton(onClick = navigateUp) }
             )
@@ -185,6 +187,7 @@ private fun BackupInfoText(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PreviousBackupDetails(
     lastBackupDate: String?,
@@ -215,7 +218,7 @@ fun PreviousBackupDetails(
                     label = "BackupProgressBarAnimation"
                 ) { loading ->
                     if (loading) {
-                        LinearProgressIndicator(
+                        LinearWavyProgressIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
                         )
