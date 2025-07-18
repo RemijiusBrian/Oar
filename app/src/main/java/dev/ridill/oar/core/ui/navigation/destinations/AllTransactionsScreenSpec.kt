@@ -66,6 +66,17 @@ data object AllTransactionsScreenSpec : ScreenSpec {
             onResult = viewModel::onAddEditTxNavResult
         )
 
+        FloatingWindowNavigationResultEffect<Long>(
+            resultKey = AddEditFolderSheetSpec.ACTION_FOLDER_SAVED,
+            navBackStackEntry = navBackStackEntry,
+            viewModel,
+            navController
+        ) { id ->
+            navController.navigate(
+                FolderDetailsScreenSpec.routeWithArgs(id)
+            )
+        }
+
         CollectFlowEffect(viewModel.events, context, snackbarController) { event ->
             when (event) {
                 is AllTransactionsViewModel.AllTransactionsEvent.ShowUiMessage -> {
@@ -120,7 +131,15 @@ data object AllTransactionsScreenSpec : ScreenSpec {
                 navController.navigate(
                     AddEditTransactionScreenSpec.routeWithArg(transactionId = it)
                 )
-            }
+            },
+            navigateToCreateSchedule = {
+                navController.navigate(
+                    AddEditTransactionScreenSpec.routeWithArg(
+                        isScheduleTxMode = true
+                    )
+                )
+            },
+            navigateToCreateFolder = { navController.navigate(AddEditFolderSheetSpec.routeWithArg()) }
         )
     }
 }

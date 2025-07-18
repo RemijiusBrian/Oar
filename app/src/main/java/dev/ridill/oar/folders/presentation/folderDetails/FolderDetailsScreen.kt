@@ -22,12 +22,14 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -40,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -89,6 +92,7 @@ import dev.ridill.oar.transactions.presentation.components.TransactionListItem
 import java.time.LocalDateTime
 import kotlin.math.absoluteValue
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FolderDetailsScreen(
     snackbarController: SnackbarController,
@@ -109,9 +113,10 @@ fun FolderDetailsScreen(
     )
 
     val layoutDirection = LocalLayoutDirection.current
+    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     OarScaffold(
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     if (state.transactionMultiSelectionModeActive) {
                         Text(
@@ -159,7 +164,8 @@ fun FolderDetailsScreen(
                             )
                         }
                     }
-                }
+                },
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
         floatingActionButton = {
@@ -178,6 +184,8 @@ fun FolderDetailsScreen(
             }
         },
         snackbarController = snackbarController,
+        modifier = Modifier
+            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -188,6 +196,8 @@ fun FolderDetailsScreen(
                     end = paddingValues.calculateEndPadding(layoutDirection),
                 )
         ) {
+            SpacerSmall()
+
             FolderDetails(
                 folderName = state.folderName,
                 isExcluded = state.isExcluded,
@@ -540,7 +550,7 @@ private fun TransactionInFolderItem(
                     }
                 ) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_outline_remove_folder),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_remove_folder),
                         contentDescription = stringResource(R.string.cd_remove_from_folder)
                     )
                 }

@@ -11,7 +11,7 @@ object SettingsGraphSpec : NavGraphSpec, BottomNavDestination {
         get() = R.string.destination_settings
 
     override val iconRes: Int
-        get() = R.drawable.ic_outline_settings
+        get() = R.drawable.ic_outlined_settings
 
     override val precedence: Int
         get() = 0

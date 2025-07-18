@@ -29,11 +29,11 @@ enum class AllTransactionsMultiSelectionOption(
         labelRes = R.string.all_transactions_multi_selection_option_un_mark_excluded
     ),
     ADD_TO_FOLDER(
-        iconRes = R.drawable.ic_outline_add_folder,
+        iconRes = R.drawable.ic_outlined_add_folder,
         labelRes = R.string.all_transactions_multi_selection_option_add_to_folder
     ),
     REMOVE_FROM_FOLDERS(
-        iconRes = R.drawable.ic_outline_remove_folder,
+        iconRes = R.drawable.ic_outlined_remove_folder,
         labelRes = R.string.all_transactions_multi_selection_option_remove_from_folders
     ),
     AGGREGATE_TOGETHER(

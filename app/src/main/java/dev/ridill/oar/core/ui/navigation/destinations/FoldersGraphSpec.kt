@@ -10,7 +10,7 @@ object FoldersGraphSpec : NavGraphSpec, BottomNavDestination {
         get() = R.string.destination_folders_graph
 
     override val iconRes: Int
-        get() = R.drawable.ic_outline_folder
+        get() = R.drawable.ic_outlined_folder
 
     override val precedence: Int
         get() = 2

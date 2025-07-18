@@ -11,13 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -53,6 +54,7 @@ import dev.ridill.oar.folders.domain.model.AggregateType
 import dev.ridill.oar.folders.domain.model.FolderUIModel
 import kotlin.math.absoluteValue
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AllFoldersScreen(
     snackbarController: SnackbarController,
@@ -61,13 +63,13 @@ fun AllFoldersScreen(
     navigateToFolderDetails: (Long) -> Unit,
     navigateUp: () -> Unit
 ) {
-    val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val areFoldersListEmpty by remember {
         derivedStateOf { foldersPagingItems.isEmpty() }
     }
     OarScaffold(
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(AllFoldersScreenSpec.labelRes)) },
                 navigationIcon = { BackArrowButton(onClick = navigateUp) },
                 scrollBehavior = topAppBarScrollBehavior
@@ -78,7 +80,7 @@ fun AllFoldersScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = navigateToAddFolder) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_outline_add_folder),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_add_folder),
                     contentDescription = stringResource(R.string.cd_new_folder)
                 )
             }

@@ -236,7 +236,7 @@ fun NewTransactionFab(
         modifier = modifier
     ) {
         Icon(
-            imageVector = ImageVector.vectorResource(R.drawable.ic_outline_money_add),
+            imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_money_add),
             contentDescription = stringResource(R.string.cd_new_transaction_fab)
         )
     }

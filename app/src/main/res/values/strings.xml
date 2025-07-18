@@ -514,6 +514,8 @@
     <string name="restoring_backup_jobs">Restoring Backup Jobs</string>
     <string name="restoring_schedule_reminders">Restoring Schedule Reminders</string>
     <string name="cd_option_name">Option %s</string>
+    <string name="cd_close_menu">Close menu</string>
+    <string name="new_transaction">New Transaction</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>

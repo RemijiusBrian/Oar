@@ -18,11 +18,12 @@ import androidx.compose.material.icons.rounded.BrightnessMedium
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,9 +41,9 @@ import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.FeatureInfoDialog
+import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.PermissionRationaleDialog
 import dev.ridill.oar.core.ui.components.RadioOptionListDialog
-import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.icons.Message
 import dev.ridill.oar.core.ui.navigation.destinations.SettingsScreenSpec
@@ -55,6 +56,7 @@ import dev.ridill.oar.settings.presentation.components.SimpleSettingsPreference
 import dev.ridill.oar.settings.presentation.components.SwitchPreference
 import java.util.Currency
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     snackbarController: SnackbarController,
@@ -71,13 +73,13 @@ fun SettingsScreen(
     launchUriInBrowser: (Uri) -> Unit
 ) {
     val layoutDirection = LocalLayoutDirection.current
-    val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(SettingsScreenSpec.labelRes)) },
                 navigationIcon = { BackArrowButton(onClick = navigateUp) },
                 scrollBehavior = topAppBarScrollBehavior

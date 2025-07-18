@@ -32,6 +32,7 @@ val Long.Companion.Zero: Long get() = 0L
 fun Long?.orZero(): Long = this ?: Long.Zero
 
 val Dp.Companion.Zero: Dp get() = 0.dp
+fun Dp?.orZero(): Dp = this ?: Dp.Zero
 
 val String.Companion.Empty: String get() = ""
 val String.Companion.WhiteSpace: String get() = " "

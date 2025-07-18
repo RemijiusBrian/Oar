@@ -14,18 +14,21 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -48,6 +51,7 @@ import dev.ridill.oar.core.ui.util.isEmpty
 import dev.ridill.oar.tags.domain.model.Tag
 import dev.ridill.oar.tags.presentation.components.TagListItem
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AllTagsScreen(
     snackbarController: SnackbarController,
@@ -69,11 +73,13 @@ fun AllTagsScreen(
         onBack = actions::onMultiSelectionModeDismiss
     )
 
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         snackbarController = snackbarController,
-        modifier = modifier,
+        modifier = modifier
+            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     if (state.multiSelectionModeActive) {
                         Text(stringResource(R.string.count_selected, state.selectedIds.size))
@@ -102,7 +108,8 @@ fun AllTagsScreen(
                             )
                         }
                     }
-                }
+                },
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
         floatingActionButton = {
@@ -112,7 +119,7 @@ fun AllTagsScreen(
                     contentDescription = stringResource(R.string.cd_create_new_tag)
                 )
             }
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier

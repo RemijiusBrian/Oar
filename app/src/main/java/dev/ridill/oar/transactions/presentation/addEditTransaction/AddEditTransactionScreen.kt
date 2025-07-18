@@ -19,27 +19,27 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedAssistChip
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingToolbarDefaults.floatingToolbarVerticalNestedScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
+import androidx.compose.material3.MediumFloatingActionButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SelectableDates
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -90,10 +90,12 @@ import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.ExcludedIcon
 import dev.ridill.oar.core.ui.components.LabelledRadioButton
 import dev.ridill.oar.core.ui.components.OarDatePickerDialog
+import dev.ridill.oar.core.ui.components.OarPlainTooltip
 import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.OarTextField
 import dev.ridill.oar.core.ui.components.OarTimePickerDialog
 import dev.ridill.oar.core.ui.components.SnackbarController
+import dev.ridill.oar.core.ui.components.Spacer
 import dev.ridill.oar.core.ui.components.SpacerExtraSmall
 import dev.ridill.oar.core.ui.components.SpacerMedium
 import dev.ridill.oar.core.ui.components.TitleLargeText
@@ -102,9 +104,12 @@ import dev.ridill.oar.core.ui.components.rememberAmountOutputTransformation
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.AllSchedulesScreenSpec
 import dev.ridill.oar.core.ui.theme.IconSizeMedium
+import dev.ridill.oar.core.ui.theme.IconSizeSmall
 import dev.ridill.oar.core.ui.theme.OarTheme
 import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
 import dev.ridill.oar.core.ui.theme.spacing
+import dev.ridill.oar.core.ui.util.PaddingSide
+import dev.ridill.oar.core.ui.util.exclude
 import dev.ridill.oar.schedules.domain.model.ScheduleRepetition
 import dev.ridill.oar.settings.presentation.components.SimplePreference
 import dev.ridill.oar.settings.presentation.components.SwitchPreference
@@ -119,6 +124,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Currency
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AddEditTransactionScreen(
     isEditMode: Boolean,
@@ -144,7 +150,7 @@ fun AddEditTransactionScreen(
         }
     }
 
-    val topAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val dateNowUtc = remember { DateUtil.dateNow(ZoneId.of(ZoneOffset.UTC.id)) }
     val datePickerState = if (state.isScheduleTxMode) rememberDatePickerState(
@@ -174,9 +180,10 @@ fun AddEditTransactionScreen(
         initialMinute = state.timestamp.minute
     )
 
+    var toolbarExpanded by remember { mutableStateOf(true) }
     OarScaffold(
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     Text(
                         text = stringResource(
@@ -191,144 +198,166 @@ fun AddEditTransactionScreen(
                     )
                 },
                 navigationIcon = { BackArrowButton(onClick = navigateUp) },
-                actions = {
-                    OptionsMenu(
-                        options = state.menuOptions,
-                        onOptionClick = actions::onOptionClick
-                    )
-                },
                 scrollBehavior = topAppBarScrollBehavior
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = actions::onSaveClick,
-                text = { Text(stringResource(R.string.save)) },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Save,
-                        contentDescription = stringResource(
-                            id = if (state.isScheduleTxMode) R.string.cd_save_schedule
-                            else R.string.cd_save_transaction
-                        )
-                    )
-                }
             )
         },
         modifier = Modifier
             .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+            .floatingToolbarVerticalNestedScroll(
+                expanded = toolbarExpanded,
+                onExpand = { toolbarExpanded = true },
+                onCollapse = { toolbarExpanded = false }
+            )
             .imePadding()
             .then(modifier),
         snackbarController = snackbarController
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    top = MaterialTheme.spacing.medium,
-                    bottom = PaddingScrollEnd
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-        ) {
-            TransactionTypeSelector(
-                selectedType = state.transactionType,
-                onValueChange = actions::onTypeChange,
+        Box {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(TRANSACTION_TYPE_SELECTOR_WIDTH_FRACTION)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            AmountInput(
-                currency = state.currency,
-                onCurrencyClick = navigateToCurrencySelection,
-                inputState = amountInputState,
-                isInputAnExpression = state.isAmountInputAnExpression,
-                onExpressionEvalClick = actions::onEvaluateExpressionClick,
-                onTransformClick = navigateToAmountTransformation,
-                onFocusLost = actions::onAmountFocusLost,
-                modifier = Modifier
-                    .padding(horizontal = MaterialTheme.spacing.medium)
-                    .focusRequester(amountFocusRequester)
-            )
-
-            NoteInput(
-                isDuplicateMode = isDuplicateMode,
-                inputState = noteInputState,
-                modifier = Modifier
-                    .padding(horizontal = MaterialTheme.spacing.medium)
-            )
-
-            if (!isEditMode) {
-                AmountRecommendationsRow(
-                    recommendations = state.amountRecommendations,
-                    onRecommendationClick = {
-                        actions.onRecommendedAmountClick(it)
-                        focusManager.moveFocus(FocusDirection.Down)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(AMOUNT_RECOMMENDATION_WIDTH_FRACTION)
-                )
-            }
-
-            HorizontalDivider()
-
-            TransactionTimestamp(
-                timestamp = state.timestamp,
-                onClick = actions::onTimestampClick,
-                modifier = Modifier
-                    .padding(horizontal = MaterialTheme.spacing.medium)
-                    .align(Alignment.End)
-            )
-
-            AnimatedVisibility(!state.isScheduleTxMode) {
-                SimplePreference(
-                    titleRes = R.string.cycle,
-                    summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
-                )
-            }
-
-            AnimatedVisibility(
-                visible = state.isScheduleTxMode,
-                modifier = Modifier
-                    .align(Alignment.Start)
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        top = MaterialTheme.spacing.medium,
+                        bottom = PaddingScrollEnd
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
-                TransactionRepeatModeIndicator(
-                    selectedRepeatMode = state.selectedRepetition,
-                    onClick = actions::onRepeatModeClick,
+                TransactionTypeSelector(
+                    selectedType = state.transactionType,
+                    onValueChange = actions::onTypeChange,
+                    modifier = Modifier
+                        .fillMaxWidth(TRANSACTION_TYPE_SELECTOR_WIDTH_FRACTION)
+                        .align(Alignment.CenterHorizontally)
+                )
+
+                AmountInput(
+                    currency = state.currency,
+                    onCurrencyClick = navigateToCurrencySelection,
+                    inputState = amountInputState,
+                    isInputAnExpression = state.isAmountInputAnExpression,
+                    onExpressionEvalClick = actions::onEvaluateExpressionClick,
+                    onTransformClick = navigateToAmountTransformation,
+                    onFocusLost = actions::onAmountFocusLost,
+                    modifier = Modifier
+                        .padding(horizontal = MaterialTheme.spacing.medium)
+                        .focusRequester(amountFocusRequester)
+                )
+
+                NoteInput(
+                    isDuplicateMode = isDuplicateMode,
+                    inputState = noteInputState,
+                    modifier = Modifier
+                        .padding(horizontal = MaterialTheme.spacing.medium)
+                )
+
+                if (!isEditMode) {
+                    AmountRecommendationsRow(
+                        recommendations = state.amountRecommendations,
+                        onRecommendationClick = {
+                            actions.onRecommendedAmountClick(it)
+                            focusManager.moveFocus(FocusDirection.Down)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(AMOUNT_RECOMMENDATION_WIDTH_FRACTION)
+                    )
+                }
+
+                HorizontalDivider()
+
+                TransactionTimestamp(
+                    timestamp = state.timestamp,
+                    onClick = actions::onTimestampClick,
+                    modifier = Modifier
+                        .padding(horizontal = MaterialTheme.spacing.medium)
+                        .align(Alignment.End)
+                )
+
+                AnimatedVisibility(!state.isScheduleTxMode) {
+                    SimplePreference(
+                        titleRes = R.string.cycle,
+                        summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = state.isScheduleTxMode,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                ) {
+                    TransactionRepeatModeIndicator(
+                        selectedRepeatMode = state.selectedRepetition,
+                        onClick = actions::onRepeatModeClick,
+                        modifier = Modifier
+                            .padding(horizontal = MaterialTheme.spacing.medium)
+                    )
+                }
+
+                HorizontalDivider()
+
+                SwitchPreference(
+                    titleRes = R.string.exclude_from_expenditure,
+                    value = state.isTransactionExcluded,
+                    onValueChange = actions::onExclusionToggle,
+                    leadingIcon = { ExcludedIcon() }
+                )
+
+                HorizontalDivider()
+
+                FolderIndicator(
+                    folderName = state.linkedFolderName,
+                    onSelectFolderClick = actions::onSelectFolderClick,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                )
+
+                TagSelection(
+                    tagsLazyPagingItems = recentTagsLazyPagingItems,
+                    selectedTagId = state.selectedTagId,
+                    onTagClick = actions::onTagSelect,
+                    onViewAllClick = actions::onViewAllTagsClick,
                     modifier = Modifier
                         .padding(horizontal = MaterialTheme.spacing.medium)
                 )
             }
 
-            HorizontalDivider()
-
-            SwitchPreference(
-                titleRes = R.string.exclude_from_expenditure,
-                value = state.isTransactionExcluded,
-                onValueChange = actions::onExclusionToggle,
-                leadingIcon = { ExcludedIcon() }
-            )
-
-            HorizontalDivider()
-
-            FolderIndicator(
-                folderName = state.linkedFolderName,
-                onSelectFolderClick = actions::onSelectFolderClick,
+            HorizontalFloatingToolbar(
+                expanded = toolbarExpanded,
+                floatingActionButton = {
+                    MediumFloatingActionButton(
+                        onClick = actions::onSaveClick,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Save,
+                            contentDescription = stringResource(
+                                id = if (state.isScheduleTxMode) R.string.cd_save_schedule
+                                else R.string.cd_save_transaction
+                            )
+                        )
+                    }
+                },
                 modifier = Modifier
-                    .align(Alignment.Start)
-            )
-
-            TagSelection(
-                tagsLazyPagingItems = recentTagsLazyPagingItems,
-                selectedTagId = state.selectedTagId,
-                onTagClick = actions::onTagSelect,
-                onViewAllClick = actions::onViewAllTagsClick,
-                modifier = Modifier
-                    .padding(horizontal = MaterialTheme.spacing.medium)
-            )
+                    .align(Alignment.BottomEnd)
+                    .padding(paddingValues.exclude(PaddingSide.TOP))
+                    .padding(MaterialTheme.spacing.medium)
+            ) {
+                state.menuOptions.forEach { option ->
+                    OarPlainTooltip(
+                        tooltipText = stringResource(option.labelRes)
+                    ) {
+                        IconButton(
+                            onClick = { actions.onOptionClick(option) }
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(option.iconRes),
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -549,7 +578,7 @@ private fun FolderIndicator(
         title = folderName ?: stringResource(R.string.transaction_folder_indicator_label),
         leadingIcon = {
             Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.ic_outline_move_to_folder),
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_move_to_folder),
                 contentDescription = stringResource(R.string.cd_add_transaction_to_folder)
             )
         },
@@ -560,6 +589,7 @@ private fun FolderIndicator(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TransactionTypeSelector(
     selectedType: TransactionType,
@@ -571,42 +601,75 @@ private fun TransactionTypeSelector(
         stringResource(selectedType.labelRes)
     )
 
-    val typesCount = remember { TransactionType.entries.size }
-
-    SingleChoiceSegmentedButtonRow(
+    Row(
         modifier = modifier
-            .semantics {
+            .semantics(true) {
                 contentDescription = typeSelectorContentDescription
             },
+        horizontalArrangement = Arrangement.spacedBy(
+            ButtonGroupDefaults.ConnectedSpaceBetween,
+            Alignment.CenterHorizontally
+        )
     ) {
         TransactionType.entries.forEachIndexed { index, type ->
-            val selected = selectedType == type
-            val transactionTypeSelectorContentDescription = if (!selected)
-                stringResource(
-                    R.string.cd_transaction_type_selector_unselected,
-                    stringResource(type.labelRes)
-                )
-            else null
-            SegmentedButton(
-                selected = selected,
-                onClick = { onValueChange(type) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = typesCount),
+            ToggleButton(
+                checked = selectedType == type,
+                onCheckedChange = { onValueChange(type) },
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                },
                 modifier = Modifier
-                    .semantics {
-                        transactionTypeSelectorContentDescription?.let {
-                            contentDescription = it
-                        }
-                    },
-                label = { Text(stringResource(type.labelRes)) },
-                icon = {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(type.iconRes),
-                        contentDescription = null
-                    )
-                }
-            )
+                    .weight(1f)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(type.iconRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(IconSizeSmall)
+                )
+
+                Spacer(ToggleButtonDefaults.IconSpacing)
+
+                Text(stringResource(type.labelRes))
+            }
         }
     }
+
+//    SingleChoiceSegmentedButtonRow(
+//        modifier = modifier
+//            .semantics {
+//                contentDescription = typeSelectorContentDescription
+//            },
+//    ) {
+//        TransactionType.entries.forEachIndexed { index, type ->
+//            val selected = selectedType == type
+//            val transactionTypeSelectorContentDescription = if (!selected)
+//                stringResource(
+//                    R.string.cd_transaction_type_selector_unselected,
+//                    stringResource(type.labelRes)
+//                )
+//            else null
+//            SegmentedButton(
+//                selected = selected,
+//                onClick = { onValueChange(type) },
+//                shape = SegmentedButtonDefaults.itemShape(index = index, count = typesCount),
+//                modifier = Modifier
+//                    .semantics {
+//                        transactionTypeSelectorContentDescription?.let {
+//                            contentDescription = it
+//                        }
+//                    },
+//                label = { Text(stringResource(type.labelRes)) },
+//                icon = {
+//                    Icon(
+//                        imageVector = ImageVector.vectorResource(type.iconRes),
+//                        contentDescription = null
+//                    )
+//                }
+//            )
+//        }
+//    }
 }
 
 @Composable
@@ -656,7 +719,7 @@ private fun TransactionRepeatModeIndicator(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_outline_repeat_duration),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_repeat_duration),
                     contentDescription = stringResource(R.string.cd_transaction_repeat_mode)
                 )
             }
@@ -702,49 +765,6 @@ private fun RepetitionSelectionSheet(
                 modifier = Modifier
                     .fillMaxWidth()
             )
-        }
-    }
-}
-
-@Composable
-private fun OptionsMenu(
-    options: Set<AddEditTxOption>,
-    onOptionClick: (AddEditTxOption) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var actionsExpanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = modifier
-    ) {
-        IconButton(
-            onClick = { actionsExpanded = !actionsExpanded }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                contentDescription = stringResource(R.string.cd_show_options)
-            )
-        }
-
-        DropdownMenu(
-            expanded = actionsExpanded,
-            onDismissRequest = { actionsExpanded = false },
-            shape = MaterialTheme.shapes.small
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(option.labelRes)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(option.iconRes),
-                            contentDescription = null
-                        )
-                    },
-                    onClick = {
-                        actionsExpanded = false
-                        onOptionClick(option)
-                    }
-                )
-            }
         }
     }
 }

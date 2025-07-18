@@ -9,18 +9,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.LabelledRadioButton
-import dev.ridill.oar.core.ui.components.PermissionRationaleDialog
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.PermissionRationaleDialog
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.SecuritySettingsScreenSpec
 import dev.ridill.oar.core.ui.theme.spacing
@@ -28,6 +31,7 @@ import dev.ridill.oar.settings.domain.appLock.AppAutoLockInterval
 import dev.ridill.oar.settings.presentation.components.SimpleSettingsPreference
 import dev.ridill.oar.settings.presentation.components.SwitchPreference
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SecuritySettingsScreen(
     snackbarController: SnackbarController,
@@ -35,14 +39,18 @@ fun SecuritySettingsScreen(
     actions: SecuritySettingsActions,
     navigateUp: () -> Unit
 ) {
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(SecuritySettingsScreenSpec.labelRes)) },
-                navigationIcon = { BackArrowButton(onClick = navigateUp) }
+                navigationIcon = { BackArrowButton(onClick = navigateUp) },
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
-        snackbarController = snackbarController
+        snackbarController = snackbarController,
+        modifier = Modifier
+            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
             modifier = Modifier

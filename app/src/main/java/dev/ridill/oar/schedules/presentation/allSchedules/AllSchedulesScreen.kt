@@ -13,12 +13,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.NotificationsOff
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,10 +43,10 @@ import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.CancelButton
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.ListSeparator
-import dev.ridill.oar.core.ui.components.PermissionRationaleDialog
-import dev.ridill.oar.core.ui.components.PermissionState
 import dev.ridill.oar.core.ui.components.OarPlainTooltip
 import dev.ridill.oar.core.ui.components.OarScaffold
+import dev.ridill.oar.core.ui.components.PermissionRationaleDialog
+import dev.ridill.oar.core.ui.components.PermissionState
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.SwipeActionsContainer
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
@@ -58,6 +59,7 @@ import dev.ridill.oar.schedules.presentation.components.ScheduleListItem
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import java.time.LocalDateTime
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AllSchedulesScreen(
     context: Context = LocalContext.current,
@@ -69,7 +71,6 @@ fun AllSchedulesScreen(
     navigateUp: () -> Unit,
     navigateToAddEditSchedule: (Long?) -> Unit
 ) {
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isNotificationPermissionGranted by remember(notificationPermissionState) {
         derivedStateOf { notificationPermissionState?.isGranted != false }
     }
@@ -85,10 +86,10 @@ fun AllSchedulesScreen(
     )
 
     val schedulesListState = rememberLazyListState()
-
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     Text(
                         text = if (state.multiSelectionModeActive) stringResource(
@@ -294,7 +295,7 @@ private fun ScheduleItem(
                     },
                 ) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_outline_double_tick),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_double_tick),
                         contentDescription = stringResource(R.string.cd_mark_as_paid)
                     )
                 }
