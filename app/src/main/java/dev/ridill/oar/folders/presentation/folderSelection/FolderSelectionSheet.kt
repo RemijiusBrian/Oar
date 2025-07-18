@@ -68,6 +68,7 @@ fun FolderSelectionSheet(
                 onClick = onConfirm,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.medium)
             ) {
                 Text(stringResource(R.string.action_confirm))
             }

@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.res.stringResource
@@ -59,7 +58,6 @@ import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.PartOfDay
 import dev.ridill.oar.core.domain.util.WhiteSpace
 import dev.ridill.oar.core.ui.components.BodyMediumText
-import dev.ridill.oar.core.ui.components.CollapsibleHeaderLayout
 import dev.ridill.oar.core.ui.components.DisplaySmallText
 import dev.ridill.oar.core.ui.components.ListLabel
 import dev.ridill.oar.core.ui.components.OarImage
@@ -74,8 +72,9 @@ import dev.ridill.oar.core.ui.components.SpacerSmall
 import dev.ridill.oar.core.ui.components.TitleMediumText
 import dev.ridill.oar.core.ui.components.VerticalNumberSpinnerContent
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
-import dev.ridill.oar.core.ui.components.rememberCollapsibleHeaderState
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
+import dev.ridill.oar.core.ui.components.scrollableLayout.ScrollableHeaderLayout
+import dev.ridill.oar.core.ui.components.scrollableLayout.ScrollableLayoutDefaults
 import dev.ridill.oar.core.ui.navigation.destinations.AllTransactionsScreenSpec
 import dev.ridill.oar.core.ui.navigation.destinations.BottomNavDestination
 import dev.ridill.oar.core.ui.theme.ContentAlpha
@@ -145,14 +144,13 @@ fun DashboardScreen(
         },
         snackbarController = snackbarController,
     ) { paddingValues ->
-        val collapsibleHeaderState = rememberCollapsibleHeaderState(
+        val scrollableLayoutBehaviour = ScrollableLayoutDefaults.exitUntilCollapsedScrollBehavior(
             parallaxFactor = 2f
         )
-        val headerShape = MaterialTheme.shapes.extraLarge
-        CollapsibleHeaderLayout(
+        ScrollableHeaderLayout(
             modifier = Modifier
                 .fillMaxSize(),
-            state = collapsibleHeaderState,
+            scrollBehavior = scrollableLayoutBehaviour,
             header = {
                 DashboardHeader(
                     signedInUser = state.signedInUser,
@@ -165,85 +163,77 @@ fun DashboardScreen(
                     contentPadding = PaddingValues(
                         top = paddingValues.calculateTopPadding()
                     ),
-                    shape = headerShape,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MaterialTheme.spacing.small)
                         .padding(bottom = MaterialTheme.spacing.small)
-                        .graphicsLayer {
-                            val expansionProgress =
-                                collapsibleHeaderState.expansionProgress.floatValue
-                            alpha = expansionProgress
-                            shape = headerShape
-                        }
                 )
-            },
-            body = {
-                Surface {
-                    Column(
+            }
+        ) {
+            Surface {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    SpacerSmall()
+                    RecentSpendsHeader(
+                        amount = state.spentAmount,
+                        onAllTransactionsClick = navigateToAllTransactions,
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = MaterialTheme.spacing.medium,
+                                vertical = MaterialTheme.spacing.medium
+                            )
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(Float.One),
+                        contentPadding = PaddingValues(
+                            bottom = paddingValues.calculateBottomPadding() + PaddingScrollEnd
+                        )
                     ) {
-                        SpacerSmall()
-                        RecentSpendsHeader(
-                            amount = state.spentAmount,
-                            onAllTransactionsClick = navigateToAllTransactions,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    horizontal = MaterialTheme.spacing.medium,
-                                    vertical = MaterialTheme.spacing.medium
-                                )
+                        listEmptyIndicator(
+                            isListEmpty = areRecentSpendsEmpty,
+                            messageRes = R.string.recent_spends_list_empty_message
                         )
 
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(Float.One),
-                            contentPadding = PaddingValues(
-                                bottom = paddingValues.calculateBottomPadding() + PaddingScrollEnd
-                            )
-                        ) {
-                            listEmptyIndicator(
-                                isListEmpty = areRecentSpendsEmpty,
-                                messageRes = R.string.recent_spends_list_empty_message
-                            )
-
-                            items(
-                                count = recentSpends.itemCount,
-                                key = recentSpends.itemKey { it.id },
-                                contentType = recentSpends.itemContentType { "RecentSpendCard" }
-                            ) { index ->
-                                recentSpends[index]?.let { transaction ->
-                                    TransactionListItem(
-                                        note = transaction.note,
-                                        amount = transaction.amountFormatted,
-                                        timeStamp = transaction.timestamp,
-                                        leadingContentLine1 = transaction.timestamp.format(DateUtil.Formatters.ddth),
-                                        leadingContentLine2 = transaction.timestamp.format(DateUtil.Formatters.EEE),
-                                        type = transaction.type,
-                                        tag = transaction.tag,
-                                        folder = transaction.folder,
-                                        modifier = Modifier
-                                            .fillParentMaxWidth()
-                                            .clickable(
-                                                onClick = {
-                                                    navigateToAddEditTransaction(
-                                                        transaction.id,
-                                                        false
-                                                    )
-                                                },
-                                                onClickLabel = stringResource(R.string.cd_tap_to_edit_transaction)
-                                            )
-                                            .animateItem(),
-                                    )
-                                }
+                        items(
+                            count = recentSpends.itemCount,
+                            key = recentSpends.itemKey { it.id },
+                            contentType = recentSpends.itemContentType { "RecentSpendCard" }
+                        ) { index ->
+                            recentSpends[index]?.let { transaction ->
+                                TransactionListItem(
+                                    note = transaction.note,
+                                    amount = transaction.amountFormatted,
+                                    timeStamp = transaction.timestamp,
+                                    leadingContentLine1 = transaction.timestamp.format(DateUtil.Formatters.ddth),
+                                    leadingContentLine2 = transaction.timestamp.format(DateUtil.Formatters.EEE),
+                                    type = transaction.type,
+                                    tag = transaction.tag,
+                                    folder = transaction.folder,
+                                    modifier = Modifier
+                                        .fillParentMaxWidth()
+                                        .clickable(
+                                            onClick = {
+                                                navigateToAddEditTransaction(
+                                                    transaction.id,
+                                                    false
+                                                )
+                                            },
+                                            onClickLabel = stringResource(R.string.cd_tap_to_edit_transaction)
+                                        )
+                                        .animateItem(),
+                                )
                             }
                         }
                     }
                 }
             }
-        )
+        }
     }
 }
 
