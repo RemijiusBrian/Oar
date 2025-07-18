@@ -59,7 +59,7 @@ android {
 
         create("production") {
             dimension = "env"
-            versionCode = 5
+            versionCode = 6
             versionName = "0.2.0"
         }
     }
@@ -89,7 +89,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin { 
+    kotlin {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_17
         }
