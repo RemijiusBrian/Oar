@@ -5,6 +5,7 @@ import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.core.animateTo
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableFloatStateOf
@@ -63,7 +64,7 @@ object ScrollableLayoutDefaults {
         ),
         canScroll: () -> Boolean = { true },
         snapAnimationSpec: AnimationSpec<Float>? = null,
-        flingAnimationSpec: DecayAnimationSpec<Float>? = null,
+        flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
     ): ScrollableLayoutBehaviour =
         remember(state, canScroll, snapAnimationSpec, flingAnimationSpec) {
             ExitUntilCollapsedScrollBehavior(
@@ -91,8 +92,6 @@ private class ExitUntilCollapsedScrollBehavior(
                 val prevHeightOffset = state.offsetY
                 state.offsetY = state.offsetY + available.y
                 return if (prevHeightOffset != state.offsetY) {
-                    // We're in the middle of top app bar collapse or expand.
-                    // Consume only the scroll on the Y axis.
                     available.copy(x = 0f)
                 } else {
                     Offset.Zero
@@ -137,16 +136,10 @@ private suspend fun settleHeader(
     flingAnimationSpec: DecayAnimationSpec<Float>?,
     snapAnimationSpec: AnimationSpec<Float>?,
 ): Velocity {
-    // Check if the app bar is completely collapsed/expanded. If so, no need to settle the app bar,
-    // and just return Zero Velocity.
-    // Note that we don't check for 0f due to float precision with the collapsedFraction
-    // calculation.
     if (state.collapsedFraction < 0.01f || state.collapsedFraction == 1f) {
         return Velocity.Zero
     }
     var remainingVelocity = velocity
-    // In case there is an initial velocity that was left after a previous user fling, animate to
-    // continue the motion to expand or collapse the app bar.
     if (flingAnimationSpec != null && abs(velocity) > 1f) {
         var lastValue = 0f
         AnimationState(initialValue = 0f, initialVelocity = velocity).animateDecay(
@@ -164,12 +157,12 @@ private suspend fun settleHeader(
     }
     // Snap if animation specs were provided.
     if (snapAnimationSpec != null) {
-        if (state.offsetY < 0 && state.offsetY > state.offsetY) {
+        if (state.offsetY < 0 && state.offsetY > -state.offsetYLimit) {
             AnimationState(initialValue = state.offsetY).animateTo(
                 if (state.collapsedFraction < 0.5f) {
                     0f
                 } else {
-                    state.offsetY
+                    -state.offsetYLimit
                 },
                 animationSpec = snapAnimationSpec,
             ) {
