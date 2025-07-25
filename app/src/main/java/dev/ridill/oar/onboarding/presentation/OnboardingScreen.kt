@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -40,6 +41,7 @@ import dev.ridill.oar.core.ui.theme.PrimaryBrandColor
 import dev.ridill.oar.core.ui.theme.onPrimaryBrandColor
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.onboarding.domain.model.OnboardingPage
+import dev.ridill.oar.onboarding.presentation.components.OnboardingShapes
 import dev.ridill.oar.onboarding.presentation.components.PermissionsPage
 import dev.ridill.oar.onboarding.presentation.components.SetupBudgetCyclesPage
 import dev.ridill.oar.onboarding.presentation.components.SignInAndDataRestore
@@ -84,6 +86,19 @@ fun OnboardingScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                OnboardingShapes(
+                    currentPage = when (pagerState.currentPage) {
+                        OnboardingPage.WELCOME.ordinal -> OnboardingPage.WELCOME
+                        OnboardingPage.APP_PERMISSIONS.ordinal -> OnboardingPage.APP_PERMISSIONS
+                        OnboardingPage.ACCOUNT_SIGN_IN_AND_DATA_RESTORE.ordinal -> OnboardingPage.ACCOUNT_SIGN_IN_AND_DATA_RESTORE
+                        OnboardingPage.SETUP_BUDGET_CYCLES.ordinal -> OnboardingPage.SETUP_BUDGET_CYCLES
+                        else -> OnboardingPage.WELCOME
+                    },
+                    pageState = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.24f)
+                )
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier

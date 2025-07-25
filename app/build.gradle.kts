@@ -147,6 +147,7 @@ dependencies {
     implementation(libs.androidx.compose.material3.windowSize)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.graphics.shapes)
 
     implementation(libs.androidx.compose.material)
 
