@@ -176,6 +176,13 @@ data object AddEditTransactionScreenSpec : ScreenSpec {
             onResult = viewModel::onCurrencySelect
         )
 
+        FloatingWindowNavigationResultEffect<Long?>(
+            resultKey = CycleSelectionSheetSpec.SELECTED_CYCLE_ID,
+            navBackStackEntry = navBackStackEntry,
+            viewModel,
+            onResult = viewModel::onCycleSelect
+        )
+
         CollectFlowEffect(viewModel.events, snackbarController, context) { event ->
             when (event) {
                 is AddEditTransactionViewModel.AddEditTransactionEvent.ShowUiMessage -> {
@@ -242,6 +249,9 @@ data object AddEditTransactionScreenSpec : ScreenSpec {
             },
             navigateToCurrencySelection = {
                 navController.navigate(CurrencySelectionSheetSpec.routeWithArg(state.currency.currencyCode))
+            },
+            navigateToCycleSelection = {
+                navController.navigate(CycleSelectionSheetSpec.routeWithArgs(state.selectedCycleId))
             }
         )
     }

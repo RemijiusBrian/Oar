@@ -1,5 +1,9 @@
 package dev.ridill.oar.budgetCycles.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.filter
 import androidx.room.withTransaction
 import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.data.local.AggregationsDao
@@ -13,6 +17,7 @@ import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
 import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
@@ -20,6 +25,7 @@ import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.LocaleUtil
+import dev.ridill.oar.core.domain.util.UtilConstants
 import dev.ridill.oar.core.domain.util.logD
 import dev.ridill.oar.core.domain.util.logE
 import dev.ridill.oar.core.domain.util.logI
@@ -40,6 +46,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import java.time.YearMonth
+import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Currency
 import kotlin.math.absoluteValue
@@ -472,6 +479,30 @@ class BudgetCycleRepositoryImpl(
             )
         )
     }
+
+    override suspend fun getCyclesPagingData(
+        query: String
+    ): Flow<PagingData<CycleSelector>> = Pager(
+        config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
+        pagingSourceFactory = { cycleDao.getCycleSelectionItems() }
+    ).flow
+        .mapLatest { pagingData ->
+            pagingData.filter {
+                it.description.contains(query, ignoreCase = true)
+                        || query.contains(
+                    other = it.startDate.month
+                        .getDisplayName(TextStyle.SHORT_STANDALONE, LocaleUtil.defaultLocale),
+                    ignoreCase = true
+                )
+                        || query.contains(
+                    other = it.endDate.month
+                        .getDisplayName(TextStyle.SHORT_STANDALONE, LocaleUtil.defaultLocale),
+                    ignoreCase = true
+                )
+                        || query.contains(it.startDate.year.toString())
+                        || query.contains(it.endDate.year.toString())
+            }
+        }
 }
 
 class CycleEntryCreationFailedThrowable(entity: BudgetCycleEntry) :

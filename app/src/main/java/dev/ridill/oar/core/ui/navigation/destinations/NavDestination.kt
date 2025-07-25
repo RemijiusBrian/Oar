@@ -18,6 +18,7 @@ sealed interface NavDestination {
                 AddEditTagSheetSpec,
                 TagSelectionSheetSpec,
                 CurrencySelectionSheetSpec,
+                CycleSelectionSheetSpec
             )
 
         const val DEEP_LINK_URI = "dev.ridill.oar://app"

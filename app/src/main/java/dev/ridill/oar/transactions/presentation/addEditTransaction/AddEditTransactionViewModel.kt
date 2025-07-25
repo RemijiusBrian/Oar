@@ -1,7 +1,6 @@
 package dev.ridill.oar.transactions.presentation.addEditTransaction
 
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -40,6 +39,7 @@ import dev.ridill.oar.transactions.domain.repository.AddEditTransactionRepositor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -85,12 +85,15 @@ class AddEditTransactionViewModel @Inject constructor(
         init = { TextFieldState() }
     )
 
-    private val cycleDescription = txInput
-        .mapLatest { it?.cycleId ?: OarDatabase.INVALID_ID_LONG }
-        .flatMapLatest { cycleRepo.getCycleByIdFlow(it) }
+    private val selectedCycleId = txInput.mapLatest { it?.cycleId }
+        .distinctUntilChanged()
+    private val cycleDescription = selectedCycleId
+        .flatMapLatest { id ->
+            id?.let(cycleRepo::getCycleByIdFlow)
+                ?: flowOf(null)
+        }
         .mapLatest { it?.description }
         .distinctUntilChanged()
-
 
     private val isAmountInputAnExpression = amountInputState.textAsFlow()
         .mapLatest { evalService.isExpression(it) }
@@ -153,8 +156,9 @@ class AddEditTransactionViewModel @Inject constructor(
             optionEntries = optionEntries - AddEditTxOption.DUPLICATE
         }
 
-        optionEntries = if (scheduleMode) optionEntries - AddEditTxOption.CONVERT_TO_SCHEDULE
-        else optionEntries - AddEditTxOption.CONVERT_TO_NORMAL_TRANSACTION
+        optionEntries =
+            if (scheduleMode) optionEntries - AddEditTxOption.CONVERT_TO_SCHEDULE
+            else optionEntries - AddEditTxOption.CONVERT_TO_NORMAL_TRANSACTION
 
         optionEntries
     }
@@ -177,6 +181,7 @@ class AddEditTransactionViewModel @Inject constructor(
         selectedRepetition,
         showRepetitionSelection,
         cycleDescription,
+        selectedCycleId,
     ).mapLatest { (
                       isLoading,
                       menuOptions,
@@ -195,6 +200,7 @@ class AddEditTransactionViewModel @Inject constructor(
                       selectedRepetition,
                       showRepetitionSelection,
                       cycleDescription,
+                      selectedCycleId,
                   ) ->
         AddEditTransactionState(
             isLoading = isLoading,
@@ -213,7 +219,8 @@ class AddEditTransactionViewModel @Inject constructor(
             isScheduleTxMode = isScheduleTxMode,
             selectedRepetition = selectedRepetition,
             showRepeatModeSelection = showRepetitionSelection,
-            cycleDescription = cycleDescription
+            cycleDescription = cycleDescription,
+            selectedCycleId = selectedCycleId,
         )
     }.asStateFlow(viewModelScope, AddEditTransactionState())
 
@@ -269,6 +276,11 @@ class AddEditTransactionViewModel @Inject constructor(
 
     fun onCurrencySelect(currency: Currency) {
         savedStateHandle[TX_INPUT] = txInput.value?.copy(currency = currency)
+    }
+
+    fun onCycleSelect(id: Long?) {
+        if (id == null) return
+        savedStateHandle[TX_INPUT] = txInput.value?.copy(cycleId = id)
     }
 
     override fun onAmountFocusLost() {
@@ -370,8 +382,12 @@ class AddEditTransactionViewModel @Inject constructor(
         val amount = amountInputState.text.toString()
             .toDoubleOrNull() ?: return
         val transformedAmount = when (result.transformation) {
-            AmountTransformation.DIVIDE_BY -> amount / result.factor.toDoubleOrNull().orZero()
-            AmountTransformation.MULTIPLIER -> amount * result.factor.toDoubleOrNull().orZero()
+            AmountTransformation.DIVIDE_BY -> amount / result.factor.toDoubleOrNull()
+                .orZero()
+
+            AmountTransformation.MULTIPLIER -> amount * result.factor.toDoubleOrNull()
+                .orZero()
+
             AmountTransformation.PERCENT -> amount * (result.factor.toFloatOrNull()
                 .orZero() / 100f)
         }
@@ -543,7 +559,9 @@ class AddEditTransactionViewModel @Inject constructor(
 
     sealed interface AddEditTransactionEvent {
         data class ShowUiMessage(val uiText: UiText) : AddEditTransactionEvent
-        data class NavigateUpWithResult(val result: AddEditTxResult) : AddEditTransactionEvent
+        data class NavigateUpWithResult(val result: AddEditTxResult) :
+            AddEditTransactionEvent
+
         data class LaunchFolderSelection(val preselectedId: Long?) : AddEditTransactionEvent
         data class LaunchTagSelection(val preselectedId: Long?) : AddEditTransactionEvent
         data class NavigateToDuplicateTransactionCreation(val id: Long) :

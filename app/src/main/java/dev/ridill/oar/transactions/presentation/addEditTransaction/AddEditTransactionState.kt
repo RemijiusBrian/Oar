@@ -27,7 +27,8 @@ data class AddEditTransactionState(
     val isScheduleTxMode: Boolean = false,
     val selectedRepetition: ScheduleRepetition = ScheduleRepetition.NO_REPEAT,
     val showRepeatModeSelection: Boolean = false,
-    val cycleDescription: String? = null
+    val cycleDescription: String? = null,
+    val selectedCycleId: Long? = null,
 ) {
     val timestampUtc: ZonedDateTime
         get() = timestamp.atZone(ZoneId.of(ZoneOffset.UTC.id))

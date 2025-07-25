@@ -1,10 +1,12 @@
 package dev.ridill.oar.budgetCycles.data.local
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.local.view.BudgetCycleDetailsView
+import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.core.data.db.BaseDao
 import dev.ridill.oar.settings.data.local.ConfigKey
 import kotlinx.coroutines.flow.Flow
@@ -56,4 +58,11 @@ interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
         """
     )
     suspend fun updateCurrencyCodeForActiveCycle(currencyCode: String)
+
+    @Query("""
+        SELECT id, start_date AS startDate, end_date AS endDate 
+        FROM budget_cycle_table
+        ORDER BY start_date DESC, end_date DESC
+        """)
+    fun getCycleSelectionItems(): PagingSource<Int, CycleSelector>
 }
