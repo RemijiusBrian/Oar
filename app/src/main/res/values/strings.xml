@@ -33,6 +33,7 @@
     <string name="destination_new_folder">New Folder</string>
     <string name="destination_edit_folder">Edit Folder</string>
     <string name="destination_budget_cycles">Budget Cycles</string>
+    <string name="destination_budget_cycle_selection">Select Cycle</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_new_transaction_label">Add New Transaction</string>
@@ -516,6 +517,7 @@
     <string name="cd_option_name">Option %s</string>
     <string name="cd_close_menu">Close menu</string>
     <string name="new_transaction">New Transaction</string>
+    <string name="search_cycle">Search cycle by start or end dates</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>

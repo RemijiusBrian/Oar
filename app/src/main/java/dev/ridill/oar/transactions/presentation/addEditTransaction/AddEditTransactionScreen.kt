@@ -138,6 +138,7 @@ fun AddEditTransactionScreen(
     navigateUp: () -> Unit,
     navigateToAmountTransformation: () -> Unit,
     navigateToCurrencySelection: () -> Unit,
+    navigateToCycleSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -278,7 +279,8 @@ fun AddEditTransactionScreen(
                 AnimatedVisibility(!state.isScheduleTxMode) {
                     SimplePreference(
                         titleRes = R.string.cycle,
-                        summary = state.cycleDescription.orEmpty() // TODO: Cycle Selector
+                        summary = state.cycleDescription.orEmpty(),
+                        onClick = navigateToCycleSelection
                     )
                 }
 
@@ -811,7 +813,8 @@ private fun PreviewScreenContent() {
             },
             navigateUp = {},
             navigateToAmountTransformation = {},
-            navigateToCurrencySelection = {}
+            navigateToCurrencySelection = {},
+            navigateToCycleSelection = {}
         )
     }
 }

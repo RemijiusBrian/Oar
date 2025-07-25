@@ -1,12 +1,15 @@
 package dev.ridill.oar.budgetCycles.domain.repository
 
+import androidx.paging.PagingData
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleConfig
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
 import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.core.domain.model.Result
+import dev.ridill.oar.core.domain.util.Empty
 import kotlinx.coroutines.flow.Flow
 import java.time.YearMonth
 import java.util.Currency
@@ -52,4 +55,8 @@ interface BudgetCycleRepository {
 
     suspend fun completeCycleNowAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
     fun getCycleByIdFlow(id: Long): Flow<BudgetCycleEntry?>
+
+    suspend fun getCyclesPagingData(
+        query: String = String.Empty
+    ): Flow<PagingData<CycleSelector>>
 }
