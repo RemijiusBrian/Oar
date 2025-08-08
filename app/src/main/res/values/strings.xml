@@ -308,6 +308,10 @@
         <item quantity="other">Select Tags</item>
     </plurals>
 
+    <plurals name="cycle_update_for_transaction">
+        <item quantity="one">Cycle updated for transaction</item>
+        <item quantity="other">Cycle updated for transactions</item>
+    </plurals>
 
     <string name="biometric_prompt_title_app_name">Unlock %s</string>
     <string name="biometric_or_screen_lock_prompt_message" tools:override="true">Use your biometric or screen lock to continue</string>
@@ -376,6 +380,7 @@
     <string name="search_currency">Search Currency</string>
     <string name="hide_excluded_transactions">Hide Excluded</string>
     <string name="show_excluded_transactions">Show Excluded</string>
+    <string name="all_transactions_multi_selection_option_change_cycle">Change Cycle</string>
     <string name="all_transactions_multi_selection_option_assign_tag">Assign Tag</string>
     <string name="all_transactions_multi_selection_option_remove_tag">Remove Tag</string>
     <string name="all_transactions_multi_selection_option_mark_excluded">Exclude from Expenditure</string>
@@ -518,6 +523,7 @@
     <string name="cd_close_menu">Close menu</string>
     <string name="new_transaction">New Transaction</string>
     <string name="search_cycle">Search cycle by start or end dates</string>
+    <string name="folder_multi_select_option_remove_from_this_folder">Remove from this folder</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>

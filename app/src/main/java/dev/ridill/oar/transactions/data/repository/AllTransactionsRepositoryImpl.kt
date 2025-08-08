@@ -138,4 +138,11 @@ class AllTransactionsRepositoryImpl(
             insertedId
         }
     }
+
+    override suspend fun updateCycleForTransactions(
+        ids: Set<Long>,
+        cycleId: Long
+    ) = withContext(Dispatchers.IO) {
+        transactionsDao.updateCycleIdForTransactions(ids, cycleId)
+    }
 }

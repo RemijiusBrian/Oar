@@ -127,7 +127,7 @@ private fun NewFolderItem(
         headlineContent = { Text(stringResource(R.string.create_new_folder)) },
         trailingContent = {
             Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_add_folder),
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder_add),
                 contentDescription = stringResource(R.string.cd_create_new_folder)
             )
         },
@@ -176,7 +176,7 @@ private fun FolderSelectionCard(
                 else MaterialTheme.elevation.level0
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_filled_folder),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder),
                     contentDescription = null
                 )
             }

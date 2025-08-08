@@ -9,35 +9,39 @@ enum class AllTransactionsMultiSelectionOption(
     @StringRes val labelRes: Int
 ) {
     DELETE(
-        iconRes = R.drawable.ic_rounded_delete,
+        iconRes = R.drawable.ic_outlined_delete,
         labelRes = R.string.action_delete
     ),
+    CHANGE_CYCLE(
+        iconRes = R.drawable.ic_outlined_cycle,
+        labelRes = R.string.all_transactions_multi_selection_option_change_cycle
+    ),
     ASSIGN_TAG(
-        iconRes = R.drawable.ic_rounded_tags,
+        iconRes = R.drawable.ic_outlined_tag,
         labelRes = R.string.all_transactions_multi_selection_option_assign_tag
     ),
     REMOVE_TAG(
-        iconRes = R.drawable.ic_rounded_untag,
+        iconRes = R.drawable.ic_outlined_tag_remove,
         labelRes = R.string.all_transactions_multi_selection_option_remove_tag
     ),
     EXCLUDE_FROM_EXPENDITURE(
-        iconRes = R.drawable.ic_rounded_exclude,
+        iconRes = R.drawable.ic_outlined_exclude,
         labelRes = R.string.all_transactions_multi_selection_option_mark_excluded
     ),
     INCLUDE_IN_EXPENDITURE(
-        iconRes = R.drawable.ic_rounded_include,
+        iconRes = R.drawable.ic_outlined_add_circle,
         labelRes = R.string.all_transactions_multi_selection_option_un_mark_excluded
     ),
     ADD_TO_FOLDER(
-        iconRes = R.drawable.ic_outlined_add_folder,
+        iconRes = R.drawable.ic_outlined_folder_import,
         labelRes = R.string.all_transactions_multi_selection_option_add_to_folder
     ),
     REMOVE_FROM_FOLDERS(
-        iconRes = R.drawable.ic_outlined_remove_folder,
+        iconRes = R.drawable.ic_outlined_folder_export,
         labelRes = R.string.all_transactions_multi_selection_option_remove_from_folders
     ),
     AGGREGATE_TOGETHER(
-        iconRes = R.drawable.ic_total,
+        iconRes = R.drawable.ic_outlined_summation_circle,
         labelRes = R.string.all_transactions_multi_selection_option_aggregate_together
     )
 }

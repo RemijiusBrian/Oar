@@ -113,7 +113,7 @@ fun FolderDetailsScreen(
     )
 
     val layoutDirection = LocalLayoutDirection.current
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
         topBar = {
             MediumFlexibleTopAppBar(
@@ -550,7 +550,7 @@ private fun TransactionInFolderItem(
                     }
                 ) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_remove_folder),
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder_export),
                         contentDescription = stringResource(R.string.cd_remove_from_folder)
                     )
                 }

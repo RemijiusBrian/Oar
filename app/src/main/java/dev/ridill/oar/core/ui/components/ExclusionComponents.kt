@@ -27,26 +27,13 @@ import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.theme.IconSizeSmall
 import dev.ridill.oar.core.ui.theme.spacing
 
-/*@Composable
-fun ExclusionIcon(
-    excluded: Boolean,
-    modifier: Modifier = Modifier
-) = Icon(
-    imageVector = ImageVector.vectorResource(
-        id = if (excluded) R.drawable.ic_rounded_exclude
-        else R.drawable.ic_rounded_include
-    ),
-    contentDescription = null,
-    modifier = modifier
-)*/
-
 @Composable
 fun ExcludedIcon(
     modifier: Modifier = Modifier,
     size: Dp = DefaultIndicatorSize,
     tint: Color = LocalContentColor.current
 ) = Icon(
-    imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_exclude),
+    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_exclude),
     contentDescription = stringResource(R.string.cd_excluded),
     modifier = Modifier
         .size(size)
@@ -59,7 +46,7 @@ fun ExcludedIndicatorSmall(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current
 ) = Icon(
-    imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_exclude),
+    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_exclude),
     contentDescription = stringResource(R.string.cd_excluded),
     modifier = Modifier
         .size(IconSizeSmall)
@@ -91,7 +78,7 @@ fun MarkExcludedSwitch(
             .then(modifier)
     ) {
         Icon(
-            imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_exclude),
+            imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_exclude),
             contentDescription = null,
             modifier = Modifier
                 .size(SwitchDefaults.IconSize)

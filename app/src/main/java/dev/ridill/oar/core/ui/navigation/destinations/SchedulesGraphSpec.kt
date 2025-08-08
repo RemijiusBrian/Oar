@@ -10,7 +10,7 @@ data object SchedulesGraphSpec : NavGraphSpec, BottomNavDestination {
         get() = R.string.destination_schedules_graph
 
     override val iconRes: Int
-        get() = R.drawable.ic_outlined_schedule
+        get() = R.drawable.ic_outlined_alarm_clock
 
     override val precedence: Int
         get() = 1

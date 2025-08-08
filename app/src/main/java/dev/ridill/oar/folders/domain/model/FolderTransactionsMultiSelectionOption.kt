@@ -9,11 +9,11 @@ enum class FolderTransactionsMultiSelectionOption(
     @StringRes val labelRes: Int
 ) {
     DELETE(
-        iconRes = R.drawable.ic_rounded_delete,
+        iconRes = R.drawable.ic_outlined_delete,
         labelRes = R.string.action_delete
     ),
     REMOVE_FROM_FOLDERS(
-        iconRes = R.drawable.ic_outlined_remove_folder,
-        labelRes = R.string.all_transactions_multi_selection_option_remove_from_folders
+        iconRes = R.drawable.ic_outlined_folder_export,
+        labelRes = R.string.folder_multi_select_option_remove_from_this_folder
     ),
 }
