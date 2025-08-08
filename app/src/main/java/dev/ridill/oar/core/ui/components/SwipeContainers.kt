@@ -71,30 +71,7 @@ fun SwipeToDismissContainer(
     content: @Composable RowScope.() -> Unit
 ) {
     var isRemoved by remember { mutableStateOf(false) }
-    val state = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.Settled -> true
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    if (enableDismissFromStartToEnd) {
-                        isRemoved = true
-                        true
-                    } else {
-                        false
-                    }
-                }
-
-                SwipeToDismissBoxValue.EndToStart -> {
-                    if (enableDismissFromEndToStart) {
-                        isRemoved = true
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
-        }
-    )
+    val state = rememberSwipeToDismissBoxState()
 
     LaunchedEffect(Unit) {
         state.snapTo(SwipeToDismissBoxValue.Settled)
@@ -117,10 +94,11 @@ fun SwipeToDismissContainer(
     ) {
         SwipeToDismissBox(
             state = state,
-            enableDismissFromStartToEnd = true,
-            enableDismissFromEndToStart = true,
+            enableDismissFromStartToEnd = enableDismissFromStartToEnd,
+            enableDismissFromEndToStart = enableDismissFromEndToStart,
             gesturesEnabled = gesturesEnabled,
             backgroundContent = { backgroundContent(state) },
+            onDismiss = { isRemoved = true },
             content = content
         )
     }

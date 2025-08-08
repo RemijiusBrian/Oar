@@ -57,17 +57,13 @@ fun OarSnackbar(
 ) {
     val visuals = snackbarData.visuals as OarSnackbarVisuals
     val isError = visuals.isError
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = {
-            onSwipeDismiss(it)
-            true
-        }
-    )
+    val dismissState = rememberSwipeToDismissBoxState()
 
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {},
         enableDismissFromEndToStart = true,
+        onDismiss = onSwipeDismiss,
         modifier = modifier
     ) {
         Snackbar(
