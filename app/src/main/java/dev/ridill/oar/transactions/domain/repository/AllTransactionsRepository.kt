@@ -39,4 +39,5 @@ interface AllTransactionsRepository {
     suspend fun addTransactionsToFolderByIds(ids: Set<Long>, folderId: Long)
     suspend fun removeTransactionsFromFolders(ids: Set<Long>)
     suspend fun aggregateTogether(ids: Set<Long>, dateTime: LocalDateTime): Long
+    suspend fun updateCycleForTransactions(ids: Set<Long>, cycleId: Long)
 }

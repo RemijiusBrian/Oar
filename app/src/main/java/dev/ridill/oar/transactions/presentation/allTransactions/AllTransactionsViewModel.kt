@@ -366,6 +366,10 @@ class AllTransactionsViewModel @Inject constructor(
                 AllTransactionsMultiSelectionOption.AGGREGATE_TOGETHER -> {
                     savedStateHandle[SHOW_AGGREGATION_CONFIRMATION] = true
                 }
+
+                AllTransactionsMultiSelectionOption.CHANGE_CYCLE -> {
+                    eventBus.send(AllTransactionsEvent.ChooseCycleForTransactions)
+                }
             }
         }
     }
@@ -521,6 +525,20 @@ class AllTransactionsViewModel @Inject constructor(
         savedStateHandle[SHOW_FILTER_OPTIONS] = false
     }
 
+    fun onCycleSelect(id: Long) = viewModelScope.launch {
+        val selectedIds = selectedTransactionIds.value
+        transactionRepo.updateCycleForTransactions(selectedIds, id)
+        dismissMultiSelectionMode()
+        eventBus.send(
+            AllTransactionsEvent.ShowUiMessage(
+                UiText.PluralResource(
+                    R.plurals.cycle_update_for_transaction,
+                    selectedIds.size
+                )
+            )
+        )
+    }
+
     sealed interface AllTransactionsEvent {
         data class ShowUiMessage(val uiText: UiText) : AllTransactionsEvent
         data class NavigateToTagSelection(
@@ -531,6 +549,7 @@ class AllTransactionsViewModel @Inject constructor(
         data class NavigateToAddEditTx(val id: Long) : AllTransactionsEvent
         data object NavigateToFolderSelection : AllTransactionsEvent
         data object ScheduleSaved : AllTransactionsEvent
+        data object ChooseCycleForTransactions : AllTransactionsEvent
     }
 }
 

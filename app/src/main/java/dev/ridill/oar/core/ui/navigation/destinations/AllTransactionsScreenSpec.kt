@@ -77,6 +77,13 @@ data object AllTransactionsScreenSpec : ScreenSpec {
             )
         }
 
+        FloatingWindowNavigationResultEffect<Long>(
+            resultKey = CycleSelectionSheetSpec.SELECTED_CYCLE_ID,
+            navBackStackEntry = navBackStackEntry,
+            viewModel,
+            onResult = viewModel::onCycleSelect
+        )
+
         CollectFlowEffect(viewModel.events, context, snackbarController) { event ->
             when (event) {
                 is AllTransactionsViewModel.AllTransactionsEvent.ShowUiMessage -> {
@@ -115,6 +122,10 @@ data object AllTransactionsScreenSpec : ScreenSpec {
                     navController.navigate(
                         AddEditTransactionScreenSpec.routeWithArg(event.id)
                     )
+                }
+
+                AllTransactionsViewModel.AllTransactionsEvent.ChooseCycleForTransactions -> {
+                    navController.navigate(CycleSelectionSheetSpec.route)
                 }
             }
         }

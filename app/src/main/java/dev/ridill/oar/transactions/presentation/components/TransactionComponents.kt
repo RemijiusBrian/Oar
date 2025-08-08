@@ -208,7 +208,7 @@ private fun FolderIndicator(
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
         ) {
             Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.ic_filled_folder),
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder),
                 contentDescription = null,
                 modifier = Modifier
                     .size(SmallIndicatorSize)

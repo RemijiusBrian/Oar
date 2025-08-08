@@ -80,7 +80,7 @@ fun AllFoldersScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = navigateToAddFolder) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_add_folder),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder_add),
                     contentDescription = stringResource(R.string.cd_new_folder)
                 )
             }

@@ -190,7 +190,7 @@ enum class CreateOption(
     ),
     CREATE_SCHEDULE(
         labelRes = R.string.new_schedule,
-        iconRes = R.drawable.ic_outlined_schedule,
+        iconRes = R.drawable.ic_outlined_alarm_clock,
         default = false
     ),
     CREATE_FOLDER(

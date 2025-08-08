@@ -77,4 +77,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
 
     @Query("UPDATE transaction_table SET folder_id = NULL WHERE id IN (:ids)")
     suspend fun removeFolderFromTransactionsByIds(ids: Set<Long>)
+
+    @Query("UPDATE transaction_table SET cycle_id = :cycleId WHERE id IN (:ids)")
+    suspend fun updateCycleIdForTransactions(ids: Set<Long>, cycleId: Long)
 }

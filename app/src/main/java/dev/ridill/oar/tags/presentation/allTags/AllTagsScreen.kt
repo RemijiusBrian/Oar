@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -41,7 +42,6 @@ import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.SearchField
 import dev.ridill.oar.core.ui.components.SnackbarController
-import dev.ridill.oar.core.ui.components.icons.Tags
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
 import dev.ridill.oar.core.ui.navigation.destinations.AllTagsScreenSpec
 import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
@@ -115,7 +115,7 @@ fun AllTagsScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = { navigateToAddEditTag(null) }) {
                 Icon(
-                    imageVector = Icons.Rounded.Tags,
+                    imageVector = Icons.Rounded.Add,
                     contentDescription = stringResource(R.string.cd_create_new_tag)
                 )
             }
@@ -134,7 +134,8 @@ fun AllTagsScreen(
                     .padding(MaterialTheme.spacing.medium)
             )
             LazyColumn(
-                modifier = Modifier,
+                modifier = Modifier
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = MaterialTheme.spacing.medium,
                     bottom = PaddingScrollEnd

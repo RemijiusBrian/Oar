@@ -99,7 +99,6 @@ import dev.ridill.oar.core.ui.components.Spacer
 import dev.ridill.oar.core.ui.components.SpacerExtraSmall
 import dev.ridill.oar.core.ui.components.SpacerMedium
 import dev.ridill.oar.core.ui.components.TitleLargeText
-import dev.ridill.oar.core.ui.components.icons.CalendarClock
 import dev.ridill.oar.core.ui.components.rememberAmountOutputTransformation
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.AllSchedulesScreenSpec
@@ -563,7 +562,7 @@ private fun TransactionTimestamp(
         }
         FilledTonalIconButton(onClick = onClick) {
             Icon(
-                imageVector = Icons.Outlined.CalendarClock,
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_date_time),
                 contentDescription = stringResource(R.string.cd_tap_to_pick_timestamp)
             )
         }
@@ -580,7 +579,7 @@ private fun FolderIndicator(
         title = folderName ?: stringResource(R.string.transaction_folder_indicator_label),
         leadingIcon = {
             Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_move_to_folder),
+                imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder_import),
                 contentDescription = stringResource(R.string.cd_add_transaction_to_folder)
             )
         },
@@ -637,41 +636,6 @@ private fun TransactionTypeSelector(
             }
         }
     }
-
-//    SingleChoiceSegmentedButtonRow(
-//        modifier = modifier
-//            .semantics {
-//                contentDescription = typeSelectorContentDescription
-//            },
-//    ) {
-//        TransactionType.entries.forEachIndexed { index, type ->
-//            val selected = selectedType == type
-//            val transactionTypeSelectorContentDescription = if (!selected)
-//                stringResource(
-//                    R.string.cd_transaction_type_selector_unselected,
-//                    stringResource(type.labelRes)
-//                )
-//            else null
-//            SegmentedButton(
-//                selected = selected,
-//                onClick = { onValueChange(type) },
-//                shape = SegmentedButtonDefaults.itemShape(index = index, count = typesCount),
-//                modifier = Modifier
-//                    .semantics {
-//                        transactionTypeSelectorContentDescription?.let {
-//                            contentDescription = it
-//                        }
-//                    },
-//                label = { Text(stringResource(type.labelRes)) },
-//                icon = {
-//                    Icon(
-//                        imageVector = ImageVector.vectorResource(type.iconRes),
-//                        contentDescription = null
-//                    )
-//                }
-//            )
-//        }
-//    }
 }
 
 @Composable
@@ -721,7 +685,7 @@ private fun TransactionRepeatModeIndicator(
             },
             leadingIcon = {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_repeat_duration),
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_repeat),
                     contentDescription = stringResource(R.string.cd_transaction_repeat_mode)
                 )
             }
