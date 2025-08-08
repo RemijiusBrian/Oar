@@ -182,9 +182,13 @@ fun SwipeActionsContainer(
     // Preview Animation
     var runPreviewAnimation by remember { mutableStateOf(animatePreview) }
     LaunchedEffect(gesturesEnabled, actionsSide, actionsRowWidth, runPreviewAnimation) {
+        if (!gesturesEnabled) {
+            offset.animateTo(Float.Zero)
+            return@LaunchedEffect
+        }
         val previewOffset = actionsRowWidth * previewFraction * actionsSide.directionMultiplier
         delay(PreviewAnimInitialDelay)
-        while (gesturesEnabled && runPreviewAnimation) {
+        while (runPreviewAnimation) {
             offset.animateTo(
                 targetValue = previewOffset,
                 animationSpec = tween(durationMillis = 1_000)
