@@ -35,9 +35,6 @@ interface TransactionDao : BaseDao<TransactionEntity> {
     @Query("SELECT * FROM transaction_table WHERE id = :id")
     suspend fun getTransactionById(id: Long): TransactionEntity?
 
-    @Query("SELECT * FROM transaction_table WHERE id IN (:ids)")
-    suspend fun getTransactionsByIds(ids: Set<Long>): List<TransactionEntity>
-
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
@@ -50,7 +47,7 @@ interface TransactionDao : BaseDao<TransactionEntity> {
             AND (:folderId IS NULL OR folderId = :folderId)
             AND (:showExcluded = 1 OR excluded = 0)
             AND (:currencyCode IS NULL OR currencyCode = :currencyCode)
-        ORDER BY DATE(cycleStartDate) DESC, DATE(cycleEndDate) DESC, DATETIME(transactionTimestamp) DESC, transactionNote DESC, tagName DESC, folderName DESC
+        ORDER BY DATE(cycleStartDate) DESC, DATE(cycleEndDate) DESC, DATETIME(transactionTimestamp) DESC, transactionId DESC
         """
     )
     fun getTransactionsPaged(
