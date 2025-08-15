@@ -70,7 +70,8 @@ fun BackupSettingsScreen(
         topBar = {
             MediumFlexibleTopAppBar(
                 title = { Text(stringResource(BackupSettingsScreenSpec.labelRes)) },
-                navigationIcon = { BackArrowButton(onClick = navigateUp) }
+                navigationIcon = { BackArrowButton(onClick = navigateUp) },
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
         modifier = Modifier

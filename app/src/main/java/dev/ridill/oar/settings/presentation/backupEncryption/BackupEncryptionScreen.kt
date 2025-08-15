@@ -8,16 +8,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CloudDone
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -35,7 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.ridill.oar.R
-import dev.ridill.oar.core.domain.util.One
+import dev.ridill.oar.core.ui.components.ArrangementTopWithFooter
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ButtonWithLoadingIndicator
 import dev.ridill.oar.core.ui.components.DisplayMediumText
@@ -44,11 +47,11 @@ import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.PasswordField
 import dev.ridill.oar.core.ui.components.SecureTextFieldKeyboardOptions
 import dev.ridill.oar.core.ui.components.SnackbarController
-import dev.ridill.oar.core.ui.components.Spacer
 import dev.ridill.oar.core.ui.components.SpacerMedium
 import dev.ridill.oar.core.ui.navigation.destinations.BackupEncryptionScreenSpec
 import dev.ridill.oar.core.ui.theme.spacing
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BackupEncryptionScreen(
     snackbarController: SnackbarController,
@@ -63,7 +66,7 @@ fun BackupEncryptionScreen(
     OarScaffold(
         isLoading = state.isLoading,
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(BackupEncryptionScreenSpec.labelRes)) },
                 navigationIcon = { BackArrowButton(onClick = navigateUp) },
                 scrollBehavior = topAppBarScrollBehavior
@@ -77,10 +80,11 @@ fun BackupEncryptionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(MaterialTheme.spacing.medium)
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+            verticalArrangement = ArrangementTopWithFooter(MaterialTheme.spacing.medium)
         ) {
             Icon(
                 imageVector = Icons.Rounded.CloudDone,
@@ -99,8 +103,6 @@ fun BackupEncryptionScreen(
                 modifier = Modifier
                     .padding(horizontal = MaterialTheme.spacing.large)
             )
-
-            Spacer(weight = Float.One)
 
             OutlinedButton(
                 onClick = actions::onUpdatePasswordClick,
