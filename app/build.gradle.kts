@@ -30,6 +30,10 @@ android {
         }
 
         buildConfigField("String", "GOOGLE_APIS_BASE_URL", "\"https://www.googleapis.com/\"")
+
+        androidResources {
+            localeFilters += listOf("en")
+        }
     }
 
     buildTypes {
