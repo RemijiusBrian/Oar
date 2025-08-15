@@ -4,6 +4,7 @@ import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.RichTooltipColors
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TooltipState
@@ -23,7 +24,9 @@ fun OarPlainTooltip(
     tooltipText: String,
     modifier: Modifier = Modifier,
     state: TooltipState = rememberTooltipState(),
-    positionProvider: PopupPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+    positionProvider: PopupPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+        TooltipAnchorPosition.Above,
+    ),
     focusable: Boolean = true,
     enableUserInput: Boolean = true,
     tooltipShape: Shape = TooltipDefaults.plainTooltipContainerShape,
@@ -64,7 +67,9 @@ fun OarRichTooltip(
     tooltipTitle: String? = null,
     action: @Composable (() -> Unit)? = null,
     state: TooltipState = rememberTooltipState(),
-    positionProvider: PopupPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+    positionProvider: PopupPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+        TooltipAnchorPosition.Above,
+    ),
     focusable: Boolean = true,
     enableUserInput: Boolean = true,
     tooltipShape: Shape = TooltipDefaults.richTooltipContainerShape,
