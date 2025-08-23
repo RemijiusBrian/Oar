@@ -12,6 +12,7 @@ import dev.ridill.oar.core.domain.util.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import java.util.Currency
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,26 +28,40 @@ class BudgetCyclesViewModel @Inject constructor(
     private val canCompleteCycle = activeCycle
         .mapLatest { it?.startDate?.isBefore(DateUtil.dateNow()) == true }
         .distinctUntilChanged()
-    private val showCycleCompletion = savedStateHandle
+    private val showCycleCompletionWarning = savedStateHandle
         .getStateFlow(SHOW_CYCLE_COMPLETION_WARNING, false)
+
+    private val showCycleOptions = savedStateHandle
+        .getStateFlow(SHOW_CYCLE_OPTIONS, false)
 
     val state = combineTuple(
         activeCycle,
         canCompleteCycle,
-        showCycleCompletion
+        showCycleCompletionWarning,
+        showCycleOptions
     ).mapLatest { (
                       activeCycle,
                       canCompleteCycle,
-                      showCycleCompletion
+                      showCycleCompletionWarning,
+                      showCycleOptions
                   ) ->
         BudgetCyclesState(
             activeCycle = activeCycle,
             showCycleCompleteAction = canCompleteCycle,
-            showCycleCompletionWarning = showCycleCompletion
+            showCycleCompletionWarning = showCycleCompletionWarning,
+            showCycleOptions = showCycleOptions
         )
     }.asStateFlow(viewModelScope, BudgetCyclesState())
 
-    override fun onCompleteActiveCycleClick() {
+    override fun onCycleOptionsClick() {
+        savedStateHandle[SHOW_CYCLE_OPTIONS] = true
+    }
+
+    override fun onCycleOptionsDismiss() {
+        savedStateHandle[SHOW_CYCLE_OPTIONS] = false
+    }
+
+    override fun onCompleteActiveCycleAction() {
         savedStateHandle[SHOW_CYCLE_COMPLETION_WARNING] = true
     }
 
@@ -61,6 +76,13 @@ class BudgetCyclesViewModel @Inject constructor(
             repo.completeCycleNowAndStartNext(activeCycle.id)
         }
     }
+
+    fun onCurrencySelected(currency: Currency) {
+        viewModelScope.launch {
+            repo.updateCurrencyForActiveCycle(currency)
+        }
+    }
 }
 
+private const val SHOW_CYCLE_OPTIONS = "SHOW_CYCLE_OPTIONS"
 private const val SHOW_CYCLE_COMPLETION_WARNING = "SHOW_CYCLE_COMPLETION_WARNING"

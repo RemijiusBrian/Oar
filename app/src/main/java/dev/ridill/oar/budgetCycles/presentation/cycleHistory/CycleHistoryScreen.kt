@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -74,6 +75,8 @@ fun BudgetCyclesScreenContent(
     history: LazyPagingItems<CycleHistoryEntry>,
     actions: BudgetCyclesActions,
     navigateUp: () -> Unit,
+    navigateToUpdateBudget: () -> Unit,
+    navigateToCurrencySelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -106,9 +109,10 @@ fun BudgetCyclesScreenContent(
                         endDate = cycle.endDate,
                         budget = cycle.budgetFormatted,
                         aggregate = cycle.aggregateFormatted,
+                        onCycleOptionsClick = actions::onCycleOptionsClick,
                         cycleProgressFraction = { cycle.progressFraction },
                         showCompleteAction = state.showCycleCompleteAction,
-                        onCompleteCycleSwiped = actions::onCompleteActiveCycleClick,
+                        onCompleteCycleSwiped = actions::onCompleteActiveCycleAction,
                         modifier = Modifier
                             .padding(horizontal = MaterialTheme.spacing.medium)
                             .animateItem()
@@ -175,6 +179,7 @@ private fun ActiveCycleDetails(
     endDate: LocalDate,
     budget: String,
     aggregate: String,
+    onCycleOptionsClick: () -> Unit,
     cycleProgressFraction: () -> Float,
     showCompleteAction: Boolean,
     onCompleteCycleSwiped: () -> Unit,
@@ -231,7 +236,10 @@ private fun ActiveCycleDetails(
             }
 
             IconButton(
-                onClick = {}
+                onClick = onCycleOptionsClick,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_gears),
@@ -266,6 +274,7 @@ private fun PreviewActiveCycleInfo() {
                 aggregate = 500L.toString(),
                 cycleProgressFraction = { 0.5f },
                 onCompleteCycleSwiped = {},
+                onCycleOptionsClick = {},
                 showCompleteAction = true,
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -326,11 +335,15 @@ private fun PreviewCycleHistoryScreenContent() {
                 )
             ).collectAsLazyPagingItems(),
             actions = object : BudgetCyclesActions {
-                override fun onCompleteActiveCycleClick() {}
+                override fun onCycleOptionsClick() {}
+                override fun onCycleOptionsDismiss() {}
+                override fun onCompleteActiveCycleAction() {}
                 override fun onCompleteActiveCycleDismiss() {}
                 override fun onCompleteActiveCycleConfirm() {}
             },
             navigateUp = {},
+            navigateToUpdateBudget = {},
+            navigateToCurrencySelection = {}
         )
     }
 }

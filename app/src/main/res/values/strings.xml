@@ -182,12 +182,8 @@
     <string name="preference_dynamic_colors_summary">Set app colors based on your wallpaper</string>
     <string name="preference_notifications">Notifications</string>
     <string name="preference_notification_summary">Manage your notification preferences</string>
-    <string name="preference_budget">Monthly Budget</string>
     <string name="preference_budget_cycles">Budget Cycles</string>
-    <string name="preference_set_budget_summary">Tap to update your budget</string>
-    <string name="preference_current_budget_summary">Your budget is set to %s</string>
-    <string name="preference_base_currency">Base Currency</string>
-    <string name="preference_base_currency_summary">%1$s (%2$s)</string>
+    <string name="preference_budget_cycles_summary">Checkout your cycle history</string>
     <string name="preference_auto_detect_transactions">Auto-detect Transactions</string>
     <string name="preference_auto_detect_transactions_summary">Try to add transactions from SMS</string>
     <string name="preference_source_code">Source Code</string>

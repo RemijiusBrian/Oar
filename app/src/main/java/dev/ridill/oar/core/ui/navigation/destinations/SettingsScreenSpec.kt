@@ -17,13 +17,11 @@ import dev.ridill.oar.core.ui.components.CollectFlowEffect
 import dev.ridill.oar.core.ui.components.FloatingWindowNavigationResultEffect
 import dev.ridill.oar.core.ui.components.rememberPermissionState
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
-import dev.ridill.oar.core.ui.util.LocalCurrencyPreference
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.core.ui.util.launchAppNotificationSettings
 import dev.ridill.oar.core.ui.util.launchAppSettings
 import dev.ridill.oar.settings.presentation.settings.SettingsScreen
 import dev.ridill.oar.settings.presentation.settings.SettingsViewModel
-import java.util.Currency
 
 data object SettingsScreenSpec : ScreenSpec {
 
@@ -41,8 +39,6 @@ data object SettingsScreenSpec : ScreenSpec {
     ) {
         val viewModel: SettingsViewModel = hiltViewModel(navBackStackEntry)
         val state by viewModel.state.collectAsStateWithLifecycle()
-        val currencyPreference = LocalCurrencyPreference.current
-
         val smsPermissionState = rememberPermissionState(
             permission = Manifest.permission.RECEIVE_SMS,
             onPermissionResult = viewModel::onSmsPermissionResult
@@ -99,31 +95,13 @@ data object SettingsScreenSpec : ScreenSpec {
             }
         }
 
-        FloatingWindowNavigationResultEffect<Currency>(
-            resultKey = CurrencySelectionSheetSpec.SELECTED_CURRENCY,
-            navBackStackEntry = navBackStackEntry,
-            viewModel,
-            snackbarController,
-            context,
-            onResult = viewModel::onBaseCurrencySelected
-        )
-
         SettingsScreen(
             snackbarController = snackbarController,
-            currencyPreference = currencyPreference,
             state = state,
             actions = viewModel,
             navigateUp = navController::navigateUp,
             navigateToNotificationSettings = context::launchAppNotificationSettings,
             navigateToCycles = { navController.navigate(BudgetCyclesScreenSpec.route) },
-            navigateToUpdateBudget = { navController.navigate(UpdateBudgetSheetSpec.route) },
-            navigateToCurrencySelection = {
-                navController.navigate(
-                    CurrencySelectionSheetSpec.routeWithArg(
-                        preSelectedCurrencyCode = currencyPreference.currencyCode
-                    )
-                )
-            },
             navigateToManageTags = { navController.navigate(TagsGraphSpec.route) },
             navigateToBackupSettings = { navController.navigate(BackupSettingsScreenSpec.route) },
             navigateToSecuritySettings = { navController.navigate(SecuritySettingsScreenSpec.route) },

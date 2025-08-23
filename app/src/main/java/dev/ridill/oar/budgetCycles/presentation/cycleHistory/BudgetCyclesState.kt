@@ -5,5 +5,6 @@ import dev.ridill.oar.budgetCycles.domain.model.CycleHistoryEntry
 data class BudgetCyclesState(
     val activeCycle: CycleHistoryEntry? = null,
     val showCycleCompleteAction: Boolean = false,
-    val showCycleCompletionWarning: Boolean = false
+    val showCycleCompletionWarning: Boolean = false,
+    val showCycleOptions: Boolean = false
 )
