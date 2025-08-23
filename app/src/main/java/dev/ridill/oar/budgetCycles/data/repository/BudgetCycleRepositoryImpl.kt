@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.filter
+import androidx.paging.map
 import androidx.room.withTransaction
 import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.data.local.AggregationsDao
@@ -11,12 +12,14 @@ import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.toEntity
 import dev.ridill.oar.budgetCycles.data.toEntry
+import dev.ridill.oar.budgetCycles.data.toHistoryEntry
 import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManager
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleConfig
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
 import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleHistoryEntry
 import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
@@ -480,7 +483,7 @@ class BudgetCycleRepositoryImpl(
         )
     }
 
-    override suspend fun getCyclesPagingData(
+    override suspend fun getCyclesSelectorsPagingData(
         query: String
     ): Flow<PagingData<CycleSelector>> = Pager(
         config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
@@ -502,6 +505,18 @@ class BudgetCycleRepositoryImpl(
                         || query.contains(it.startDate.year.toString())
                         || query.contains(it.endDate.year.toString())
             }
+        }
+
+    override fun getActiveCycleDetails(): Flow<CycleHistoryEntry?> = cycleDao
+        .getActiveCycleFlow()
+        .mapLatest { it?.toHistoryEntry() }
+
+    override fun getCompletedCycleDetails(): Flow<PagingData<CycleHistoryEntry>> = Pager(
+        config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
+        pagingSourceFactory = { cycleDao.getNotActiveCycleDetails() }
+    ).flow
+        .mapLatest { pagingData ->
+            pagingData.map { it.toHistoryEntry() }
         }
 }
 

@@ -6,6 +6,7 @@ import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
 import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleHistoryEntry
 import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.core.domain.model.Result
@@ -56,7 +57,10 @@ interface BudgetCycleRepository {
     suspend fun completeCycleNowAndStartNext(id: Long): Result<BudgetCycleSummary, BudgetCycleError>
     fun getCycleByIdFlow(id: Long): Flow<BudgetCycleEntry?>
 
-    suspend fun getCyclesPagingData(
+    suspend fun getCyclesSelectorsPagingData(
         query: String = String.Empty
     ): Flow<PagingData<CycleSelector>>
+
+    fun getActiveCycleDetails(): Flow<CycleHistoryEntry?>
+    fun getCompletedCycleDetails(): Flow<PagingData<CycleHistoryEntry>>
 }

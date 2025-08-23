@@ -52,7 +52,12 @@ data object SettingsScreenSpec : ScreenSpec {
         val snackbarController = rememberSnackbarController()
         val credentialService = rememberCredentialService(context = context)
         val activity = LocalActivity.current
-        CollectFlowEffect(viewModel.events, snackbarController, context, credentialService) { event ->
+        CollectFlowEffect(
+            viewModel.events,
+            snackbarController,
+            context,
+            credentialService
+        ) { event ->
             when (event) {
                 is SettingsViewModel.SettingsEvent.ShowUiMessage -> {
                     snackbarController.showSnackbar(
@@ -110,6 +115,7 @@ data object SettingsScreenSpec : ScreenSpec {
             actions = viewModel,
             navigateUp = navController::navigateUp,
             navigateToNotificationSettings = context::launchAppNotificationSettings,
+            navigateToCycles = { navController.navigate(BudgetCyclesScreenSpec.route) },
             navigateToUpdateBudget = { navController.navigate(UpdateBudgetSheetSpec.route) },
             navigateToCurrencySelection = {
                 navController.navigate(

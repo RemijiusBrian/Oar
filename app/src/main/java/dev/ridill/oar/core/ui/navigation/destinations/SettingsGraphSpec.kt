@@ -23,6 +23,6 @@ object SettingsGraphSpec : NavGraphSpec, BottomNavDestination {
             BackupSettingsScreenSpec,
             BackupEncryptionScreenSpec,
             SecuritySettingsScreenSpec,
-            BudgetCyclesScreenSpec
+            BudgetCyclesScreenSpec,
         )
 }

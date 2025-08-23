@@ -70,6 +70,42 @@ fun DisplayMediumText(
 )
 
 @Composable
+fun DisplayMediumText(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = 2,
+    minLines: Int = 1,
+) = Text(
+    text = text,
+    modifier = modifier,
+    color = color,
+    fontSize = fontSize,
+    fontStyle = fontStyle,
+    fontWeight = fontWeight,
+    fontFamily = fontFamily,
+    letterSpacing = letterSpacing,
+    textDecoration = textDecoration,
+    textAlign = textAlign,
+    lineHeight = lineHeight,
+    overflow = overflow,
+    softWrap = softWrap,
+    maxLines = maxLines,
+    minLines = minLines,
+    style = MaterialTheme.typography.displayMedium,
+)
+
+@Composable
 fun DisplaySmallText(
     text: String,
     modifier: Modifier = Modifier,
@@ -146,6 +182,44 @@ fun LabelLargeText(
 )
 
 @Composable
+fun LabelLargeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = 2,
+    minLines: Int = 1,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+) = Text(
+    text = text,
+    modifier = modifier,
+    color = color,
+    fontSize = fontSize,
+    fontStyle = fontStyle,
+    fontWeight = fontWeight,
+    fontFamily = fontFamily,
+    letterSpacing = letterSpacing,
+    textDecoration = textDecoration,
+    textAlign = textAlign,
+    lineHeight = lineHeight,
+    overflow = overflow,
+    softWrap = softWrap,
+    maxLines = maxLines,
+    minLines = minLines,
+    onTextLayout = onTextLayout,
+    style = MaterialTheme.typography.labelLarge,
+)
+
+@Composable
 fun TitleLargeText(
     text: String,
     modifier: Modifier = Modifier,
@@ -180,6 +254,42 @@ fun TitleLargeText(
     maxLines = maxLines,
     minLines = minLines,
     onTextLayout = onTextLayout,
+    style = MaterialTheme.typography.titleLarge
+)
+
+@Composable
+fun TitleLargeText(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = 2,
+    minLines: Int = 1,
+) = Text(
+    text = text,
+    modifier = modifier,
+    color = color,
+    fontSize = fontSize,
+    fontStyle = fontStyle,
+    fontWeight = fontWeight,
+    fontFamily = fontFamily,
+    letterSpacing = letterSpacing,
+    textDecoration = textDecoration,
+    textAlign = textAlign,
+    lineHeight = lineHeight,
+    overflow = overflow,
+    softWrap = softWrap,
+    maxLines = maxLines,
+    minLines = minLines,
     style = MaterialTheme.typography.titleLarge
 )
 

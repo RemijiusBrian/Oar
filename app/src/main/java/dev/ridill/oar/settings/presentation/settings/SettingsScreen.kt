@@ -65,6 +65,7 @@ fun SettingsScreen(
     actions: SettingsActions,
     navigateUp: () -> Unit,
     navigateToNotificationSettings: () -> Unit,
+    navigateToCycles: () -> Unit,
     navigateToUpdateBudget: () -> Unit,
     navigateToCurrencySelection: () -> Unit,
     navigateToManageTags: () -> Unit,
@@ -125,6 +126,11 @@ fun SettingsScreen(
             HorizontalDivider(
                 modifier = Modifier
                     .padding(vertical = PreferenceDividerVerticalPadding)
+            )
+
+            SimpleSettingsPreference(
+                titleRes = R.string.preference_budget_cycles,
+                onClick = navigateToCycles
             )
 
             SimpleSettingsPreference(
