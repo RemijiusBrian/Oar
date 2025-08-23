@@ -34,5 +34,6 @@ data class BudgetCycleDetailsView(
     val endDate: LocalDate,
     val budget: Long,
     val currencyCode: String,
+    val aggregate: Double,
     val active: Boolean
 )

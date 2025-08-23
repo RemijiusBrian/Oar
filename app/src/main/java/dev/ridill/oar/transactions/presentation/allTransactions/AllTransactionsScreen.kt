@@ -191,7 +191,6 @@ fun AllTransactionsScreen(
                         }
                     }
                 )
-//                NewTransactionFab(onClick = { navigateToAddEditTransaction(null) })
             }
         },
         bottomBar = {

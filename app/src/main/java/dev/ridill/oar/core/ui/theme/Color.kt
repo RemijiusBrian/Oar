@@ -6,8 +6,8 @@ import androidx.compose.ui.graphics.luminance
 val PrimaryBrandColor = Color(0xFF466644)
 val onPrimaryBrandColor = Color(0xFFE3F5BD)
 
-val DebitRed = Color(0xFFEC7D7D)
-val CreditGreen = Color(0xFFC8D6A2)
+val NegativeRed = Color(0xFFEC7D7D)
+val PositiveGreen = Color(0xFFC8D6A2)
 
 val primaryLight = Color(0xFF2F4E2E)
 val onPrimaryLight = Color(0xFFFFFFFF)

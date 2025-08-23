@@ -59,10 +59,22 @@ interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
     )
     suspend fun updateCurrencyCodeForActiveCycle(currencyCode: String)
 
-    @Query("""
+    @Query(
+        """
         SELECT id, start_date AS startDate, end_date AS endDate 
         FROM budget_cycle_table
         ORDER BY start_date DESC, end_date DESC
-        """)
+        """
+    )
     fun getCycleSelectionItems(): PagingSource<Int, CycleSelector>
+
+    @Query(
+        """
+        SELECT * 
+        FROM budget_cycle_details_view
+        WHERE active = 0
+        ORDER BY startDate DESC, endDate DESC
+        """
+    )
+    fun getNotActiveCycleDetails(): PagingSource<Int, BudgetCycleDetailsView>
 }

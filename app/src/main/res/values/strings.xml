@@ -182,12 +182,8 @@
     <string name="preference_dynamic_colors_summary">Set app colors based on your wallpaper</string>
     <string name="preference_notifications">Notifications</string>
     <string name="preference_notification_summary">Manage your notification preferences</string>
-    <string name="preference_budget">Monthly Budget</string>
     <string name="preference_budget_cycles">Budget Cycles</string>
-    <string name="preference_set_budget_summary">Tap to update your budget</string>
-    <string name="preference_current_budget_summary">Your budget is set to %s</string>
-    <string name="preference_base_currency">Base Currency</string>
-    <string name="preference_base_currency_summary">%1$s (%2$s)</string>
+    <string name="preference_budget_cycles_summary">Checkout your cycle history</string>
     <string name="preference_auto_detect_transactions">Auto-detect Transactions</string>
     <string name="preference_auto_detect_transactions_summary">Try to add transactions from SMS</string>
     <string name="preference_source_code">Source Code</string>
@@ -264,6 +260,8 @@
     <string name="action_irreversible_message">This action is irreversible and cannot be undone. Do you want to continue?</string>
     <string name="transaction_aggregation_confirmation_title">Aggregate transactions?</string>
     <string name="transaction_aggregation_confirmation_message">This action will delete the selected transactions and instead create a new entry in their place, that is the aggregate of the selected transactions. If the aggregation cancels out, no new transaction will be created. Do you want to continue?</string>
+    <string name="complete_cycle_confirmation_title">Complete current cycle?</string>
+    <string name="complete_cycle_confirmation_message">This action will complete your current active cycle and start the next. This action is irreversible and cannot be undone. Are you sure you want to continue?</string>
 
     <string name="feature_info_auto_detect_transaction_title">Auto-Detect Transactions</string>
     <string name="feature_info_auto_detect_transaction_message">%s tries to read SMS data to automatically detect and add transactions.</string>
@@ -510,8 +508,6 @@
     <string name="you_have_spent_a_total_of_amount_so_far_this_month">You have spent a total of %s so far this month</string>
     <string name="spent_this_month">Spent this month</string>
     <string name="save">Save</string>
-    <string name="cycle_started_on">Cycle started on</string>
-    <string name="cycle_ends_on">Cycle ends on</string>
     <string name="new_cycle_started">New Cycle Started</string>
     <string name="cycle_completed">Cycle Completed</string>
     <string name="starting_cycle">Initializing Budget Cycles</string>
@@ -524,6 +520,15 @@
     <string name="new_transaction">New Transaction</string>
     <string name="search_cycle">Search cycle by start or end dates</string>
     <string name="folder_multi_select_option_remove_from_this_folder">Remove from this folder</string>
+    <string name="amounts_divided">%1$s/%2$s</string>
+    <string name="your_completed_cycles_will_appear_here">Your completed cycles will appear here</string>
+    <string name="completed_cycles">Completed Cycles</string>
+    <string name="active_cycle">Active Cycle</string>
+    <string name="started_on">Started On</string>
+    <string name="ends_on">Ends On</string>
+    <string name="swipe_to_complete_cycle">Swipe to complete cycle</string>
+    <string name="update_budget">Update Budget</string>
+    <string name="change_base_currency">Change base currency</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>
