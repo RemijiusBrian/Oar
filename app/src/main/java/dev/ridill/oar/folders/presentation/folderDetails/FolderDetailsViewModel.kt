@@ -78,7 +78,7 @@ class FolderDetailsViewModel @Inject constructor(
         .getStateFlow(SHOW_REMOVE_FROM_FOLDER_CONFIRMATION, false)
 
     private val aggregatesList = selectedTransactionIds
-        .flatMapLatest { aggRepo.getAmountAggregate(selectedTxIds = it) }
+        .flatMapLatest { aggRepo.getAmountAggregate(selectedTxIds = it, addExcluded = true) }
         .distinctUntilChanged()
 
     private val shouldShowActionPreview = combineTuple(
