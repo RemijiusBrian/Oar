@@ -8,8 +8,6 @@ interface AllTransactionsActions {
     fun onSearchModeToggle(active: Boolean)
     fun onClearSearchQuery()
     fun onClearAllFiltersClick()
-    fun onDateFilterRangeChange(range: ClosedFloatingPointRange<Float>)
-    fun onDateFilterClear()
     fun onTypeFilterSelect(filter: TransactionTypeFilter)
     fun onShowExcludedToggle(showExcluded: Boolean)
     fun onChangeTagFiltersClick()
