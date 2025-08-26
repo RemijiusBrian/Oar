@@ -6,25 +6,26 @@ import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Currency
 
 interface AllTransactionsRepository {
-    fun getDateLimits(): Flow<Pair<LocalDate, LocalDate>>
     fun getAmountAggregate(
-        dateRange: Pair<LocalDate, LocalDate>? = null,
+        cycleIds: Set<Long>,
         type: TransactionType?,
         addExcluded: Boolean,
         tagIds: Set<Long>,
-        selectedTxIds: Set<Long>
+        selectedTxIds: Set<Long>,
+        currency: Currency?
     ): Flow<List<AggregateAmountItem>>
 
     fun getAllTransactionsPaged(
-        dateRange: Pair<LocalDate, LocalDate>? = null,
+        cycleIds: Set<Long>? = null,
         transactionType: TransactionType? = null,
         showExcluded: Boolean = true,
         tagIds: Set<Long>? = null,
-        folderId: Long? = null
+        folderId: Long? = null,
+        currency: Currency? = null
     ): Flow<PagingData<TransactionListItemUIModel>>
 
     fun getSearchResults(

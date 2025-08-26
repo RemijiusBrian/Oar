@@ -79,7 +79,6 @@ import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.presentation.AmountAggregatesList
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
-import dev.ridill.oar.core.domain.util.One
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
@@ -91,7 +90,6 @@ import dev.ridill.oar.core.ui.components.ItemListSheet
 import dev.ridill.oar.core.ui.components.ListLabel
 import dev.ridill.oar.core.ui.components.ListSeparator
 import dev.ridill.oar.core.ui.components.OarModalBottomSheet
-import dev.ridill.oar.core.ui.components.OarRangeSlider
 import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.OptionListItem
 import dev.ridill.oar.core.ui.components.SnackbarController
@@ -117,7 +115,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionTypeFilter
 import dev.ridill.oar.transactions.presentation.components.TransactionListItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 @Composable
 fun AllTransactionsScreen(
@@ -372,12 +369,6 @@ fun AllTransactionsScreen(
         FilterOptionsSheet(
             onDismissRequest = actions::onFilterOptionsDismiss,
             onClearAllFiltersClick = actions::onClearAllFiltersClick,
-            dateLimitFloatRange = state.dateLimitsFloatRange,
-            selectedDates = state.selectedDates,
-            selectedFloatRange = state.selectedDateRange,
-            dateRangeSteps = state.dateRangeSteps.toInt(),
-            onDateRangeChange = actions::onDateFilterRangeChange,
-            onDateFilterClear = actions::onDateFilterClear,
             selectedTypeFilter = state.selectedTransactionTypeFilter,
             onTypeFilterSelect = actions::onTypeFilterSelect,
             showExcluded = state.showExcludedTransactions,
@@ -615,12 +606,6 @@ private fun MultiSelectionOptionsSheet(
 private fun FilterOptionsSheet(
     onDismissRequest: () -> Unit,
     onClearAllFiltersClick: () -> Unit,
-    dateLimitFloatRange: ClosedFloatingPointRange<Float>,
-    selectedDates: Pair<LocalDate, LocalDate>?,
-    selectedFloatRange: ClosedFloatingPointRange<Float>,
-    dateRangeSteps: Int,
-    onDateRangeChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    onDateFilterClear: () -> Unit,
     selectedTypeFilter: TransactionTypeFilter,
     onTypeFilterSelect: (TransactionTypeFilter) -> Unit,
     selectedTags: List<Tag>,
@@ -630,9 +615,6 @@ private fun FilterOptionsSheet(
     onShowExcludedToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val showDateFilter by remember(dateLimitFloatRange) {
-        derivedStateOf { dateLimitFloatRange.endInclusive > Float.One }
-    }
     OarModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
@@ -664,17 +646,6 @@ private fun FilterOptionsSheet(
                         textDecoration = TextDecoration.Underline
                     )
                 }
-            }
-
-            if (showDateFilter) {
-                DateFilterSection(
-                    dateLimitFloatRange = dateLimitFloatRange,
-                    selectedDates = selectedDates,
-                    selectedFloatRange = selectedFloatRange,
-                    dateRangeSteps = dateRangeSteps,
-                    onDateRangeChange = onDateRangeChange,
-                    onDateFilterClear = onDateFilterClear
-                )
             }
 
             TypeFilterSection(
@@ -735,37 +706,6 @@ private fun FilterSectionTitle(
                 .padding(vertical = MaterialTheme.spacing.small)
         )
     }
-}
-
-@Composable
-private fun DateFilterSection(
-    dateLimitFloatRange: ClosedFloatingPointRange<Float>,
-    selectedDates: Pair<LocalDate, LocalDate>?,
-    selectedFloatRange: ClosedFloatingPointRange<Float>,
-    dateRangeSteps: Int,
-    onDateRangeChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    onDateFilterClear: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isDateFilterActive by remember(dateLimitFloatRange, selectedFloatRange) {
-        derivedStateOf { dateLimitFloatRange != selectedFloatRange }
-    }
-    FilterSectionTitle(
-        resId = R.string.date,
-        showClearOption = isDateFilterActive,
-        onClearClick = onDateFilterClear
-    )
-    OarRangeSlider(
-        valueRange = dateLimitFloatRange,
-        value = selectedFloatRange,
-        startThumbValue = { selectedDates?.first?.format(DateUtil.Formatters.MMM_yy_spaceSep) },
-        endThumbValue = { selectedDates?.second?.format(DateUtil.Formatters.MMM_yy_spaceSep) },
-        steps = dateRangeSteps,
-        onValueChange = onDateRangeChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.spacing.medium)
-    )
 }
 
 @Composable

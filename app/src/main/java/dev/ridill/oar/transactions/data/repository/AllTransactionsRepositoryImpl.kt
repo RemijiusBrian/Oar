@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Currency
 import kotlin.math.absoluteValue
 
 class AllTransactionsRepositoryImpl(
@@ -38,37 +38,36 @@ class AllTransactionsRepositoryImpl(
     private val preferencesManager: PreferencesManager,
 ) : AllTransactionsRepository {
     override fun getAmountAggregate(
-        dateRange: Pair<LocalDate, LocalDate>?,
+        cycleIds: Set<Long>,
         type: TransactionType?,
         addExcluded: Boolean,
         tagIds: Set<Long>,
-        selectedTxIds: Set<Long>
+        selectedTxIds: Set<Long>,
+        currency: Currency?
     ): Flow<List<AggregateAmountItem>> = aggregationsDao.getAggregatesGroupedByCurrencyCode(
+        cycleIds = cycleIds,
         type = type,
         tagIds = tagIds.takeIf { it.isNotEmpty() },
         addExcluded = addExcluded,
         selectedTxIds = selectedTxIds.takeIf { it.isNotEmpty() },
-        currencyCode = null,
-        cycleIds = null
+        currencyCode = currency?.currencyCode
     ).mapLatest { it.map(AmountAndCurrencyRelation::toAggregateAmountItem) }
         .distinctUntilChanged()
 
-    override fun getDateLimits(): Flow<Pair<LocalDate, LocalDate>> = transactionsDao.getDateLimits()
-        .mapLatest { limits -> limits.minDate to limits.maxDate }
-        .distinctUntilChanged()
-
     override fun getAllTransactionsPaged(
-        dateRange: Pair<LocalDate, LocalDate>?,
+        cycleIds: Set<Long>?,
         transactionType: TransactionType?,
         showExcluded: Boolean,
         tagIds: Set<Long>?,
-        folderId: Long?
+        folderId: Long?,
+        currency: Currency?
     ): Flow<PagingData<TransactionListItemUIModel>> = repo.getDateSeparatedTransactions(
-        cycleIds = null,
+        cycleIds = cycleIds,
         type = transactionType,
         showExcluded = showExcluded,
         tagIds = tagIds,
-        folderId = folderId
+        folderId = folderId,
+        currency = currency
     )
 
     override fun getSearchResults(query: String?): Flow<PagingData<TransactionEntry>> = repo

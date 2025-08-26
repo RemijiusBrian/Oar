@@ -9,7 +9,6 @@ import dev.ridill.oar.core.data.db.BaseDao
 import dev.ridill.oar.transactions.data.local.entity.TransactionEntity
 import dev.ridill.oar.transactions.data.local.views.TransactionDetailsView
 import dev.ridill.oar.transactions.domain.model.TransactionAmountLimits
-import dev.ridill.oar.transactions.domain.model.TransactionDateLimits
 import dev.ridill.oar.transactions.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
 
@@ -23,14 +22,6 @@ interface TransactionDao : BaseDao<TransactionEntity> {
     """
     )
     fun getTransactionAmountRange(): Flow<TransactionAmountLimits>
-
-    @Query(
-        """
-        SELECT IFNULL(MAX(DATE(timestamp)), DATE('now')) AS maxDate, IFNULL(MIN(DATE(timestamp)), DATE('now')) AS minDate
-        FROM transaction_table
-    """
-    )
-    fun getDateLimits(): Flow<TransactionDateLimits>
 
     @Query("SELECT * FROM transaction_table WHERE id = :id")
     suspend fun getTransactionById(id: Long): TransactionEntity?
