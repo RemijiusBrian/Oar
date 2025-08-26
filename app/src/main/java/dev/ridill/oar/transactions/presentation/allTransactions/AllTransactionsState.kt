@@ -25,5 +25,6 @@ data class AllTransactionsState(
     val selectedTagFilters: List<Tag> = emptyList(),
     val showAggregationConfirmation: Boolean = false,
     val showMultiSelectionOptions: Boolean = false,
-    val showFilterOptions: Boolean = false
+    val showFilterOptions: Boolean = false,
+    val areAnyFiltersActive: Boolean = false
 )
