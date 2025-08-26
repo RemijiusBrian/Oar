@@ -34,8 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.Zero
@@ -44,7 +46,9 @@ import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.RadioOptionListDialog
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.icons.Google
+import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.BackupSettingsScreenSpec
+import dev.ridill.oar.core.ui.theme.OarTheme
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.settings.domain.modal.BackupInterval
 import dev.ridill.oar.settings.domain.repositoty.FatalBackupError
@@ -268,5 +272,25 @@ private fun FatalBackupErrorMessage(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun PreviewBackupSettingsScreen() {
+    OarTheme {
+        BackupSettingsScreen(
+            context = LocalContext.current,
+            snackbarController = rememberSnackbarController(),
+            state = BackupSettingsState(),
+            actions = object : BackupSettingsActions {
+                override fun onBackupIntervalPreferenceClick() {}
+                override fun onBackupIntervalSelected(interval: BackupInterval) {}
+                override fun onBackupIntervalSelectionDismiss() {}
+                override fun onBackupNowClick() {}
+                override fun onEncryptionPreferenceClick() {}
+            },
+            navigateUp = {}
+        )
     }
 }

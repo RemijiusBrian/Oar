@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.components.ArrangementTopWithFooter
@@ -48,7 +49,9 @@ import dev.ridill.oar.core.ui.components.PasswordField
 import dev.ridill.oar.core.ui.components.SecureTextFieldKeyboardOptions
 import dev.ridill.oar.core.ui.components.SnackbarController
 import dev.ridill.oar.core.ui.components.SpacerMedium
+import dev.ridill.oar.core.ui.components.rememberSnackbarController
 import dev.ridill.oar.core.ui.navigation.destinations.BackupEncryptionScreenSpec
+import dev.ridill.oar.core.ui.theme.OarTheme
 import dev.ridill.oar.core.ui.theme.spacing
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -220,5 +223,26 @@ private fun PasswordUpdateSheet(
                 enabled = confirmEnabled
             )
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun PreviewBackupEncryptionScreen() {
+    OarTheme {
+        BackupEncryptionScreen(
+            snackbarController = rememberSnackbarController(),
+            currentPasswordState = TextFieldState(),
+            newPasswordState = TextFieldState(),
+            confirmNewPasswordState = TextFieldState(),
+            state = BackupEncryptionState(),
+            actions = object : BackupEncryptionActions {
+                override fun onUpdatePasswordClick() {}
+                override fun onPasswordInputDismiss() {}
+                override fun onForgotCurrentPasswordClick() {}
+                override fun onPasswordUpdateConfirm() {}
+            },
+            navigateUp = {}
+        )
     }
 }
