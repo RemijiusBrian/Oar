@@ -33,7 +33,7 @@ class CycleSelectionViewModel @Inject constructor(
     val cyclesPagingData = query.textAsFlow()
         .debounce(UtilConstants.DEBOUNCE_TIMEOUT)
         .flatMapLatest { query ->
-            repo.getCyclesPagingData(query)
+            repo.getCyclesSelectorsPagingData(query)
         }
 
     fun onCycleSelect(id: Long) {

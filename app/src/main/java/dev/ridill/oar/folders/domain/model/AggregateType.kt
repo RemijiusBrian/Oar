@@ -5,8 +5,8 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import dev.ridill.oar.R
 import dev.ridill.oar.core.domain.util.Zero
-import dev.ridill.oar.core.ui.theme.CreditGreen
-import dev.ridill.oar.core.ui.theme.DebitRed
+import dev.ridill.oar.core.ui.theme.PositiveGreen
+import dev.ridill.oar.core.ui.theme.NegativeRed
 
 enum class AggregateType(
     @StringRes val labelRes: Int,
@@ -21,12 +21,12 @@ enum class AggregateType(
     AGG_DEBIT(
         labelRes = R.string.aggregate_type_debit,
         iconRes = R.drawable.ic_rounded_arrow_up_right,
-        color = DebitRed
+        color = NegativeRed
     ),
     AGG_CREDIT(
         labelRes = R.string.aggregate_type_credit,
         iconRes = R.drawable.ic_rounded_arrow_down_left,
-        CreditGreen
+        PositiveGreen
     );
 
     companion object {

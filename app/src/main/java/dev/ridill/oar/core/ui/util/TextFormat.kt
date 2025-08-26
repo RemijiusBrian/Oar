@@ -11,7 +11,7 @@ import java.util.Locale
 
 object TextFormat {
     fun currency(
-        amount: Double,
+        amount: Number,
         currency: Currency = LocaleUtil.defaultCurrency,
         locale: Locale = LocaleUtil.defaultLocale,
         maxFractionDigits: Int = currency.defaultFractionDigits,
@@ -26,22 +26,7 @@ object TextFormat {
 
     @Composable
     fun currencyAmount(
-        amount: Double,
-        currency: Currency = LocalCurrencyPreference.current,
-        locale: Locale = LocaleUtil.defaultLocale,
-        maxFractionDigits: Int = currency.defaultFractionDigits,
-        minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS
-    ): String = NumberFormat.getCurrencyInstance(locale)
-        .apply {
-            maximumFractionDigits = maxFractionDigits
-            minimumFractionDigits = minFractionDigits
-            setCurrency(currency)
-        }
-        .format(amount)
-
-    @Composable
-    fun currencyAmount(
-        amount: Long,
+        amount: Number,
         currency: Currency = LocalCurrencyPreference.current,
         locale: Locale = LocaleUtil.defaultLocale,
         maxFractionDigits: Int = currency.defaultFractionDigits,
@@ -55,21 +40,7 @@ object TextFormat {
         .format(amount)
 
     fun number(
-        value: Double,
-        locale: Locale = LocaleUtil.defaultLocale,
-        maxFractionDigits: Int = DEFAULT_MAX_FRACTION_DIGITS,
-        minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS,
-        isGroupingUsed: Boolean = true
-    ): String = NumberFormat.getNumberInstance(locale)
-        .apply {
-            maximumFractionDigits = maxFractionDigits
-            minimumFractionDigits = minFractionDigits
-            this.isGroupingUsed = isGroupingUsed
-        }
-        .format(value)
-
-    fun number(
-        value: Long,
+        value: Number,
         locale: Locale = LocaleUtil.defaultLocale,
         maxFractionDigits: Int = DEFAULT_MAX_FRACTION_DIGITS,
         minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS,
@@ -84,45 +55,13 @@ object TextFormat {
 
     @Composable
     fun compactNumber(
-        value: Double,
+        value: Number,
         locale: Locale = LocaleUtil.defaultLocale,
         compactStyle: CompactDecimalFormat.CompactStyle = CompactDecimalFormat.CompactStyle.SHORT,
         maxFractionDigits: Int = DEFAULT_MAX_FRACTION_DIGITS,
         minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS,
         isGroupingUsed: Boolean = true
     ): String = CompactDecimalFormat.getInstance(locale, compactStyle)
-        .apply {
-            maximumFractionDigits = maxFractionDigits
-            minimumFractionDigits = minFractionDigits
-            this.isGroupingUsed = isGroupingUsed
-        }
-        .format(value)
-
-    @Composable
-    fun compactAmount(
-        value: Double,
-        locale: Locale = LocaleUtil.defaultLocale,
-        currency: Currency = LocalCurrencyPreference.current,
-        compactStyle: CompactDecimalFormat.CompactStyle = CompactDecimalFormat.CompactStyle.SHORT,
-        maxFractionDigits: Int = DEFAULT_MAX_FRACTION_DIGITS,
-        minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS,
-        isGroupingUsed: Boolean = true
-    ): String = CompactDecimalFormat.getInstance(locale, compactStyle)
-        .apply {
-            maximumFractionDigits = maxFractionDigits
-            minimumFractionDigits = minFractionDigits
-            this.currency = android.icu.util.Currency.fromJavaCurrency(currency)
-            this.isGroupingUsed = isGroupingUsed
-        }
-        .format(value)
-
-    fun percent(
-        value: Float,
-        locale: Locale = LocaleUtil.defaultLocale,
-        maxFractionDigits: Int = DEFAULT_MAX_FRACTION_DIGITS,
-        minFractionDigits: Int = DEFAULT_MIN_FRACTION_DIGITS,
-        isGroupingUsed: Boolean = true
-    ): String = NumberFormat.getPercentInstance(locale)
         .apply {
             maximumFractionDigits = maxFractionDigits
             minimumFractionDigits = minFractionDigits

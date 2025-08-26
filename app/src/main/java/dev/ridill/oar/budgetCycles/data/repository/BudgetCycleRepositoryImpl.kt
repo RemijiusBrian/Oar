@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.filter
+import androidx.paging.map
 import androidx.room.withTransaction
 import dev.ridill.oar.R
 import dev.ridill.oar.aggregations.data.local.AggregationsDao
@@ -11,12 +12,14 @@ import dev.ridill.oar.budgetCycles.data.local.BudgetCycleDao
 import dev.ridill.oar.budgetCycles.data.local.entity.BudgetCycleEntity
 import dev.ridill.oar.budgetCycles.data.toEntity
 import dev.ridill.oar.budgetCycles.data.toEntry
+import dev.ridill.oar.budgetCycles.data.toHistoryEntry
 import dev.ridill.oar.budgetCycles.domain.cycleManager.CycleManager
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleConfig
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleEntry
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleError
 import dev.ridill.oar.budgetCycles.domain.model.BudgetCycleSummary
 import dev.ridill.oar.budgetCycles.domain.model.CycleDurationUnit
+import dev.ridill.oar.budgetCycles.domain.model.CycleHistoryEntry
 import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDay
 import dev.ridill.oar.budgetCycles.domain.model.CycleStartDayType
@@ -287,16 +290,19 @@ class BudgetCycleRepositoryImpl(
         month: YearMonth,
         startNow: Boolean
     ): BudgetCycleEntry = withContext(Dispatchers.IO) {
-        logI(TAG) { "createCycleWithStartDayAndMonth() called with: month = $month" }
+        logI(TAG) { "createCycleEntryFromConfigForMonth() called with: month = $month" }
         val config = getCycleConfig()
         val dateNow = DateUtil.dateNow()
+        val dateFromYearMonth = DateUtil.dateNow()
+            .with(month)
         val startDay = config.startDay
+        logD(TAG) { "createCycleEntryFromConfigForMonth: startDay = $startDay" }
         val (startDate, endDate) = when (startDay) {
             CycleStartDay.FirstDayOfMonth -> {
                 val startDate = if (startNow) dateNow
                 else dateNow.withDayOfMonth(1)
 
-                val endDate = dateNow
+                val endDate = dateFromYearMonth
                     .with(TemporalAdjusters.lastDayOfMonth())
 
                 startDate to endDate
@@ -308,33 +314,24 @@ class BudgetCycleRepositoryImpl(
                     .withMonth(month.monthValue - 1)
                     .with(TemporalAdjusters.lastDayOfMonth())
 
-                val endDate = dateNow
+                val endDate = dateFromYearMonth
                     .with(TemporalAdjusters.lastDayOfMonth())
                     .minusDays(1L)
 
                 startDate to endDate
             }
 
-            is CycleStartDay.SpecificDayOfMonth -> if (dateNow.dayOfMonth < startDay.dayOfMonth) {
+            is CycleStartDay.SpecificDayOfMonth ->  {
                 val startDate = if (startNow) dateNow
                 else dateNow
                     .withMonth(month.monthValue - 1)
                     .withDayOfMonth(startDay.dayOfMonth)
 
-                val endDate = dateNow
+                val endDate = dateFromYearMonth
                     .withDayOfMonth(startDay.dayOfMonth)
+                    .minusDays(1L)
 
                 startDate to endDate
-            } else {
-                val startDate = if (startNow) dateNow
-                else dateNow
-                    .withDayOfMonth(startDay.dayOfMonth)
-
-                val endDate = dateNow
-                    .withMonth(month.monthValue + 1)
-                    .withDayOfMonth(startDay.dayOfMonth)
-
-                startDate to endDate.minusDays(1L)
             }
         }
 
@@ -381,7 +378,7 @@ class BudgetCycleRepositoryImpl(
 
                 // Create Next Cycle Entry
                 val newCycleResult = createNewCycleAndScheduleCompletion(
-                    month = YearMonth.from(enforcedCycleEndDate),
+                    month = YearMonth.from(enforcedCycleEndDate.plusMonths(1L)),
                     startNow = true
                 )
 
@@ -480,7 +477,7 @@ class BudgetCycleRepositoryImpl(
         )
     }
 
-    override suspend fun getCyclesPagingData(
+    override suspend fun getCyclesSelectorsPagingData(
         query: String
     ): Flow<PagingData<CycleSelector>> = Pager(
         config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
@@ -502,6 +499,18 @@ class BudgetCycleRepositoryImpl(
                         || query.contains(it.startDate.year.toString())
                         || query.contains(it.endDate.year.toString())
             }
+        }
+
+    override fun getActiveCycleDetails(): Flow<CycleHistoryEntry?> = cycleDao
+        .getActiveCycleFlow()
+        .mapLatest { it?.toHistoryEntry() }
+
+    override fun getCompletedCycleDetails(): Flow<PagingData<CycleHistoryEntry>> = Pager(
+        config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
+        pagingSourceFactory = { cycleDao.getNotActiveCycleDetails() }
+    ).flow
+        .mapLatest { pagingData ->
+            pagingData.map { it.toHistoryEntry() }
         }
 }
 

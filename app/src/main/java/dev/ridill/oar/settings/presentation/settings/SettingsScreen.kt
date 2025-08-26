@@ -38,7 +38,6 @@ import androidx.core.net.toUri
 import dev.ridill.oar.R
 import dev.ridill.oar.account.domain.model.AuthState
 import dev.ridill.oar.core.domain.util.BuildUtil
-import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.FeatureInfoDialog
 import dev.ridill.oar.core.ui.components.OarScaffold
@@ -49,24 +48,20 @@ import dev.ridill.oar.core.ui.components.icons.Message
 import dev.ridill.oar.core.ui.navigation.destinations.SettingsScreenSpec
 import dev.ridill.oar.core.ui.theme.OarTheme
 import dev.ridill.oar.core.ui.theme.PaddingScrollEnd
-import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.settings.domain.modal.AppTheme
 import dev.ridill.oar.settings.presentation.components.PreferenceIcon
 import dev.ridill.oar.settings.presentation.components.SimpleSettingsPreference
 import dev.ridill.oar.settings.presentation.components.SwitchPreference
-import java.util.Currency
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     snackbarController: SnackbarController,
-    currencyPreference: Currency,
     state: SettingsState,
     actions: SettingsActions,
     navigateUp: () -> Unit,
     navigateToNotificationSettings: () -> Unit,
-    navigateToUpdateBudget: () -> Unit,
-    navigateToCurrencySelection: () -> Unit,
+    navigateToCycles: () -> Unit,
     navigateToManageTags: () -> Unit,
     navigateToBackupSettings: () -> Unit,
     navigateToSecuritySettings: () -> Unit,
@@ -128,26 +123,9 @@ fun SettingsScreen(
             )
 
             SimpleSettingsPreference(
-                titleRes = R.string.preference_budget,
-                summary = state.currentMonthlyBudget.takeIf { it > Long.Zero }
-                    ?.let {
-                        stringResource(
-                            R.string.preference_current_budget_summary,
-                            TextFormat.currencyAmount(it)
-                        )
-                    }
-                    ?: stringResource(R.string.preference_set_budget_summary),
-                onClick = navigateToUpdateBudget
-            )
-
-            SimpleSettingsPreference(
-                titleRes = R.string.preference_base_currency,
-                summary = stringResource(
-                    R.string.preference_base_currency_summary,
-                    currencyPreference.displayName,
-                    currencyPreference.currencyCode
-                ),
-                onClick = navigateToCurrencySelection
+                titleRes = R.string.preference_budget_cycles,
+                summary = stringResource(R.string.preference_budget_cycles_summary),
+                onClick = navigateToCycles
             )
 
             SimpleSettingsPreference(
