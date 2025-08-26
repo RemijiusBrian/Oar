@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +21,6 @@ import dev.ridill.oar.R
 import dev.ridill.oar.budgetCycles.domain.model.CycleSelector
 import dev.ridill.oar.core.ui.components.ListSearchSheet
 import dev.ridill.oar.core.ui.navigation.destinations.CycleSelectionSheetSpec
-import dev.ridill.oar.core.ui.theme.elevation
 import dev.ridill.oar.core.ui.theme.spacing
 
 @Composable
@@ -77,8 +78,13 @@ private fun CycleSelectionItem(
     ListItem(
         headlineContent = { Text(description) },
         modifier = modifier
-            .clickable(onClick = onClick),
-        tonalElevation = if (selected) MaterialTheme.elevation.level1
-        else MaterialTheme.elevation.level0
+            .clickable(
+                onClick = onClick,
+                onClickLabel = stringResource(R.string.cd_tap_to_select_cycle, description)
+            ),
+        colors = ListItemDefaults.colors(
+            containerColor = if (selected) MaterialTheme.colorScheme.surfaceContainerHigh
+            else BottomSheetDefaults.ContainerColor
+        )
     )
 }

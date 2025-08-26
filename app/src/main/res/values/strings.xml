@@ -529,6 +529,8 @@
     <string name="swipe_to_complete_cycle">Swipe to complete cycle</string>
     <string name="update_budget">Update Budget</string>
     <string name="change_base_currency">Change base currency</string>
+    <string name="cd_tap_to_select_cycle">Tap to select cycle %s</string>
+    <string name="cd_tap_to_select_folder">Tap to select folder %s</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>

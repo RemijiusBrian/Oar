@@ -32,7 +32,6 @@ import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.ui.components.ExcludedIndicatorSmall
 import dev.ridill.oar.core.ui.components.ListItemLeadingContentContainer
 import dev.ridill.oar.core.ui.components.ListSearchSheet
-import dev.ridill.oar.core.ui.theme.elevation
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.core.ui.util.exclusionGraphicsLayer
 import dev.ridill.oar.folders.domain.model.Folder
@@ -172,8 +171,7 @@ private fun FolderSelectionCard(
         supportingContent = { Text(createdTimestamp) },
         leadingContent = {
             ListItemLeadingContentContainer(
-                tonalElevation = if (selected) MaterialTheme.elevation.level1
-                else MaterialTheme.elevation.level0
+                containerColor = MaterialTheme.colorScheme.tertiary
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_folder),
@@ -181,12 +179,14 @@ private fun FolderSelectionCard(
                 )
             }
         },
-        tonalElevation = if (selected) MaterialTheme.elevation.level1
-        else MaterialTheme.elevation.level0,
+        colors = ListItemDefaults.colors(
+            containerColor = if (selected) MaterialTheme.colorScheme.surfaceContainerHigh
+            else BottomSheetDefaults.ContainerColor
+        ),
         modifier = Modifier
             .clickable(
                 onClick = onClick,
-                role = Role.Button
+                onClickLabel = stringResource(R.string.cd_tap_to_select_folder, name)
             )
             .exclusionGraphicsLayer(excluded)
             .then(modifier)
