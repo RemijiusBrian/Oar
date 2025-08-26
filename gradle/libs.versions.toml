@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.1"
 kotlin = "2.2.10"
 google-services = "4.4.3"
 com-google-devtools-ksp = "2.2.10-2.0.2"
@@ -21,7 +21,7 @@ androidx-lifecycle = "2.9.2"
 
 core-splashscreen = "1.0.1"
 
-dagger-hilt = "2.57"
+dagger-hilt = "2.57.1"
 androidx-hilt = "1.2.0"
 
 androidx-room = "2.7.2"
