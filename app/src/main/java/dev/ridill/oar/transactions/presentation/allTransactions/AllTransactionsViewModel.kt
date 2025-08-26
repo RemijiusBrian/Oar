@@ -223,7 +223,8 @@ class AllTransactionsViewModel @Inject constructor(
         showAggregationConfirmation,
         showMultiSelectionOptions,
         showFilterOptions,
-        selectedTags
+        selectedTags,
+        areAnyFiltersActive
     ).mapLatest { (
                       searchModeActive,
                       dateLimitsAsClosedFloatRange,
@@ -240,7 +241,8 @@ class AllTransactionsViewModel @Inject constructor(
                       showAggregationConfirmation,
                       showMultiSelectionOptions,
                       showFilterOptions,
-                      selectedTags
+                      selectedTags,
+                      areAnyFiltersActive
                   ) ->
         AllTransactionsState(
             searchModeActive = searchModeActive,
@@ -258,7 +260,8 @@ class AllTransactionsViewModel @Inject constructor(
             showAggregationConfirmation = showAggregationConfirmation,
             showMultiSelectionOptions = showMultiSelectionOptions,
             showFilterOptions = showFilterOptions,
-            selectedTagFilters = selectedTags
+            selectedTagFilters = selectedTags,
+            areAnyFiltersActive = areAnyFiltersActive
         )
     }.asStateFlow(viewModelScope, AllTransactionsState())
 
