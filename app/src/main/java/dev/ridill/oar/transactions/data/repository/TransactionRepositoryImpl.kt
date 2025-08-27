@@ -40,7 +40,7 @@ class TransactionRepositoryImpl(
         pagingSourceFactory = {
             dao.getTransactionsPaged(
                 query = query,
-                cycleIds = cycleIds,
+                cycleIds = cycleIds?.takeIf { it.isNotEmpty() },
                 type = type,
                 showExcluded = showExcluded,
                 tagIds = tagIds?.takeIf { it.isNotEmpty() },
