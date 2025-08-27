@@ -23,8 +23,7 @@ import java.time.LocalDate
         END AS active
         FROM budget_cycle_table bdgt
         LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = '${ConfigKey.ACTIVE_CYCLE_ID}' AND cnfg.config_value = bdgt.id)
-        LEFT OUTER JOIN transaction_table tx ON tx.cycle_id = bdgt.id
-        WHERE tx.currency_code = bdgt.currency_code
+        LEFT OUTER JOIN transaction_table tx ON (tx.cycle_id = bdgt.id AND tx.currency_code = bdgt.currency_code)
         GROUP BY bdgt.id
     """,
     viewName = "budget_cycle_details_view"

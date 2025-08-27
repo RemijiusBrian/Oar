@@ -15,6 +15,15 @@ fun BudgetCycleDetailsView.toEntry(): BudgetCycleEntry = BudgetCycleEntry(
     active = active
 )
 
+fun BudgetCycleEntity.toEntry(active: Boolean): BudgetCycleEntry = BudgetCycleEntry(
+    id = id,
+    startDate = startDate,
+    endDate = endDate,
+    budget = budget,
+    currency = LocaleUtil.currencyForCode(currencyCode),
+    active = active
+)
+
 fun BudgetCycleEntry.toEntity(): BudgetCycleEntity = BudgetCycleEntity(
     id = id,
     startDate = startDate,

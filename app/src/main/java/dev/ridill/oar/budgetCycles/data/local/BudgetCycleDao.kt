@@ -23,9 +23,18 @@ interface BudgetCycleDao : BaseDao<BudgetCycleEntity> {
     @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
     fun getActiveCycleFlow(): Flow<BudgetCycleDetailsView?>
 
+    @Query(
+        """
+        SELECT * 
+        FROM budget_cycle_table
+        WHERE id = (SELECT config_value FROM config_table WHERE config_key = '${ConfigKey.ACTIVE_CYCLE_ID}')
+    """
+    )
+    suspend fun getActiveCycle(): BudgetCycleEntity?
+
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM budget_cycle_details_view WHERE active = 1 LIMIT 1")
-    fun getActiveCycle(): BudgetCycleDetailsView?
+    suspend fun getActiveCycleDetailsView(): BudgetCycleDetailsView?
 
     @Query("SELECT * FROM budget_cycle_table WHERE DATE(start_date) = DATE(:startDate) AND DATE(end_date) = DATE(:endDate)")
     suspend fun getCycleForDate(

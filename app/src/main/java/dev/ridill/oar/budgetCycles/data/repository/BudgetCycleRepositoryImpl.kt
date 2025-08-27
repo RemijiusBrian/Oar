@@ -45,7 +45,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import java.time.YearMonth
@@ -69,7 +68,7 @@ class BudgetCycleRepositoryImpl(
         .mapLatest { it?.toEntry() }
 
     override suspend fun getActiveCycle(): BudgetCycleEntry? = withContext(Dispatchers.IO) {
-        cycleDao.getActiveCycle()?.toEntry()
+        cycleDao.getActiveCycleDetailsView()?.toEntry()
     }
 
     override suspend fun getCycleConfig(): BudgetCycleConfig = withContext(Dispatchers.IO) {
@@ -266,10 +265,10 @@ class BudgetCycleRepositoryImpl(
 
             logI(TAG) { "continuing with cycleId = $cycleId" }
             updateActiveCycleId(cycleId)
-            val activeCycle = cycleDao.getActiveCycleFlow().first()
+            val activeCycle = cycleDao.getActiveCycle()
                 ?: throw CycleNotFoundThrowable(cycleId)
             logD(TAG) { "entry = $entry created with ID = $cycleId" }
-            scheduleCycleCompletion(activeCycle.toEntry())
+            scheduleCycleCompletion(activeCycle.toEntry(true))
         } catch (t: CycleEntryCreationFailedThrowable) {
             logE(t, TAG) { "createNewCycleAndScheduleCompletion" }
             Result.Error(
@@ -321,7 +320,7 @@ class BudgetCycleRepositoryImpl(
                 startDate to endDate
             }
 
-            is CycleStartDay.SpecificDayOfMonth ->  {
+            is CycleStartDay.SpecificDayOfMonth -> {
                 val startDate = if (startNow) dateNow
                 else dateNow
                     .withMonth(month.monthValue - 1)
@@ -469,12 +468,14 @@ class BudgetCycleRepositoryImpl(
     }
 
     private suspend fun updateActiveCycleId(id: Long) = withContext(Dispatchers.IO) {
+        logD(TAG) { "updateActiveCycleId() called with: id = $id" }
         configDao.upsert(
             ConfigEntity(
                 configKey = ConfigKey.ACTIVE_CYCLE_ID,
                 configValue = id.toString()
             )
         )
+        logI(TAG) {"set Id = $id as active cycle"  }
     }
 
     override suspend fun getCyclesSelectorsPagingData(
