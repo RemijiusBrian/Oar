@@ -45,7 +45,7 @@ class AllTransactionsRepositoryImpl(
         selectedTxIds: Set<Long>,
         currency: Currency?
     ): Flow<List<AggregateAmountItem>> = aggregationsDao.getAggregatesGroupedByCurrencyCode(
-        cycleIds = cycleIds,
+        cycleIds = cycleIds.takeIf { it.isNotEmpty() },
         type = type,
         tagIds = tagIds.takeIf { it.isNotEmpty() },
         addExcluded = addExcluded,
