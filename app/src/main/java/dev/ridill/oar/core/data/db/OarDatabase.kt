@@ -1,5 +1,6 @@
 package dev.ridill.oar.core.data.db
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -37,7 +38,10 @@ import dev.ridill.oar.transactions.data.local.views.TransactionDetailsView
         TransactionDetailsView::class,
         FolderAndAggregateView::class
     ],
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(DateTimeConverter::class)
 abstract class OarDatabase : RoomDatabase() {
