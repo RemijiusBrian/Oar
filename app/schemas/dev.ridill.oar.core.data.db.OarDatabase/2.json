@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "e59decc8e6b7a5598031c3fb8481583a",
+    "identityHash": "5e328a498052e01f9278f0de0120aff0",
     "entities": [
       {
         "tableName": "budget_cycle_table",
@@ -426,7 +426,7 @@
     "views": [
       {
         "viewName": "budget_cycle_details_view",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT bdgt.id AS id,\n        bdgt.start_date AS startDate,\n        bdgt.end_date as endDate,\n        bdgt.budget AS budget,\n        bdgt.currency_code AS currencyCode,\n        IFNULL(SUM(\n                CASE\n                    WHEN tx.type = 'DEBIT' THEN tx.amount\n                    WHEN tx.type = 'CREDIT' THEN -tx.amount\n                END\n        ), 0) as aggregate,\n        CASE\n            WHEN cnfg.config_value IS NOT NULL THEN 1\n            ELSE 0\n        END AS active\n        FROM budget_cycle_table bdgt\n        LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = 'ACTIVE_CYCLE_ID' AND cnfg.config_value = bdgt.id)\n        LEFT OUTER JOIN transaction_table tx ON tx.cycle_id = bdgt.id\n        WHERE tx.currency_code = bdgt.currency_code\n        GROUP BY bdgt.id"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT bdgt.id AS id,\n        bdgt.start_date AS startDate,\n        bdgt.end_date as endDate,\n        bdgt.budget AS budget,\n        bdgt.currency_code AS currencyCode,\n        IFNULL(SUM(\n                CASE\n                    WHEN tx.type = 'DEBIT' THEN tx.amount\n                    WHEN tx.type = 'CREDIT' THEN -tx.amount\n                END\n        ), 0) as aggregate,\n        CASE\n            WHEN cnfg.config_value IS NOT NULL THEN 1\n            ELSE 0\n        END AS active\n        FROM budget_cycle_table bdgt\n        LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = 'ACTIVE_CYCLE_ID' AND cnfg.config_value = bdgt.id)\n        LEFT OUTER JOIN transaction_table tx ON (tx.cycle_id = bdgt.id AND tx.currency_code = bdgt.currency_code)\n        GROUP BY bdgt.id"
       },
       {
         "viewName": "transaction_details_view",
@@ -439,7 +439,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e59decc8e6b7a5598031c3fb8481583a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e328a498052e01f9278f0de0120aff0')"
     ]
   }
 }
