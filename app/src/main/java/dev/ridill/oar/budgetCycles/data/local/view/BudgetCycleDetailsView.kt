@@ -13,8 +13,8 @@ import java.time.LocalDate
         bdgt.currency_code AS currencyCode,
         IFNULL(SUM(
                 CASE
-                    WHEN tx.type = 'DEBIT' THEN tx.amount
-                    WHEN tx.type = 'CREDIT' THEN -tx.amount
+                    WHEN tx.transactionType = 'DEBIT' THEN tx.transactionAmount
+                    WHEN tx.transactionType = 'CREDIT' THEN -tx.transactionAmount
                 END
         ), 0) as aggregate,
         CASE
@@ -23,7 +23,7 @@ import java.time.LocalDate
         END AS active
         FROM budget_cycle_table bdgt
         LEFT OUTER JOIN config_table cnfg ON (cnfg.config_key = '${ConfigKey.ACTIVE_CYCLE_ID}' AND cnfg.config_value = bdgt.id)
-        LEFT OUTER JOIN transaction_table tx ON (tx.cycle_id = bdgt.id AND tx.currency_code = bdgt.currency_code)
+        LEFT OUTER JOIN transaction_details_view tx ON (tx.cycleId = bdgt.id AND tx.currencyCode = bdgt.currency_code AND tx.excluded = 0)
         GROUP BY bdgt.id
     """,
     viewName = "budget_cycle_details_view"
