@@ -1,42 +1,42 @@
 [versions]
-agp = "8.12.1"
-kotlin = "2.2.10"
+agp = "8.13.0"
+kotlin = "2.2.20"
 google-services = "4.4.3"
-com-google-devtools-ksp = "2.2.10-2.0.2"
+com-google-devtools-ksp = "2.2.20-2.0.3"
 
 core-ktx = "1.17.0"
 kotlin-bom = "2.2.0"
-activity-compose = "1.10.1"
+activity-compose = "1.11.0"
 appcompat = "1.7.1"
 junit = "4.13.2"
 androidx-junit = "1.3.0"
 espresso-core = "3.7.0"
 
-compose-bom = "2025.08.00"
-compose-material3 = "1.5.0-alpha02"
-navigation-compose = "2.9.3"
-compose-material = "1.9.0"
+compose-bom = "2025.09.00"
+compose-material3 = "1.5.0-alpha04"
+navigation-compose = "2.9.4"
+compose-material = "1.9.1"
 
-androidx-lifecycle = "2.9.2"
+androidx-lifecycle = "2.9.3"
 
 core-splashscreen = "1.0.1"
 
 dagger-hilt = "2.57.1"
-androidx-hilt = "1.2.0"
+androidx-hilt = "1.3.0"
 
-androidx-room = "2.7.2"
+androidx-room = "2.8.0"
 
 androidx-paging = "3.3.6"
 androidx-paging-compose = "3.3.6"
 
-androidx-work = "2.10.3"
+androidx-work = "2.10.4"
 
 datastore-preferences = "1.1.7"
 
 androidx-biometric = "1.2.0-alpha05"
 androidx-security-crypto = "1.1.0"
 
-firebase-bom = "34.1.0"
+firebase-bom = "34.2.0"
 firebase-crashlytics-gradle = "3.0.6"
 
 play-services-auth = "21.4.0"
@@ -53,7 +53,7 @@ timber-logging = "5.0.1"
 keval = "1.1.1"
 bcrypt = "0.4"
 
-com-google-truth = "1.4.4"
+com-google-truth = "1.4.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
