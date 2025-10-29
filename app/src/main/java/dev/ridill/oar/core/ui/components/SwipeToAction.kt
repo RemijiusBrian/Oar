@@ -1,9 +1,9 @@
 package dev.ridill.oar.core.ui.components
 
 import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -48,6 +49,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SwipeToAction(
     state: SwipeToActionState,
@@ -71,7 +73,8 @@ fun SwipeToAction(
 ) {
     val isThumbBeingInteracted by state.isDragInProgress
     val thumbWidthMultiplier by animateFloatAsState(
-        targetValue = if (isThumbBeingInteracted) 2f else 1f
+        targetValue = if (isThumbBeingInteracted) 2f else 1f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
     )
 
     val decoratedThumb = @Composable {
@@ -223,7 +226,8 @@ private fun PreviewSwipeToAction() {
 
 data class SwipeToActionState(
     private val coroutineScope: CoroutineScope,
-    private val onSwiped: () -> Unit
+    private val onSwiped: () -> Unit,
+    private val settleAnimationSpec: FiniteAnimationSpec<Float>
 ) {
     var offsetXLimit: Float = Float.Zero
         private set
@@ -252,7 +256,7 @@ data class SwipeToActionState(
         settleJob = coroutineScope.launch {
             AnimationState(offsetX).animateTo(
                 targetValue = Float.Zero,
-                animationSpec = tween(durationMillis = THUMB_SETTLE_ANIM_DURATION)
+                animationSpec = settleAnimationSpec
             ) {
                 offsetX = this.value
             }
@@ -282,15 +286,16 @@ data class SwipeToActionState(
         }.absoluteValue
 }
 
-private const val THUMB_SETTLE_ANIM_DURATION = 1_000
-
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun rememberSwipeToActionState(
     onSwiped: () -> Unit,
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    settleAnimationSpec: FiniteAnimationSpec<Float> = MaterialTheme.motionScheme.defaultSpatialSpec()
 ): SwipeToActionState = remember(onSwiped, coroutineScope) {
     SwipeToActionState(
         coroutineScope = coroutineScope,
-        onSwiped = onSwiped
+        onSwiped = onSwiped,
+        settleAnimationSpec = settleAnimationSpec
     )
 }
