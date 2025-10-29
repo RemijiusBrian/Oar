@@ -118,6 +118,11 @@ class OarActivity : AppCompatActivity() {
 
             CollectFlowEffect(snapshotFlow { darkTheme }) { isDarkTheme ->
                 enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        lightScrim = android.graphics.Color.TRANSPARENT,
+                        darkScrim = android.graphics.Color.TRANSPARENT,
+                        detectDarkMode = { isDarkTheme }
+                    ),
                     navigationBarStyle = SystemBarStyle.auto(
                         lightScrim = android.graphics.Color.TRANSPARENT,
                         darkScrim = android.graphics.Color.TRANSPARENT,
