@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -29,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -45,6 +47,7 @@ import dev.ridill.oar.core.domain.util.BiometricUtil
 import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.logI
+import dev.ridill.oar.core.ui.components.CollectFlowEffect
 import dev.ridill.oar.core.ui.components.circularReveal
 import dev.ridill.oar.core.ui.navigation.OarNavHost
 import dev.ridill.oar.core.ui.navigation.destinations.DashboardScreenSpec
@@ -65,7 +68,6 @@ class OarActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         this.intent?.let {
             val runConfigRestore = it.getBooleanExtra(RUN_CONFIG_RESTORE_EXTRA, false)
@@ -112,6 +114,16 @@ class OarActivity : AppCompatActivity() {
                 AppTheme.SYSTEM_DEFAULT -> isSystemInDarkTheme()
                 AppTheme.LIGHT -> false
                 AppTheme.DARK -> true
+            }
+
+            CollectFlowEffect(snapshotFlow { darkTheme }) { isDarkTheme ->
+                enableEdgeToEdge(
+                    navigationBarStyle = SystemBarStyle.auto(
+                        lightScrim = android.graphics.Color.TRANSPARENT,
+                        darkScrim = android.graphics.Color.TRANSPARENT,
+                        detectDarkMode = { isDarkTheme }
+                    )
+                )
             }
 
             val bottomSheetNavigator = rememberBottomSheetNavigator()
