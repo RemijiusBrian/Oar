@@ -2,10 +2,7 @@ package dev.ridill.oar.core.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -21,6 +18,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -46,6 +44,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SwipeActionsContainer(
     isRevealed: Boolean,
@@ -73,10 +72,12 @@ fun SwipeActionsContainer(
     }
 
     // Preview Animation
+    val previewAnimationRevealSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+    val previewAnimationHideSpec = MaterialTheme.motionScheme.fastSpatialSpec<Float>()
     var runPreviewAnimation by remember { mutableStateOf(animatePreview) }
     LaunchedEffect(gesturesEnabled, actionsSide, actionsRowWidth, runPreviewAnimation) {
         if (!gesturesEnabled) {
-            offset.animateTo(Float.Zero)
+            offset.animateTo(Float.Zero, animationSpec)
             return@LaunchedEffect
         }
         val previewOffset = actionsRowWidth * previewFraction * actionsSide.directionMultiplier
@@ -84,14 +85,11 @@ fun SwipeActionsContainer(
         while (runPreviewAnimation) {
             offset.animateTo(
                 targetValue = previewOffset,
-                animationSpec = tween(durationMillis = 1_000)
+                animationSpec = previewAnimationRevealSpec
             )
             offset.animateTo(
                 targetValue = Float.Zero,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
+                animationSpec = previewAnimationHideSpec
             )
             delay(PreviewAnimIterationDelay)
         }
@@ -219,6 +217,7 @@ enum class SwipeActionsSide(
     End(-1)
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 object SwipeContainerDefaults {
 
     val containerColor: Color
@@ -228,7 +227,7 @@ object SwipeContainerDefaults {
         @Composable get() = WindowInsets.safeGestures.only(WindowInsetsSides.Horizontal)
 
     val animationSpec: AnimationSpec<Float>
-        get() = spring()
+        @Composable get() = MaterialTheme.motionScheme.fastSpatialSpec()
 
     const val POSITIONAL_THRESHOLD_FRACTION = 0.5f
 

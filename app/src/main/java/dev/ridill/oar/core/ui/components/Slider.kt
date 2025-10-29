@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.RangeSliderState
@@ -124,6 +125,7 @@ private fun SliderTrack(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SliderThumb(
     value: () -> String,
@@ -138,11 +140,13 @@ private fun SliderThumb(
     val isDragged by interactionSource.collectIsDraggedAsState()
     val offsetY by animateDpAsState(
         targetValue = if (isDragged) 36.dp else Dp.Zero,
-        label = "ThumbOffset"
+        label = "ThumbOffset",
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
     )
     val scaleFactor by animateFloatAsState(
         targetValue = if (isDragged) 1.40f else 1f,
-        label = "ThumbScaleFactor"
+        label = "ThumbScaleFactor",
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
     )
 
     val cornerRadiusPx = with(localDensity) { CornerRadiusSmall.toPx() }
