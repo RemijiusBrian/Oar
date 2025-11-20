@@ -77,8 +77,15 @@ class FolderDetailsViewModel @Inject constructor(
     private val showRemoveTransactionsConfirmation = savedStateHandle
         .getStateFlow(SHOW_REMOVE_FROM_FOLDER_CONFIRMATION, false)
 
-    private val aggregatesList = selectedTransactionIds
-        .flatMapLatest { aggRepo.getAmountAggregate(selectedTxIds = it, addExcluded = true) }
+    private val aggregatesList = selectedTransactionIds.flatMapLatest {
+        aggRepo.getAmountAggregateForTransactions(
+            selectedTxIds = it,
+            addExcluded = true
+        )
+    }.distinctUntilChanged()
+
+    private val showAggregates = aggregatesList
+        .mapLatest { it.isNotEmpty() }
         .distinctUntilChanged()
 
     private val shouldShowActionPreview = combineTuple(
@@ -100,6 +107,7 @@ class FolderDetailsViewModel @Inject constructor(
         transactionMultiSelectionModeActive,
         showMultiSelectionOptions,
         aggregatesList,
+        showAggregates,
         showDeleteTransactionsConfirmation,
         showRemoveTransactionsConfirmation
     ).mapLatest { (
@@ -114,6 +122,7 @@ class FolderDetailsViewModel @Inject constructor(
                       transactionMultiSelectionModeActive,
                       showMultiSelectionOptions,
                       aggregatesList,
+                      showAggregates,
                       showDeleteTransactionsConfirmation,
                       showRemoveTransactionsConfirmation
                   ) ->
@@ -129,6 +138,7 @@ class FolderDetailsViewModel @Inject constructor(
             transactionMultiSelectionModeActive = transactionMultiSelectionModeActive,
             showMultiSelectionOptions = showMultiSelectionOptions,
             aggregatesList = aggregatesList,
+            showAggregates = showAggregates,
             showDeleteTransactionsConfirmation = showDeleteTransactionsConfirmation,
             showRemoveTransactionsConfirmation = showRemoveTransactionsConfirmation
         )
@@ -243,7 +253,14 @@ class FolderDetailsViewModel @Inject constructor(
             repo.removeTransactionFromFolderById(selectedIds)
             savedStateHandle[SELECTED_TRANSACTION_IDS] = emptySet<Long>()
             savedStateHandle[SHOW_REMOVE_FROM_FOLDER_CONFIRMATION] = false
-            eventBus.send(FolderDetailsEvent.ShowUiMessage(UiText.PluralResource(R.plurals.transaction_removed_from_this_folder, selectedIds.size)))
+            eventBus.send(
+                FolderDetailsEvent.ShowUiMessage(
+                    UiText.PluralResource(
+                        R.plurals.transaction_removed_from_this_folder,
+                        selectedIds.size
+                    )
+                )
+            )
         }
     }
 

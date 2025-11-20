@@ -18,33 +18,36 @@ import kotlin.math.absoluteValue
 class AggregationsRepositoryImpl(
     private val dao: AggregationsDao
 ) : AggregationsRepository {
-    override fun getAmountAggregate(
-        cycleIds: Set<Long>?,
-        selectedTxIds: Set<Long>?,
-        type: TransactionType?,
-        tagIds: Set<Long>?,
-        currency: Currency?,
+    override fun getAmountAggregateForTransactions(
+        selectedTxIds: Set<Long>,
         addExcluded: Boolean
-    ): Flow<List<AggregateAmountItem>> = dao.getAggregatesGroupedByCurrencyCode(
-        cycleIds = cycleIds,
-        selectedTxIds = selectedTxIds.takeIf { !it.isNullOrEmpty() },
-        type = type,
-        tagIds = tagIds.takeIf { !it.isNullOrEmpty() },
-        currencyCode = null,
+    ): Flow<List<AggregateAmountItem>> = dao.getAggregatesForTransactionIds(
+        selectedTxIds = selectedTxIds,
         addExcluded = addExcluded
+    ).mapLatest { it.map(AmountAndCurrencyRelation::toAggregateAmountItem) }
+        .distinctUntilChanged()
+
+    override fun getAmountAggregateForCycle(
+        cycleId: Long,
+        currency: Currency?,
+        addExcluded: Boolean,
+        type: TransactionType?
+    ): Flow<List<AggregateAmountItem>> = dao.getAggregatesForCycle(
+        cycleId = cycleId,
+        addExcluded = addExcluded,
+        type = type,
+        currencyCode = currency?.currencyCode
     ).mapLatest { it.map(AmountAndCurrencyRelation::toAggregateAmountItem) }
         .distinctUntilChanged()
 
     override fun getTotalDebitsForCycle(
         id: Long,
         currency: Currency
-    ): Flow<Double> = getAmountAggregate(
-        cycleIds = setOf(id),
+    ): Flow<Double> = getAmountAggregateForCycle(
+        cycleId = id,
         currency = currency,
-        selectedTxIds = null,
         type = TransactionType.DEBIT,
         addExcluded = false,
-        tagIds = null
     ).mapLatest { it.firstOrNull() }
         .mapLatest { it?.amount.orZero() }
         .mapLatest { it.absoluteValue }
@@ -53,13 +56,11 @@ class AggregationsRepositoryImpl(
     override fun getTotalCreditsForCycle(
         id: Long,
         currency: Currency
-    ): Flow<Double> = getAmountAggregate(
-        cycleIds = setOf(id),
+    ): Flow<Double> = getAmountAggregateForCycle(
+        cycleId = id,
         currency = currency,
-        selectedTxIds = null,
         type = TransactionType.CREDIT,
         addExcluded = false,
-        tagIds = null
     ).mapLatest { it.firstOrNull() }
         .mapLatest { it?.amount.orZero() }
         .mapLatest { it.absoluteValue }

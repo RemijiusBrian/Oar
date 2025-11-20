@@ -1,7 +1,6 @@
 package dev.ridill.oar.transactions.domain.repository
 
 import androidx.paging.PagingData
-import dev.ridill.oar.transactions.domain.model.AggregateAmountItem
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionType
@@ -10,15 +9,6 @@ import java.time.LocalDateTime
 import java.util.Currency
 
 interface AllTransactionsRepository {
-    fun getAmountAggregate(
-        cycleIds: Set<Long>,
-        type: TransactionType?,
-        addExcluded: Boolean,
-        tagIds: Set<Long>,
-        selectedTxIds: Set<Long>,
-        currency: Currency?
-    ): Flow<List<AggregateAmountItem>>
-
     fun getAllTransactionsPaged(
         cycleIds: Set<Long>? = null,
         transactionType: TransactionType? = null,

@@ -20,5 +20,5 @@ data class AllTransactionsState(
     val showAggregationConfirmation: Boolean = false,
     val showMultiSelectionOptions: Boolean = false,
     val showFilterOptions: Boolean = false,
-    val areAnyFiltersActive: Boolean = false
+    val showAggregates: Boolean = false
 )
