@@ -1,4 +1,4 @@
-package dev.ridill.oar.settings.presentation.currencyUpdate
+package dev.ridill.oar.budgetCycles.presentation.currencyUpdate
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.input.TextFieldState

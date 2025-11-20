@@ -1,4 +1,4 @@
-package dev.ridill.oar.settings.presentation.budgetUpdate
+package dev.ridill.oar.budgetCycles.presentation.budgetUpdate
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle

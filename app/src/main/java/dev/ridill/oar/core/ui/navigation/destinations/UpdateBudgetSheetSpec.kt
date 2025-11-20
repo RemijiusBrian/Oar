@@ -12,8 +12,8 @@ import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.core.ui.components.CollectFlowEffect
 import dev.ridill.oar.core.ui.components.navigateUpWithResult
 import dev.ridill.oar.core.ui.util.TextFormat
-import dev.ridill.oar.settings.presentation.budgetUpdate.UpdateBudgetSheet
-import dev.ridill.oar.settings.presentation.budgetUpdate.UpdateBudgetViewModel
+import dev.ridill.oar.budgetCycles.presentation.budgetUpdate.UpdateBudgetSheet
+import dev.ridill.oar.budgetCycles.presentation.budgetUpdate.UpdateBudgetViewModel
 
 data object UpdateBudgetSheetSpec : BottomSheetSpec {
 
