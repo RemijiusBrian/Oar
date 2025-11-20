@@ -6,13 +6,16 @@ import kotlinx.coroutines.flow.Flow
 import java.util.Currency
 
 interface AggregationsRepository {
-    fun getAmountAggregate(
-        cycleIds: Set<Long>? = null,
-        selectedTxIds: Set<Long>? = null,
-        type: TransactionType? = null,
-        tagIds: Set<Long>? = null,
-        currency: Currency? = null,
+    fun getAmountAggregateForTransactions(
+        selectedTxIds: Set<Long>,
         addExcluded: Boolean = false
+    ): Flow<List<AggregateAmountItem>>
+
+    fun getAmountAggregateForCycle(
+        cycleId: Long,
+        currency: Currency? = null,
+        addExcluded: Boolean = false,
+        type: TransactionType? = null
     ): Flow<List<AggregateAmountItem>>
 
     fun getTotalDebitsForCycle(id: Long, currency: Currency): Flow<Double>

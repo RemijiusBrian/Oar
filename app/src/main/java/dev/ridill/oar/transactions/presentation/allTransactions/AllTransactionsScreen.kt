@@ -192,7 +192,7 @@ fun AllTransactionsScreen(
         },
         bottomBar = {
             AnimatedVisibility(
-                visible = state.areAnyFiltersActive,
+                visible = state.showAggregates,
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it }
             ) {

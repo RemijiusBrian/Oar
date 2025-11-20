@@ -6,6 +6,7 @@ import dev.ridill.oar.account.domain.model.UserAccount
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.aggregations.domain.repository.AggregationsRepository
 import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
+import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.dashboard.domain.repository.DashboardRepository
@@ -30,7 +31,6 @@ class DashboardRepositoryImpl(
     private val transactionRepo: TransactionRepository,
     private val schedulesDao: SchedulesDao
 ) : DashboardRepository {
-
     private fun activeCycle() = cycleRepo.getActiveCycleFlow()
     private fun activeCurrencyCode() = activeCycle()
         .mapLatest { it?.currency?.currencyCode }
@@ -58,11 +58,9 @@ class DashboardRepositoryImpl(
         type: TransactionType
     ): Flow<Double> = activeCycle()
         .flatMapLatest { cycle ->
-            aggRepo.getAmountAggregate(
-                cycleIds = cycle?.id?.let { setOf(it) },
-                selectedTxIds = null,
+            aggRepo.getAmountAggregateForCycle(
+                cycleId = cycle?.id ?: OarDatabase.INVALID_ID_LONG,
                 type = type,
-                tagIds = null,
                 addExcluded = false,
                 currency = cycle?.currency,
             )

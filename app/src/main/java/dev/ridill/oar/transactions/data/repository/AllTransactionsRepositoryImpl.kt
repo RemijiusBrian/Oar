@@ -11,9 +11,6 @@ import dev.ridill.oar.core.domain.util.LocaleUtil
 import dev.ridill.oar.core.domain.util.Zero
 import dev.ridill.oar.transactions.data.local.TransactionDao
 import dev.ridill.oar.transactions.data.local.entity.TransactionEntity
-import dev.ridill.oar.transactions.data.local.relation.AmountAndCurrencyRelation
-import dev.ridill.oar.transactions.data.toAggregateAmountItem
-import dev.ridill.oar.transactions.domain.model.AggregateAmountItem
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
 import dev.ridill.oar.transactions.domain.model.TransactionListItemUIModel
 import dev.ridill.oar.transactions.domain.model.TransactionType
@@ -37,23 +34,6 @@ class AllTransactionsRepositoryImpl(
     private val repo: TransactionRepository,
     private val preferencesManager: PreferencesManager,
 ) : AllTransactionsRepository {
-    override fun getAmountAggregate(
-        cycleIds: Set<Long>,
-        type: TransactionType?,
-        addExcluded: Boolean,
-        tagIds: Set<Long>,
-        selectedTxIds: Set<Long>,
-        currency: Currency?
-    ): Flow<List<AggregateAmountItem>> = aggregationsDao.getAggregatesGroupedByCurrencyCode(
-        cycleIds = cycleIds.takeIf { it.isNotEmpty() },
-        type = type,
-        tagIds = tagIds.takeIf { it.isNotEmpty() },
-        addExcluded = addExcluded,
-        selectedTxIds = selectedTxIds.takeIf { it.isNotEmpty() },
-        currencyCode = currency?.currencyCode
-    ).mapLatest { it.map(AmountAndCurrencyRelation::toAggregateAmountItem) }
-        .distinctUntilChanged()
-
     override fun getAllTransactionsPaged(
         cycleIds: Set<Long>?,
         transactionType: TransactionType?,

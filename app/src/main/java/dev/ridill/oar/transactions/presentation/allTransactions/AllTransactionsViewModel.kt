@@ -10,6 +10,7 @@ import androidx.paging.cachedIn
 import com.zhuinden.flowcombinetuplekt.combineTuple
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.ridill.oar.R
+import dev.ridill.oar.aggregations.domain.repository.AggregationsRepository
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.core.domain.util.UtilConstants
@@ -26,7 +27,6 @@ import dev.ridill.oar.transactions.domain.repository.AllTransactionsRepository
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +35,7 @@ import javax.inject.Inject
 class AllTransactionsViewModel @Inject constructor(
     private val transactionRepo: AllTransactionsRepository,
     private val tagsRepo: TagsRepository,
+    private val aggregatesRepo: AggregationsRepository,
     private val savedStateHandle: SavedStateHandle,
     private val eventBus: EventBus<AllTransactionsEvent>
 ) : ViewModel(), AllTransactionsActions {
@@ -46,7 +47,7 @@ class AllTransactionsViewModel @Inject constructor(
         init = { TextFieldState() }
     )
     private val selectedCycleIds = savedStateHandle
-        .getStateFlow<Set<Long>>(SELECTED_CYCLE_IDS, emptySet<Long>())
+        .getStateFlow<Set<Long>>(SELECTED_CYCLE_IDS, emptySet())
 
     private val transactionTypeFilter = savedStateHandle
         .getStateFlow(TRANSACTION_TYPE_FILTER, TransactionTypeFilter.ALL)
@@ -90,57 +91,15 @@ class AllTransactionsViewModel @Inject constructor(
             transactionRepo.getSearchResults(query)
         }.cachedIn(viewModelScope)
 
-    private val isCycleFilterActive = selectedCycleIds
-        .mapLatest { it.isNotEmpty() }
-        .distinctUntilChanged()
-    private val isTagFilterActive = selectedTagIds.mapLatest { it.isNotEmpty() }
-        .distinctUntilChanged()
-    private val isTransactionTypeFilterActive = transactionTypeFilter
-        .mapLatest { it != TransactionTypeFilter.ALL }
-        .distinctUntilChanged()
-
-    private val areAnyFiltersActive = combineTuple(
-        isCycleFilterActive,
-        isTagFilterActive,
-        isTransactionTypeFilterActive,
-        transactionMultiSelectionModeActive
-    ).mapLatest { (
-                      dateFilterActive,
-                      tagFilterActive,
-                      transactionTypeFilterActive,
-                      multiSelectionModeActive
-                  ) ->
-        dateFilterActive
-                || tagFilterActive
-                || transactionTypeFilterActive
-                || multiSelectionModeActive
-    }.distinctUntilChanged()
-
-    private val aggregatesList = combineTuple(
-        areAnyFiltersActive,
-        selectedCycleIds,
-        transactionTypeFilter,
-        selectedTagIds,
-        showExcludedTransactions,
-        selectedTransactionIds
-    ).flatMapLatest { (
-                          filtersActive,
-                          cycleIds,
-                          typeFilter,
-                          selectedTagIds,
-                          addExcluded,
-                          selectedTxIds
-                      ) ->
-        if (!filtersActive) flowOf(emptyList())
-        else transactionRepo.getAmountAggregate(
-            cycleIds = cycleIds,
-            type = TransactionTypeFilter.mapToTransactionType(typeFilter),
-            tagIds = selectedTagIds,
-            addExcluded = addExcluded,
+    private val aggregatesList = selectedTransactionIds.flatMapLatest { selectedTxIds ->
+        aggregatesRepo.getAmountAggregateForTransactions(
             selectedTxIds = selectedTxIds,
-            currency = null
         )
     }.distinctUntilChanged()
+
+    private val showAggregates = aggregatesList
+        .mapLatest { it.isNotEmpty() }
+        .distinctUntilChanged()
 
     private val transactionListLabel = transactionTypeFilter.mapLatest { type ->
         when {
@@ -175,7 +134,7 @@ class AllTransactionsViewModel @Inject constructor(
         showMultiSelectionOptions,
         showFilterOptions,
         selectedTags,
-        areAnyFiltersActive
+        showAggregates
     ).mapLatest { (
                       searchModeActive,
                       selectedCycleIds,
@@ -190,7 +149,7 @@ class AllTransactionsViewModel @Inject constructor(
                       showMultiSelectionOptions,
                       showFilterOptions,
                       selectedTags,
-                      areAnyFiltersActive
+                      showAggregates
                   ) ->
         AllTransactionsState(
             searchModeActive = searchModeActive,
@@ -206,7 +165,7 @@ class AllTransactionsViewModel @Inject constructor(
             showMultiSelectionOptions = showMultiSelectionOptions,
             showFilterOptions = showFilterOptions,
             selectedTagFilters = selectedTags,
-            areAnyFiltersActive = areAnyFiltersActive
+            showAggregates = showAggregates
         )
     }.asStateFlow(viewModelScope, AllTransactionsState())
 

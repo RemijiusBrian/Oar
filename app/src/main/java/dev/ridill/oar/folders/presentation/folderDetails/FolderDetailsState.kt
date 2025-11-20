@@ -22,6 +22,7 @@ data class FolderDetailsState(
     val transactionMultiSelectionModeActive: Boolean = false,
     val showMultiSelectionOptions: Boolean = false,
     val aggregatesList: List<AggregateAmountItem> = emptyList(),
+    val showAggregates: Boolean = false,
     val showDeleteTransactionsConfirmation: Boolean = false,
     val showRemoveTransactionsConfirmation: Boolean = false
 ) {
