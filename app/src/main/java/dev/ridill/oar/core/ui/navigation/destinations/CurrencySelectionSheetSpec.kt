@@ -11,8 +11,8 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.ridill.oar.R
 import dev.ridill.oar.core.ui.components.navigateUpWithResult
-import dev.ridill.oar.settings.presentation.currencyUpdate.CurrencySelectionSheet
-import dev.ridill.oar.settings.presentation.currencyUpdate.CurrencySelectionViewModel
+import dev.ridill.oar.budgetCycles.presentation.currencyUpdate.CurrencySelectionSheet
+import dev.ridill.oar.budgetCycles.presentation.currencyUpdate.CurrencySelectionViewModel
 
 data object CurrencySelectionSheetSpec : BottomSheetSpec {
     override val route: String

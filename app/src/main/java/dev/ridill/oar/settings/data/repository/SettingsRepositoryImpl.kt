@@ -1,24 +1,18 @@
 package dev.ridill.oar.settings.data.repository
 
-import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.domain.util.DateUtil
-import dev.ridill.oar.core.domain.util.orZero
 import dev.ridill.oar.settings.domain.modal.AppTheme
 import dev.ridill.oar.settings.domain.repositoty.SettingsRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
-import java.util.Currency
 
 class SettingsRepositoryImpl(
     private val preferencesManager: PreferencesManager,
-    private val cycleRepo: BudgetCycleRepository
 ) : SettingsRepository {
     private val currentDate = MutableStateFlow(DateUtil.dateNow())
     private val preferences = preferencesManager.preferences
@@ -40,16 +34,6 @@ class SettingsRepositoryImpl(
 
     override suspend fun toggleDynamicColors(enabled: Boolean) = preferencesManager
         .updateDynamicColorsEnabled(enabled)
-
-    override fun getCurrentBudget(): Flow<Long> = cycleRepo.getActiveCycleFlow()
-        .mapLatest { it?.budget.orZero() }
-        .distinctUntilChanged()
-
-    override suspend fun updateCurrencyPreference(
-        currency: Currency
-    ) = withContext(Dispatchers.IO) {
-        cycleRepo.updateCurrencyForActiveCycle(currency)
-    }
 
     override fun getTransactionAutoDetectEnabled(): Flow<Boolean> = preferences
         .mapLatest { it.transactionAutoDetectEnabled }

@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Currency
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,8 +39,6 @@ class SettingsViewModel @Inject constructor(
 
     private val appTheme = settingsRepo.getCurrentAppTheme()
     private val dynamicColorsEnabled = settingsRepo.getDynamicColorsEnabled()
-
-    private val currentBudget = settingsRepo.getCurrentBudget()
 
     private val _transactionAutoDetectFeatureEnabled = MutableStateFlow(false)
     private val _isValidTxAutoDetectPatternsAvailable = MutableStateFlow(false)
@@ -68,7 +65,6 @@ class SettingsViewModel @Inject constructor(
         appTheme,
         dynamicColorsEnabled,
         showAppThemeSelection,
-        currentBudget,
         showAutoDetectTxOption,
         transactionAutoDetectEnabled,
         showSmsPermissionRationale,
@@ -79,7 +75,6 @@ class SettingsViewModel @Inject constructor(
                       appTheme,
                       dynamicColorsEnabled,
                       showAppThemeSelection,
-                      monthlyBudget,
                       showAutoDetectTxOption,
                       autoAddTransactionEnabled,
                       showSmsPermissionRationale,
@@ -91,7 +86,6 @@ class SettingsViewModel @Inject constructor(
             appTheme = appTheme,
             dynamicColorsEnabled = dynamicColorsEnabled,
             showAppThemeSelection = showAppThemeSelection,
-            currentMonthlyBudget = monthlyBudget,
             showAutoDetectTxOption = showAutoDetectTxOption,
             autoDetectTransactionEnabled = autoAddTransactionEnabled,
             showSmsPermissionRationale = showSmsPermissionRationale,
@@ -232,11 +226,6 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun onBaseCurrencySelected(currency: Currency) = viewModelScope.launch {
-        settingsRepo.updateCurrencyPreference(currency)
-        eventBus.send(SettingsEvent.ShowUiMessage(UiText.StringResource(R.string.currency_updated)))
     }
 
     private fun refreshConfigs() = viewModelScope.launch {

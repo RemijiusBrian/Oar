@@ -1,12 +1,9 @@
 package dev.ridill.oar.di
 
-import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dev.ridill.oar.budgetCycles.domain.repository.BudgetCycleRepository
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
@@ -14,7 +11,6 @@ import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.settings.data.local.ConfigDao
 import dev.ridill.oar.settings.data.repository.BackupSettingsRepositoryImpl
 import dev.ridill.oar.settings.data.repository.SettingsRepositoryImpl
-import dev.ridill.oar.settings.domain.appInit.AppInitWorkManager
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.repositoty.BackupSettingsRepository
 import dev.ridill.oar.settings.domain.repositoty.SettingsRepository
@@ -30,10 +26,8 @@ object SettingsViewModelModule {
     @Provides
     fun provideSettingsRepository(
         preferencesManager: PreferencesManager,
-        cycleRepo: BudgetCycleRepository
     ): SettingsRepository = SettingsRepositoryImpl(
         preferencesManager = preferencesManager,
-        cycleRepo = cycleRepo
     )
 
     @Provides
