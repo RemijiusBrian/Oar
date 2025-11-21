@@ -5,13 +5,14 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
+import dev.ridill.oar.core.domain.util.logI
 import dev.ridill.oar.core.domain.util.tryOrNull
 
 class AppLockServiceManager(
     private val context: Context
 ) {
     fun startAppUnlockedIndicator() {
-        startServiceWithAction(AppLockService.Action.START_SERVICE)
+        startServiceWithAction(AppLockService.Action.INIT_SERVICE)
     }
 
     fun stopAppUnlockedIndicator() {
@@ -29,9 +30,8 @@ class AppLockServiceManager(
     private fun startServiceWithAction(
         serviceAction: AppLockService.Action
     ) {
-        tryOrNull(
-            AppLockServiceManager::class.java.name
-        ) {
+        logI(AppLockService::class.simpleName) { "startServiceWithAction() called with: action = $serviceAction" }
+        tryOrNull(AppLockServiceManager::class.java.name) {
             val serviceIntent = Intent(context, AppLockService::class.java).apply {
                 action = serviceAction.name
             }

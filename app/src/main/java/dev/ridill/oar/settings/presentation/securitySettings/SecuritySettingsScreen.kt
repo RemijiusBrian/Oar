@@ -16,10 +16,12 @@ import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import dev.ridill.oar.R
+import dev.ridill.oar.core.domain.util.BuildUtil
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.LabelledRadioButton
 import dev.ridill.oar.core.ui.components.OarScaffold
@@ -109,11 +111,15 @@ private fun AutoLockIntervalSelection(
     onIntervalSelect: (AppAutoLockInterval) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val entries = remember {
+        AppAutoLockInterval.entries
+            .filter { BuildUtil.isDebug || !it.debugOnly }
+    }
     Column(
         modifier = modifier
     ) {
         SimpleSettingsPreference(titleRes = R.string.auto_lock_after)
-        AppAutoLockInterval.entries.forEach { interval ->
+        entries.forEach { interval ->
             LabelledRadioButton(
                 label = stringResource(interval.labelRes),
                 selected = interval == selectedInterval,

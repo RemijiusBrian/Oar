@@ -39,7 +39,7 @@ class AppLockService : Service() {
         logI(AppLockService::class.simpleName) { "App lock service onStartCommand - ${intent?.action}" }
         setForeground()
         when (intent?.action) {
-            Action.START_SERVICE.name -> initService()
+            Action.INIT_SERVICE.name -> initService()
             Action.START_AUTO_LOCK_TIMER.name -> startTimer()
             Action.STOP_AUTO_LOCK_TIMER.name -> stopTimer()
             Action.LOCK_APP_IMMEDIATELY.name -> lockAppImmediate()
@@ -52,7 +52,7 @@ class AppLockService : Service() {
     private fun initService() {
         // Some Basic Init
         resetTimerJob()
-        logI(AppLockService::class.simpleName) { "Service Started" }
+        logI(AppLockService::class.simpleName) { "Service reset and initialized" }
     }
 
     private fun startTimer() {
@@ -121,7 +121,7 @@ class AppLockService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     enum class Action {
-        START_SERVICE,
+        INIT_SERVICE,
         START_AUTO_LOCK_TIMER,
         STOP_AUTO_LOCK_TIMER,
         LOCK_APP_IMMEDIATELY,

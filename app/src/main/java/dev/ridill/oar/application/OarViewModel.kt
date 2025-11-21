@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -49,7 +48,6 @@ class OarViewModel @Inject constructor(
     val isAppLocked = preferences
         .mapLatest { it.isAppLocked }
         .distinctUntilChanged()
-        .onStart { startAppUnlockOrServiceStop() }
         .asStateFlow(viewModelScope, false)
 
     val appLockAuthErrorMessage = MutableStateFlow<UiText?>(null)
@@ -108,9 +106,12 @@ class OarViewModel @Inject constructor(
         appLockServiceManager.startAppAutoLockTimer()
     }
 
-    private suspend fun startAppUnlockOrServiceStop() {
+    fun startAppUnlockOrServiceStop() = viewModelScope.launch {
         val preferences = preferences.first()
-        if (!preferences.appLockEnabled) return
+        if (!preferences.appLockEnabled) {
+            appLockServiceManager.stopAppLockTimer()
+            return@launch
+        }
         if (preferences.isAppLocked) {
             eventBus.send(OarEvent.LaunchBiometricAuthentication)
         } else {
