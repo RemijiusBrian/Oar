@@ -60,33 +60,36 @@ class AllSchedulesRepositoryImpl(
                         canMarkPaid = entity.nextPaymentTimestamp?.isSameMonthAs(dateNow) == true
                                 || entity.nextPaymentTimestamp?.isBefore(currentMonthStartDateTime) == true
                     )
-                }.insertSeparators<ScheduleListItemUiModel.ScheduleItem,
-                        ScheduleListItemUiModel> { before, after ->
-                    when {
-                        before?.nextPaymentTimestamp
-                            ?.isSameMonthAs(after?.nextPaymentTimestamp) == true -> null
-
-                        after?.nextPaymentTimestamp
-                            ?.isSameMonthAs(dateNow) == true ->
-                            ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.this_month))
-
-                        after?.nextPaymentTimestamp
-                            ?.isBefore(currentMonthStartDateTime) == true ->
-                            ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.past_due))
-
-                        after?.nextPaymentTimestamp
-                            ?.isAfter(nextMonthStartDateTime) == true ->
-                            ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.upcoming))
-
-                        (before == null
-                                || before.nextPaymentTimestamp != null)
-                                && after != null
-                                && after.nextPaymentTimestamp == null ->
-                            ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.retired))
-
-                        else -> null
-                    }
                 }
+                    .insertSeparators<ScheduleListItemUiModel.ScheduleItem, ScheduleListItemUiModel> { before, after ->
+                        when {
+                            before?.nextPaymentTimestamp
+                                ?.isSameMonthAs(currentMonthStartDateTime) != true
+                                    && after?.nextPaymentTimestamp
+                                ?.isSameMonthAs(currentMonthStartDateTime) == true
+                                -> ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.this_month))
+
+                            before?.nextPaymentTimestamp
+                                ?.isBefore(currentMonthStartDateTime) != true
+                                    && after?.nextPaymentTimestamp
+                                ?.isBefore(currentMonthStartDateTime) == true
+                                -> ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.past_due))
+
+                            before?.nextPaymentTimestamp
+                                ?.isAfter(nextMonthStartDateTime) != true
+                                    && after?.nextPaymentTimestamp
+                                ?.isAfter(nextMonthStartDateTime) == true
+                                -> ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.upcoming))
+
+                            (before == null
+                                    || before.nextPaymentTimestamp != null)
+                                    && after != null
+                                    && after.nextPaymentTimestamp == null ->
+                                ScheduleListItemUiModel.TypeSeparator(UiText.StringResource(R.string.retired))
+
+                            else -> null
+                        }
+                    }
             }
         }
 
