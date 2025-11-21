@@ -15,6 +15,7 @@ sealed class ScheduleListItemUiModel {
         val note: String?,
         val type: TransactionType,
         val currency: Currency,
+        val repetition: ScheduleRepetition,
         val lastPaymentTimestamp: LocalDateTime?,
         val nextPaymentTimestamp: LocalDateTime?,
         val canMarkPaid: Boolean
@@ -28,6 +29,7 @@ sealed class ScheduleListItemUiModel {
             note = scheduleItem.note,
             type = scheduleItem.type,
             currency = LocaleUtil.currencyForCode(scheduleItem.currencyCode),
+            repetition = scheduleItem.repetition,
             lastPaymentTimestamp = scheduleItem.lastPaymentTimestamp,
             nextPaymentTimestamp = scheduleItem.nextPaymentTimestamp,
             canMarkPaid = canMarkPaid
