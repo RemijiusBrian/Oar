@@ -168,8 +168,13 @@ class OarActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        super.onStop()
         viewModel.startAppAutoLockTimer()
+        super.onStop()
+    }
+
+    override fun onStart() {
+        viewModel.startAppUnlockOrServiceStop()
+        super.onStart()
     }
 
     override fun onNewIntent(intent: Intent) {
