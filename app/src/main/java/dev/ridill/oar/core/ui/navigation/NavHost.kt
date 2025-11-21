@@ -1,12 +1,8 @@
 package dev.ridill.oar.core.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.navigation.BottomSheetNavigator
 import androidx.compose.material.navigation.ModalBottomSheetLayout
 import androidx.compose.material.navigation.bottomSheet
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,41 +24,35 @@ fun OarNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        ModalBottomSheetLayout(bottomSheetNavigator) {
-            NavHost(
-                navController = navController,
-                startDestination = DashboardScreenSpec.route,
-                modifier = modifier
-            ) {
-                require(NavDestination.allDestinations.isNotEmpty()) {
-                    "NavGraph must contain at least 1 child destination"
-                }
+    ModalBottomSheetLayout(bottomSheetNavigator) {
+        NavHost(
+            navController = navController,
+            startDestination = DashboardScreenSpec.route,
+            modifier = modifier
+        ) {
+            require(NavDestination.allDestinations.isNotEmpty()) {
+                "NavGraph must contain at least 1 child destination"
+            }
 
-                NavDestination.allDestinations.forEach { destination ->
-                    when (destination) {
-                        is NavGraphSpec -> addGraphSpec(
-                            windowSizeClass = windowSizeClass,
-                            navGraphSpec = destination,
-                            navController = navController
-                        )
+            NavDestination.allDestinations.forEach { destination ->
+                when (destination) {
+                    is NavGraphSpec -> addGraphSpec(
+                        windowSizeClass = windowSizeClass,
+                        navGraphSpec = destination,
+                        navController = navController
+                    )
 
-                        is ScreenSpec -> addScreenSpec(
-                            windowSizeClass = windowSizeClass,
-                            screenSpec = destination,
-                            navController = navController
-                        )
+                    is ScreenSpec -> addScreenSpec(
+                        windowSizeClass = windowSizeClass,
+                        screenSpec = destination,
+                        navController = navController
+                    )
 
-                        is BottomSheetSpec -> addBottomSheetSpec(
-                            windowSizeClass = windowSizeClass,
-                            sheetSpec = destination,
-                            navController = navController
-                        )
-                    }
+                    is BottomSheetSpec -> addBottomSheetSpec(
+                        windowSizeClass = windowSizeClass,
+                        sheetSpec = destination,
+                        navController = navController
+                    )
                 }
             }
         }
