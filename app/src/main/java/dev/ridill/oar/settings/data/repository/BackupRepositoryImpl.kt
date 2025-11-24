@@ -10,6 +10,7 @@ import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.data.util.tryNetworkCall
 import dev.ridill.oar.core.data.util.trySuspend
 import dev.ridill.oar.core.domain.crypto.CryptoManager
+import dev.ridill.oar.core.domain.file.FileHelper
 import dev.ridill.oar.core.domain.model.DataError
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.DateUtil
@@ -37,6 +38,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
 import javax.crypto.BadPaddingException
@@ -91,9 +93,6 @@ class BackupRepositoryImpl(
     override suspend fun performAppDataBackup() = withContext(Dispatchers.IO) {
         logI { "Performing Data Backup" }
         val securityPreferences = securityPreferencesManager.preferences.first()
-        val passwordHash = securityPreferences
-            .backupEncryptionHash.orEmpty()
-            .ifEmpty { throw InvalidEncryptionPasswordThrowable() }
         val passwordHashSalt = securityPreferences
             .backupEncryptionHashSalt.orEmpty()
             .ifEmpty { throw InvalidEncryptionPasswordThrowable() }
@@ -112,10 +111,7 @@ class BackupRepositoryImpl(
             logD { "Create backup folder request - $createBackupFolderRequest" }
             backupFolder = gDriveApi.createFolder(createBackupFolderMetadataPart)
         }
-        val backupFile = backupService.buildBackupFile(
-            password = passwordHash,
-            passwordSalt = passwordHashSalt
-        )
+        val backupFile = createBackupFile()
         val metadataMap = mapOf(
             "name" to backupFile.name,
             "parents" to listOf(backupFolder.id),
@@ -128,7 +124,8 @@ class BackupRepositoryImpl(
         val metadataJson = Gson().toJson(metadataMap)
         val metadataPart = metadataJson.toRequestBody(JSON_MIME_TYPE.toMediaTypeOrNull())
 
-        val fileBody = backupFile.asRequestBody(BACKUP_MIME_TYPE.toMediaTypeOrNull())
+        val fileBody = backupFile
+            .asRequestBody(FileHelper.MimeType.OCTET_STREAM.toMediaTypeOrNull())
         val mediaPart = MultipartBody.Part.createFormData(
             MEDIA_PART_KEY,
             backupFile.name,
@@ -212,6 +209,20 @@ class BackupRepositoryImpl(
         logI { "Updated last backup timestamp" }
     }
 
+    override suspend fun createBackupFile(): File = withContext(Dispatchers.IO) {
+        val securityPreferences = securityPreferencesManager.preferences.first()
+        val passwordHashSalt = securityPreferences
+            .backupEncryptionHashSalt.orEmpty()
+            .ifEmpty { throw InvalidEncryptionPasswordThrowable() }
+        val passwordHash = securityPreferences
+            .backupEncryptionHash.orEmpty()
+            .ifEmpty { throw InvalidEncryptionPasswordThrowable() }
+        return@withContext backupService.buildBackupFile(
+            password = passwordHash,
+            passwordSalt = passwordHashSalt
+        )
+    }
+
     override suspend fun tryClearLocalCache() {
         trySuspend {
             backupService.clearCache()
@@ -234,7 +245,6 @@ class BackupRepositoryImpl(
 }
 
 const val JSON_MIME_TYPE = "application/json"
-const val BACKUP_MIME_TYPE = "application/octet-stream"
 const val APP_DATA_SPACE = "appDataFolder"
 const val G_DRIVE_FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 //const val G_DRIVE_SHORTCUT_MIME_TYPE = "application/vnd.google-apps.shortcut"

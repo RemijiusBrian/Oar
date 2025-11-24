@@ -33,9 +33,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
@@ -66,7 +68,7 @@ fun BackupSettingsScreen(
     snackbarController: SnackbarController,
     state: BackupSettingsState,
     actions: BackupSettingsActions,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     OarScaffold(
@@ -134,6 +136,17 @@ fun BackupSettingsScreen(
                 ),
                 onBackupNowClick = actions::onBackupNowClick,
                 isBackupRunning = state.isBackupRunning
+            )
+
+            SimplePreference(
+                titleRes = R.string.preference_export_data_to_local_title,
+                summary = stringResource(R.string.preference_export_data_to_local_summary),
+                onClick = actions::onExportDataClick,
+                leadingIcon = {
+                    PreferenceIcon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_outlined_db_export),
+                    )
+                }
             )
 
             SimplePreference(
@@ -289,8 +302,9 @@ private fun PreviewBackupSettingsScreen() {
                 override fun onBackupIntervalSelectionDismiss() {}
                 override fun onBackupNowClick() {}
                 override fun onEncryptionPreferenceClick() {}
+                override fun onExportDataClick() {}
             },
-            navigateUp = {}
+            navigateUp = {},
         )
     }
 }

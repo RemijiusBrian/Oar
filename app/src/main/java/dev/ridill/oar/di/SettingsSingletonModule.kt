@@ -14,6 +14,7 @@ import dev.ridill.oar.core.data.db.OarDatabase
 import dev.ridill.oar.core.data.preferences.PreferencesManager
 import dev.ridill.oar.core.data.preferences.security.SecurityPreferencesManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
+import dev.ridill.oar.core.domain.file.FileHelper
 import dev.ridill.oar.core.domain.notification.NotificationHelper
 import dev.ridill.oar.settings.data.local.ConfigDao
 import dev.ridill.oar.settings.data.remote.GDriveApi
@@ -88,11 +89,13 @@ object SettingsSingletonModule {
     fun provideBackupService(
         @ApplicationContext context: Context,
         database: OarDatabase,
-        cryptoManager: CryptoManager
+        cryptoManager: CryptoManager,
+        fileHelper: FileHelper
     ): BackupService = BackupService(
         context = context,
         database = database,
-        cryptoManager = cryptoManager
+        cryptoManager = cryptoManager,
+        fileHelper = fileHelper
     )
 
     @Provides

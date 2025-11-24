@@ -2,6 +2,7 @@ package dev.ridill.oar.settings.presentation.backupSettings
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,13 +13,16 @@ import dev.ridill.oar.R
 import dev.ridill.oar.account.domain.model.AuthState
 import dev.ridill.oar.account.domain.repository.AuthRepository
 import dev.ridill.oar.account.presentation.util.AuthorizationService
+import dev.ridill.oar.core.domain.file.FileHelper
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.core.domain.util.EventBus
 import dev.ridill.oar.core.domain.util.asStateFlow
 import dev.ridill.oar.core.domain.util.logD
+import dev.ridill.oar.core.domain.util.tryOrNull
 import dev.ridill.oar.core.ui.util.UiText
 import dev.ridill.oar.settings.domain.backup.BackupWorkManager
 import dev.ridill.oar.settings.domain.modal.BackupInterval
+import dev.ridill.oar.settings.domain.repositoty.BackupRepository
 import dev.ridill.oar.settings.domain.repositoty.BackupSettingsRepository
 import dev.ridill.oar.settings.presentation.backupEncryption.ENCRYPTION_PASSWORD_UPDATED
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +38,8 @@ import javax.inject.Inject
 class BackupSettingsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val backupSettingsRepo: BackupSettingsRepository,
+    private val backupRepo: BackupRepository,
+    private val fileHelper: FileHelper,
     private val authRepo: AuthRepository,
     private val eventBus: EventBus<BackupSettingsEvent>
 ) : ViewModel(), BackupSettingsActions {
@@ -195,6 +201,45 @@ class BackupSettingsViewModel @Inject constructor(
         }
     }
 
+    fun onBackupFileCreated(uri: Uri) = viewModelScope.launch {
+        val backupFile = tryOrNull { backupRepo.createBackupFile() }
+
+        if (backupFile == null) {
+            eventBus.send(
+                BackupSettingsEvent.ShowUiMessage(
+                    UiText.StringResource(
+                        R.string.error_failed_to_export_data,
+                        true
+                    )
+                )
+            )
+            return@launch
+        }
+
+        when (fileHelper.writeFileToUri(file = backupFile, uri = uri)) {
+            is Result.Error -> {
+                eventBus.send(
+                    BackupSettingsEvent.ShowUiMessage(
+                        UiText.StringResource(
+                            R.string.error_failed_to_export_data,
+                            true
+                        )
+                    )
+                )
+            }
+
+            is Result.Success -> {
+                eventBus.send(
+                    BackupSettingsEvent.ShowUiMessage(
+                        UiText.StringResource(
+                            R.string.data_exported_successfully,
+                        )
+                    )
+                )
+            }
+        }
+    }
+
     override fun onEncryptionPreferenceClick() {
         viewModelScope.launch {
             eventBus.send(BackupSettingsEvent.NavigateToBackupEncryptionScreen)
@@ -215,10 +260,22 @@ class BackupSettingsViewModel @Inject constructor(
         }
     }
 
+    override fun onExportDataClick() {
+        viewModelScope.launch {
+            val isEncryptionPasswordAvailable = isEncryptionPasswordAvailable.first()
+            if (!isEncryptionPasswordAvailable) {
+                eventBus.send(BackupSettingsEvent.NavigateToBackupEncryptionScreen)
+            } else {
+                eventBus.send(BackupSettingsEvent.CreateBackupExportFile)
+            }
+        }
+    }
+
     sealed interface BackupSettingsEvent {
         data class ShowUiMessage(val uiText: UiText) : BackupSettingsEvent
         data object NavigateToBackupEncryptionScreen : BackupSettingsEvent
         data class StartAuthorizationFlow(val pendingIntent: PendingIntent) : BackupSettingsEvent
+        data object CreateBackupExportFile : BackupSettingsEvent
     }
 }
 

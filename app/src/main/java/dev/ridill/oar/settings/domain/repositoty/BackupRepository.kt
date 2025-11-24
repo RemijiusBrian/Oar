@@ -3,6 +3,7 @@ package dev.ridill.oar.settings.domain.repositoty
 import dev.ridill.oar.core.domain.model.DataError
 import dev.ridill.oar.core.domain.model.Result
 import dev.ridill.oar.settings.domain.modal.BackupDetails
+import java.io.File
 import java.time.LocalDateTime
 
 interface BackupRepository {
@@ -15,6 +16,7 @@ interface BackupRepository {
         timestamp: LocalDateTime
     )
 
+    suspend fun createBackupFile(): File
     suspend fun tryClearLocalCache()
     suspend fun setBackupError(error: FatalBackupError?)
     suspend fun restoreBackupJobs()

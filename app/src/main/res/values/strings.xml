@@ -196,6 +196,8 @@
         You can restore your data when you install the app.</string>
     <string name="preference_google_account">Google Account</string>
     <string name="preference_backup_interval">Backup Interval</string>
+    <string name="preference_export_data_to_local_title">Export Data</string>
+    <string name="preference_export_data_to_local_summary">Export your data to your local storage</string>
     <string name="preference_backup_encryption_title">Backup Encryption</string>
     <string name="preference_backup_encryption_summary">Tap to set a password to encrypt your data with</string>
     <string name="preference_security">Security</string>
@@ -532,6 +534,9 @@
     <string name="cd_tap_to_select_cycle">Tap to select cycle %s</string>
     <string name="cd_tap_to_select_folder">Tap to select folder %s</string>
     <string name="five_seconds">5 Seconds</string>
+    <string name="error_failed_build_file">Failed to build file</string>
+    <string name="error_failed_to_export_data">Failed to export data</string>
+    <string name="data_exported_successfully">Data exported successfully</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>

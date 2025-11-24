@@ -3,7 +3,7 @@ package dev.ridill.oar.core.ui.navigation.destinations
 import android.app.Activity
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.IntentSenderRequest.Builder
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -17,9 +17,11 @@ import androidx.navigation.NavDeepLink
 import androidx.navigation.NavHostController
 import androidx.navigation.navDeepLink
 import dev.ridill.oar.R
+import dev.ridill.oar.core.domain.file.FileHelper
 import dev.ridill.oar.core.ui.components.CollectFlowEffect
 import dev.ridill.oar.core.ui.components.NavigationResultEffect
 import dev.ridill.oar.core.ui.components.rememberSnackbarController
+import dev.ridill.oar.settings.domain.backup.BackupService
 import dev.ridill.oar.settings.presentation.backupEncryption.ACTION_ENCRYPTION_PASSWORD
 import dev.ridill.oar.settings.presentation.backupSettings.BackupSettingsScreen
 import dev.ridill.oar.settings.presentation.backupSettings.BackupSettingsViewModel
@@ -49,6 +51,11 @@ data object BackupSettingsScreenSpec : ScreenSpec {
 
         val snackbarController = rememberSnackbarController()
         val context = LocalContext.current
+
+        val backupFileCreateLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument(FileHelper.MimeType.OCTET_STREAM),
+            onResult = { it?.let(viewModel::onBackupFileCreated) }
+        )
 
         NavigationResultEffect<String>(
             resultKey = ACTION_ENCRYPTION_PASSWORD,
@@ -82,8 +89,12 @@ data object BackupSettingsScreenSpec : ScreenSpec {
 
                 is BackupSettingsViewModel.BackupSettingsEvent.StartAuthorizationFlow -> {
                     authorizationResultLauncher.launch(
-                        IntentSenderRequest.Builder(event.pendingIntent).build()
+                        Builder(event.pendingIntent).build()
                     )
+                }
+
+                BackupSettingsViewModel.BackupSettingsEvent.CreateBackupExportFile -> {
+                    backupFileCreateLauncher.launch(BackupService.dbBackupFileName(context))
                 }
             }
         }
@@ -93,7 +104,7 @@ data object BackupSettingsScreenSpec : ScreenSpec {
             snackbarController = snackbarController,
             state = state,
             actions = viewModel,
-            navigateUp = navController::navigateUp
+            navigateUp = navController::navigateUp,
         )
     }
 }

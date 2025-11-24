@@ -30,6 +30,7 @@ import dev.ridill.oar.core.domain.crashlytics.CrashlyticsManager
 import dev.ridill.oar.core.domain.crashlytics.FirebaseCrashlyticsManager
 import dev.ridill.oar.core.domain.crypto.CryptoManager
 import dev.ridill.oar.core.domain.crypto.DefaultCryptoManager
+import dev.ridill.oar.core.domain.file.FileHelper
 import dev.ridill.oar.core.domain.remoteConfig.FirebaseRemoteConfigService
 import dev.ridill.oar.core.domain.service.ExpEvalService
 import dev.ridill.oar.core.domain.service.ReceiverService
@@ -147,6 +148,11 @@ object AppModule {
 
     @Provides
     fun provideCrashlyticsManager(): CrashlyticsManager = FirebaseCrashlyticsManager()
+
+    @Provides
+    fun provideFileHelper(
+        @ApplicationContext context: Context
+    ): FileHelper = FileHelper(context = context)
 }
 
 @Qualifier
