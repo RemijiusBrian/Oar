@@ -94,6 +94,7 @@ class AllTransactionsViewModel @Inject constructor(
     private val aggregatesList = selectedTransactionIds.flatMapLatest { selectedTxIds ->
         aggregatesRepo.getAmountAggregateForTransactions(
             selectedTxIds = selectedTxIds,
+            addExcluded = true
         )
     }.distinctUntilChanged()
 
