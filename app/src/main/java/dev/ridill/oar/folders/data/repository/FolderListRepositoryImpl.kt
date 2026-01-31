@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.mapLatest
 class FolderListRepositoryImpl(
     private val folderDao: FolderDao
 ) : FolderListRepository {
-    override fun getFolderAndAggregatesPaged(): Flow<PagingData<FolderUIModel>> = Pager(
+    override fun getAllFoldersPaged(): Flow<PagingData<FolderUIModel>> = Pager(
         config = PagingConfig(pageSize = UtilConstants.DEFAULT_PAGE_SIZE),
         pagingSourceFactory = { folderDao.getFolderAndAggregatesPaged() }
     ).flow

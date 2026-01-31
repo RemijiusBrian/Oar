@@ -70,8 +70,7 @@
     <string name="cd_delete_tag">Delete Tag</string>
     <string name="cd_delete_folder">Delete Folder</string>
     <string name="cd_remove_from_folder">Remove from folder</string>
-    <string name="cd_folder_list_item_with_aggregate_amount">Folder %1$s created on %2$s</string>
-    <string name="cd_folder_list_item_without_aggregate_amount">Folder %1$s created on %2$s with aggregate amount of %3$s %4$s</string>
+    <string name="cd_folder_list_item">Folder %1$s created on %2$s</string>
     <string name="cd_tap_for_more_options">Tap for more options</string>
     <string name="cd_filter_options">Filter Options</string>
     <string name="cd_excluded">Excluded</string>
