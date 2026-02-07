@@ -1,5 +1,6 @@
 package dev.ridill.oar.folders.presentation.allFolders
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -166,8 +167,8 @@ private fun FolderCard(
     val border = CardDefaults.outlinedCardBorder()
 
     Box(
-//        onClick = onClick,
         modifier = modifier
+            .clickable(onClick = onClick,)
             .drawBehind {
                 drawOutline(
                     outline = FolderShape().createOutline(size, layoutDirection, Density(density)),

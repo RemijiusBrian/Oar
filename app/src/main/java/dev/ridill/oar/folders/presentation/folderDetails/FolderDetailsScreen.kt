@@ -2,7 +2,6 @@ package dev.ridill.oar.folders.presentation.folderDetails
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
@@ -44,7 +43,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
@@ -56,7 +54,6 @@ import dev.ridill.oar.aggregations.presentation.AmountAggregatesList
 import dev.ridill.oar.budgetCycles.domain.model.CycleIndicator
 import dev.ridill.oar.core.domain.util.DateUtil
 import dev.ridill.oar.core.domain.util.One
-import dev.ridill.oar.core.ui.components.AmountWithTypeIndicator
 import dev.ridill.oar.core.ui.components.BackArrowButton
 import dev.ridill.oar.core.ui.components.ConfirmationDialog
 import dev.ridill.oar.core.ui.components.ExcludedIcon
@@ -68,11 +65,9 @@ import dev.ridill.oar.core.ui.components.OarPlainTooltip
 import dev.ridill.oar.core.ui.components.OarScaffold
 import dev.ridill.oar.core.ui.components.OptionListItem
 import dev.ridill.oar.core.ui.components.SnackbarController
-import dev.ridill.oar.core.ui.components.SpacerExtraSmall
 import dev.ridill.oar.core.ui.components.SpacerSmall
 import dev.ridill.oar.core.ui.components.SwipeActionsContainer
 import dev.ridill.oar.core.ui.components.TitleLargeText
-import dev.ridill.oar.core.ui.components.VerticalNumberSpinnerContent
 import dev.ridill.oar.core.ui.components.icons.CalendarClock
 import dev.ridill.oar.core.ui.components.listEmptyIndicator
 import dev.ridill.oar.core.ui.navigation.destinations.FolderDetailsScreenSpec
@@ -81,8 +76,6 @@ import dev.ridill.oar.core.ui.theme.elevation
 import dev.ridill.oar.core.ui.theme.spacing
 import dev.ridill.oar.core.ui.util.TextFormat
 import dev.ridill.oar.core.ui.util.isEmpty
-import dev.ridill.oar.core.ui.util.mergedContentDescription
-import dev.ridill.oar.folders.domain.model.AggregateType
 import dev.ridill.oar.folders.domain.model.FolderTransactionsMultiSelectionOption
 import dev.ridill.oar.transactions.domain.model.TagIndicator
 import dev.ridill.oar.transactions.domain.model.TransactionEntry
@@ -91,7 +84,6 @@ import dev.ridill.oar.transactions.domain.model.TransactionType
 import dev.ridill.oar.transactions.presentation.components.NewTransactionFab
 import dev.ridill.oar.transactions.presentation.components.TransactionListItem
 import java.time.LocalDateTime
-import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -202,8 +194,6 @@ fun FolderDetailsScreen(
             FolderDetails(
                 folderName = state.folderName,
                 isExcluded = state.isExcluded,
-                aggregateAmount = state.aggregateAmount,
-                aggregateType = state.aggregateType,
                 createdTimestamp = state.createdTimestampFormatted,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -362,14 +352,13 @@ fun FolderDetailsScreen(
 private fun FolderDetails(
     folderName: String,
     isExcluded: Boolean,
-    aggregateAmount: Double,
-    aggregateType: AggregateType,
     createdTimestamp: String,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .padding(horizontal = MaterialTheme.spacing.medium),
+        horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
     ) {
         Row(
@@ -382,41 +371,9 @@ private fun FolderDetails(
             TitleLargeText(folderName)
         }
 
-        AggregateAmountAndCreatedDate(
-            aggregateAmount = aggregateAmount,
-            aggregateType = aggregateType,
-            date = createdTimestamp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
-        )
+        FolderCreatedDate(date = createdTimestamp)
 
         HorizontalDivider()
-    }
-}
-
-@Composable
-private fun AggregateAmountAndCreatedDate(
-    aggregateAmount: Double,
-    aggregateType: AggregateType,
-    date: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        AggregateAmount(
-            amount = aggregateAmount,
-            type = aggregateType,
-            modifier = Modifier
-                .weight(weight = Float.One, fill = false)
-        )
-        SpacerSmall()
-        FolderCreatedDate(
-            date = date
-        )
     }
 }
 
@@ -446,52 +403,6 @@ private fun FolderCreatedDate(
             imageVector = Icons.Outlined.CalendarClock,
             contentDescription = stringResource(R.string.cd_folder_created_date)
         )
-    }
-}
-
-@Composable
-private fun AggregateAmount(
-    amount: Double,
-    type: AggregateType,
-    modifier: Modifier = Modifier
-) {
-    val aggregateAmountContentDescription = when (type) {
-        AggregateType.BALANCED -> stringResource(R.string.cd_folder_aggregate_amount_balanced)
-        else -> stringResource(
-            R.string.cd_folder_aggregate_amount_unbalanced,
-            TextFormat.number(amount),
-            stringResource(type.labelRes)
-        )
-    }
-    Row(
-        modifier = modifier
-            .mergedContentDescription(aggregateAmountContentDescription)
-    ) {
-        VerticalNumberSpinnerContent(
-            number = amount,
-            modifier = Modifier
-                .weight(weight = Float.One, fill = false)
-                .alignBy(LastBaseline)
-        ) {
-            AmountWithTypeIndicator(
-                value = TextFormat.number(it.absoluteValue),
-                type = type
-            )
-        }
-
-        SpacerExtraSmall()
-
-        Crossfade(
-            targetState = type.labelRes,
-            label = "AggregateType",
-            modifier = Modifier
-                .alignBy(LastBaseline)
-        ) { resId ->
-            Text(
-                text = stringResource(resId),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
     }
 }
 

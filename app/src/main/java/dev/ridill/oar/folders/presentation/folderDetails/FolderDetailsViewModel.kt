@@ -14,7 +14,6 @@ import dev.ridill.oar.core.domain.util.asStateFlow
 import dev.ridill.oar.core.domain.util.orFalse
 import dev.ridill.oar.core.ui.navigation.destinations.FolderDetailsScreenSpec
 import dev.ridill.oar.core.ui.util.UiText
-import dev.ridill.oar.folders.domain.model.AggregateType
 import dev.ridill.oar.folders.domain.model.FolderTransactionsMultiSelectionOption
 import dev.ridill.oar.folders.domain.repository.FolderDetailsRepository
 import dev.ridill.oar.transactions.domain.repository.AllTransactionsRepository
@@ -49,13 +48,6 @@ class FolderDetailsViewModel @Inject constructor(
         .distinctUntilChanged()
     private val excluded = folderDetails
         .mapLatest { it?.excluded.orFalse() }
-        .distinctUntilChanged()
-    private val aggregateAmount = folderDetails
-        .mapLatest { it?.aggregate.orZero() }
-        .distinctUntilChanged()
-
-    private val aggregateType = folderDetails
-        .mapLatest { it?.aggregateType ?: AggregateType.BALANCED }
         .distinctUntilChanged()
 
     val transactionPagingData = repo.getTransactionsInFolderPaged(folderIdArg)
@@ -100,8 +92,6 @@ class FolderDetailsViewModel @Inject constructor(
         folderName,
         createdTimestamp,
         excluded,
-        aggregateAmount,
-        aggregateType,
         shouldShowActionPreview,
         showDeleteFolderConfirmation,
         selectedTransactionIds,
@@ -115,8 +105,6 @@ class FolderDetailsViewModel @Inject constructor(
                       name,
                       createdTimestamp,
                       excluded,
-                      aggregateAmount,
-                      aggregateType,
                       shouldShowActionPreview,
                       showDeleteConfirmation,
                       selectedTransactionIds,
@@ -131,8 +119,6 @@ class FolderDetailsViewModel @Inject constructor(
             folderName = name,
             createdTimestamp = createdTimestamp,
             isExcluded = excluded,
-            aggregateAmount = aggregateAmount,
-            aggregateType = aggregateType,
             shouldShowActionPreview = shouldShowActionPreview,
             showDeleteConfirmation = showDeleteConfirmation,
             selectedTransactionIds = selectedTransactionIds,

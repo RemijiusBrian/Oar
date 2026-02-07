@@ -86,8 +86,6 @@
     <string name="cd_tap_to_edit_transaction">Tap to edit transaction</string>
     <string name="cd_long_press_to_toggle_selection">Long Press To Toggle Selection</string>
     <string name="cd_clear_transaction_selection">Clear Transaction Selection</string>
-    <string name="cd_folder_aggregate_amount_balanced">Your credits and debits are balanced</string>
-    <string name="cd_folder_aggregate_amount_unbalanced">You have an aggregated amount of %1$s %2$s</string>
     <string name="cd_tap_tag_to_filter_transactions">Tap tag to filter transactions</string>
     <string name="cd_tap_tag_to_assign_to_transactions">Tap to assign tag to transactions</string>
     <string name="cd_long_press_tag_to_edit">Long press to edit tag</string>
