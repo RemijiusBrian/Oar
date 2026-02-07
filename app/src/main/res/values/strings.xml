@@ -531,6 +531,7 @@
     <string name="cd_tap_to_select_cycle">Tap to select cycle %s</string>
     <string name="cd_tap_to_select_folder">Tap to select folder %s</string>
     <string name="five_seconds">5 Seconds</string>
+    <string name="cd_tap_to_see_cycle_aggregate">Tap to see cycle aggregate</string>
     <plurals name="transaction_deleted">
         <item quantity="one">Transaction Deleted</item>
         <item quantity="other">Transactions Deleted</item>
