@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -24,12 +24,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -144,10 +153,9 @@ private fun FolderCard(
     modifier: Modifier = Modifier
 ) {
     val nameStyle = MaterialTheme.typography.titleMedium
-    val createdDateStyle = MaterialTheme.typography.bodySmall
-        .copy(
-            color = LocalContentColor.current.copy(alpha = ContentAlpha.SUB_CONTENT)
-        )
+    val createdDateStyle = MaterialTheme.typography.bodySmall.copy(
+        color = LocalContentColor.current.copy(alpha = ContentAlpha.SUB_CONTENT)
+    )
 
     val folderContentDescription = stringResource(
         R.string.cd_folder_list_item,
@@ -155,9 +163,19 @@ private fun FolderCard(
         created
     )
 
-    OutlinedCard(
-        onClick = onClick,
+    val border = CardDefaults.outlinedCardBorder()
+
+    Box(
+//        onClick = onClick,
         modifier = modifier
+            .drawBehind {
+                drawOutline(
+                    outline = FolderShape().createOutline(size, layoutDirection, Density(density)),
+                    brush = border.brush,
+                    style = Stroke(border.width.toPx())
+                )
+            }
+            .padding(MaterialTheme.spacing.medium)
             .mergedContentDescription(folderContentDescription)
             .exclusionGraphicsLayer(excluded)
     ) {
@@ -189,6 +207,60 @@ private fun FolderCard(
             )
         }
     }
+}
+
+private class FolderShape : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline = Outline.Generic(
+        path = Path().apply {
+            val scaleX = size.width / 24f
+            val scaleY = size.height / 24f
+
+            moveTo(10f * scaleX, 4f * scaleY)
+            lineTo(4f * scaleX, 4f * scaleY)
+            cubicTo(
+                2.9f * scaleX,
+                4f * scaleY,
+                2.01f * scaleX,
+                4.9f * scaleY,
+                2.01f * scaleX,
+                6f * scaleY
+            )
+            lineTo(2f * scaleX, 18f * scaleY)
+            cubicTo(
+                2f * scaleX,
+                19.1f * scaleY,
+                2.9f * scaleX,
+                20f * scaleY,
+                4f * scaleX,
+                20f * scaleY
+            )
+            lineTo(20f * scaleX, 20f * scaleY)
+            cubicTo(
+                21.1f * scaleX,
+                20f * scaleY,
+                22f * scaleX,
+                19.1f * scaleY,
+                22f * scaleX,
+                18f * scaleY
+            )
+            lineTo(22f * scaleX, 8f * scaleY)
+            cubicTo(
+                22f * scaleX,
+                6.9f * scaleY,
+                21.1f * scaleX,
+                6f * scaleY,
+                20f * scaleX,
+                6f * scaleY
+            )
+            lineTo(12f * scaleX, 6f * scaleY)
+            lineTo(10f * scaleX, 4f * scaleY)
+            close()
+        }
+    )
 }
 
 @PreviewLightDark
